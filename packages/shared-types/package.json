@@ -1,0 +1,38 @@
+{
+  "name": "@benalsam/shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types and services for Benalsam mobile and web applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "typescript",
+    "types",
+    "benalsam",
+    "shared"
+  ],
+  "author": "Benalsam Team",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^20.8.3"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+} 
