@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase  } from '../../services/supabaseClient';
 import { fetchUserFavoriteStatusForListings } from '../favoriteService';
 import { Listing, UserProfile, ApiResponse } from '../../types';
 import { DatabaseError, ValidationError, handleError } from '../../utils/errors';

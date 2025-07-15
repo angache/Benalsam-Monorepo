@@ -1,5 +1,6 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 
+// Session management helper
 const getSessionId = () => {
   let sessionId = localStorage.getItem('user_session_id');
   if (!sessionId) {
@@ -9,21 +10,45 @@ const getSessionId = () => {
   return sessionId;
 };
 
+// Error handling helper
+const handleAnalyticsError = (error, eventType) => {
+  console.error(`Error in trackEvent '${eventType}':`, error);
+  // Analytics errors are non-critical, so we don't show toasts
+};
+
 export const trackEvent = async (eventType, eventData = {}, userId = null) => {
+  if (!eventType) {
+    console.error('trackEvent called without eventType');
+    return;
+  }
+
   try {
     const event = {
       event_type: eventType,
       event_data: eventData,
       user_id: userId,
       session_id: getSessionId(),
+      created_at: new Date().toISOString(),
     };
 
     const { error } = await supabase.from('user_events').insert(event);
 
     if (error) {
-      console.error(`Error tracking event '${eventType}':`, error.message);
+      handleAnalyticsError(error, eventType);
     }
-  } catch (e) {
-    console.error('Unexpected error in trackEvent:', e);
+  } catch (error) {
+    handleAnalyticsError(error, eventType);
   }
+};
+
+export const trackPageView = async (pageName, userId = null) => {
+  await trackEvent('page_view', { page_name: pageName }, userId);
+};
+
+export const trackUserAction = async (action, details = {}, userId = null) => {
+  await trackEvent('user_action', { action, ...details }, userId);
+};
+
+export const trackError = async (errorType, errorMessage, userId = null) => {
+  await trackEvent('error', { error_type: errorType, error_message: errorMessage }, userId);
 };

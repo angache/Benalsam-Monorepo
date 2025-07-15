@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   fetchListings as fetchListingsService, 
   fetchInventoryItems as fetchInventoryItemsService,

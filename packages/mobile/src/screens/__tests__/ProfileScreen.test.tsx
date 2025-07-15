@@ -3,7 +3,7 @@ import { render, act, fireEvent, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ProfileScreen from '../ProfileScreen';
 import { useAuthStore } from '../../stores';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../../services/supabaseClient';
 
 // Mock expo-image-picker
 jest.mock('expo-image-picker', () => ({

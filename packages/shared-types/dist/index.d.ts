@@ -1,5 +1,4 @@
 export * from './types/index';
-export { supabase, db } from './services/supabaseClient';
 /**
  * Format price with Turkish Lira symbol
  */

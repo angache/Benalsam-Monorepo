@@ -1,4 +1,4 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { fakerTR as faker } from '@faker-js/faker';
 import { categoriesConfig } from '@/config/categories';
 import { toast } from '@/components/ui/use-toast';

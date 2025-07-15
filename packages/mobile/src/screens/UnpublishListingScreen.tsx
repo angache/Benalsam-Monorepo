@@ -11,7 +11,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
 import { Header, Card, Button, Input } from '../components';
-import { supabase } from '../services/supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 
 const UnpublishListingScreen = () => {
   const navigation = useNavigation<any>();

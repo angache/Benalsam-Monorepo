@@ -1,9 +1,30 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 import { processImagesForSupabase } from '@/services/imageService';
 
+// Error handling helper
+const handleError = (error, title = "Hata", description = "Bir sorun oluştu") => {
+  console.error(`Error in ${title}:`, error);
+  toast({ 
+    title: title, 
+    description: error?.message || description, 
+    variant: "destructive" 
+  });
+  return null;
+};
+
+// Validation helper
+const validateInventoryData = (itemData) => {
+  if (!itemData.name || !itemData.category) {
+    toast({ title: "Eksik Bilgi", description: "Ürün adı ve kategorisi gereklidir.", variant: "destructive" });
+    return false;
+  }
+  return true;
+};
+
 export const fetchInventoryItems = async (userId) => {
   if (!userId) return [];
+  
   try {
     const { data, error } = await supabase
       .from('inventory_items')
@@ -12,7 +33,7 @@ export const fetchInventoryItems = async (userId) => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching inventory items:', error);
+      console.error('Error in fetchInventoryItems:', error);
       if (error.message.toLowerCase().includes('failed to fetch')) {
         toast({ title: "Ağ Hatası", description: "Envanter yüklenemedi. İnternet bağlantınızı kontrol edin.", variant: "destructive" });
       } else {
@@ -20,15 +41,19 @@ export const fetchInventoryItems = async (userId) => {
       }
       return [];
     }
-    return data;
-  } catch (e) {
-    console.error('Unexpected error in fetchInventoryItems:', e);
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchInventoryItems:', error);
     toast({ title: "Beklenmedik Envanter Hatası", description: "Envanter yüklenirken beklenmedik bir sorun oluştu.", variant: "destructive" });
     return [];
   }
 };
 
 export const addInventoryItem = async (itemData, currentUserId, onProgress) => {
+  if (!validateInventoryData(itemData)) {
+    return null;
+  }
+
   try {
     const { mainImageUrl, additionalImageUrls } = await processImagesForSupabase(
       itemData.images,
@@ -57,15 +82,17 @@ export const addInventoryItem = async (itemData, currentUserId, onProgress) => {
       .single();
 
     if (error) {
-      console.error('Error adding inventory item:', error);
-      toast({ title: "Envanter Eklenemedi", description: error.message, variant: "destructive" });
-      return null;
+      return handleError(error, "Envanter Eklenemedi", error.message);
     }
+
+    toast({ 
+      title: "Ürün Eklendi! 🎉", 
+      description: "Ürün envanterinize başarıyla eklendi." 
+    });
+
     return data;
-  } catch (e) {
-    console.error('Unexpected error in addInventoryItem:', e);
-    toast({ title: "Beklenmedik Envanter Ekleme Hatası", description: "Envantere ürün eklenirken beklenmedik bir sorun oluştu.", variant: "destructive" });
-    return null;
+  } catch (error) {
+    return handleError(error, "Beklenmedik Envanter Ekleme Hatası", "Envantere ürün eklenirken beklenmedik bir sorun oluştu");
   }
 };
 

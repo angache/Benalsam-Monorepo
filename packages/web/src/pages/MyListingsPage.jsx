@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/stores';
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import MyListingsHeader from '@/components/MyListingsPage/MyListingsHeader.jsx';
 import ListingCard from '@/components/MyListingsPage/ListingCard.jsx';
 import EmptyState from '@/components/MyListingsPage/EmptyState.jsx';

@@ -1,10 +1,29 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 import { addUserActivity } from '@/services/userActivityService';
 
-export const getOrCreateConversation = async (user1Id, user2Id, offerId = null, listingId = null) => {
+// Error handling helper
+const handleError = (error, title = "Hata", description = "Bir sorun oluştu") => {
+  console.error(`Error in ${title}:`, error);
+  toast({ 
+    title: title, 
+    description: error?.message || description, 
+    variant: "destructive" 
+  });
+  return null;
+};
+
+// Validation helper
+const validateConversationData = (user1Id, user2Id) => {
   if (!user1Id || !user2Id) {
     console.error('Missing user IDs for conversation');
+    return false;
+  }
+  return true;
+};
+
+export const getOrCreateConversation = async (user1Id, user2Id, offerId = null, listingId = null) => {
+  if (!validateConversationData(user1Id, user2Id)) {
     return null;
   }
 
@@ -39,9 +58,7 @@ export const getOrCreateConversation = async (user1Id, user2Id, offerId = null, 
       .single();
 
     if (createError) {
-      console.error('Error creating conversation:', createError);
-      toast({ title: "Sohbet Oluşturulamadı", description: createError.message, variant: "destructive" });
-      return null;
+      return handleError(createError, "Sohbet Oluşturulamadı", createError.message);
     }
 
     const { error: participantError } = await supabase
@@ -57,15 +74,13 @@ export const getOrCreateConversation = async (user1Id, user2Id, offerId = null, 
 
     return newConversation.id;
   } catch (error) {
-    console.error('Error in getOrCreateConversation:', error);
-    return null;
+    return handleError(error, "Beklenmedik Hata", "Sohbet oluşturulurken bir sorun oluştu");
   }
 };
 
 export const sendMessage = async (conversationId, senderId, content, messageType = 'text') => {
   if (!conversationId || !senderId || !content) {
-    toast({ title: "Hata", description: "Mesaj göndermek için eksik bilgi.", variant: "destructive" });
-    return null;
+    return handleError(null, "Hata", "Mesaj göndermek için eksik bilgi");
   }
 
   try {
@@ -85,11 +100,10 @@ export const sendMessage = async (conversationId, senderId, content, messageType
       .single();
 
     if (error) {
-      console.error('Error sending message:', error);
-      toast({ title: "Mesaj Gönderilemedi", description: error.message, variant: "destructive" });
-      return null;
+      return handleError(error, "Mesaj Gönderilemedi", error.message);
     }
 
+    // Update conversation timestamp
     await supabase
       .from('conversations')
       .update({
@@ -98,6 +112,7 @@ export const sendMessage = async (conversationId, senderId, content, messageType
       })
       .eq('id', conversationId);
 
+    // Add user activity
     await addUserActivity(
       senderId,
       'message_sent',
@@ -108,9 +123,7 @@ export const sendMessage = async (conversationId, senderId, content, messageType
 
     return data;
   } catch (error) {
-    console.error('Error in sendMessage:', error);
-    toast({ title: "Beklenmedik Hata", description: "Mesaj gönderilirken bir sorun oluştu.", variant: "destructive" });
-    return null;
+    return handleError(error, "Beklenmedik Hata", "Mesaj gönderilirken bir sorun oluştu");
   }
 };
 

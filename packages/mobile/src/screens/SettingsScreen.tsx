@@ -64,6 +64,7 @@ import type {
 } from '../types';
 import type { RootStackParamList as RootStackParamListType } from '../types/navigation';
 
+
 interface NotificationPreferences {
   new_offer_push: boolean;
   new_offer_email: boolean;

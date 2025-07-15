@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase  } from '../../services/supabaseClient';
 import { addPremiumSorting, processFetchedListings } from './core';
 import { Listing, ApiResponse, QueryFilters } from '../../types';
 import { DatabaseError, handleError } from '../../utils/errors';

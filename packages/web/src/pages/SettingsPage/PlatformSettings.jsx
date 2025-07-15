@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx";

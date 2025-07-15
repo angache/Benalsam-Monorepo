@@ -4,7 +4,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
 import { fetchListings } from '../services/listingService';
-import { supabase } from '../services/supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { dopingOptions } from '../config/dopingOptions';
 
 const DopingScreen = () => {

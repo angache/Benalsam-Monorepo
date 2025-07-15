@@ -45,7 +45,7 @@ import { categoriesConfig } from '../config/categories-with-attributes';
 import { SearchBar } from '../components/SearchBar';
 import { getListingHistory } from '../services/userActivityService';
 import { fetchMostOfferedListings } from '../services/listingService/fetchers';
-import { supabase } from '../services/supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { ListingWithFavorite } from '../services/categoryFollowService';
 
 type RootStackParamList = {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, useLocation as routerLocation, Link } from 'react-router-dom';
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast.js';
 import { Button } from '@/components/ui/button.jsx';

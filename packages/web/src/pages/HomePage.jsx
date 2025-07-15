@@ -1,5 +1,5 @@
 
-    import React, { useState, useMemo } from 'react';
+    import React, { useState, useMemo, useEffect } from 'react';
     import { motion, AnimatePresence } from 'framer-motion';
     import { useHomePageData } from '@/hooks/useHomePageData';
     import { useNavigate } from 'react-router-dom';
@@ -20,17 +20,42 @@
     import StatsSection from '@/components/StatsSection';
     import PersonalizedFeed from '@/components/PersonalizedFeed';
     import {
+      fetchListings,
       fetchPopularListings,
       fetchMostOfferedListings,
       fetchTodaysDeals,
     } from '@/services/listingService';
 
 
-    const HomePage = ({ listings: initialListings, onToggleFavorite, currentUser }) => {
+    const HomePage = ({ onToggleFavorite, currentUser }) => {
       const navigate = useNavigate();
       const [viewMode, setViewMode] = useState('grid');
       const [sortOption, setSortOption] = useState('created_at-desc');
       const [localSearchQuery, setLocalSearchQuery] = useState('');
+      const [initialListings, setInitialListings] = useState([]);
+      const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+
+      // Load initial listings
+      useEffect(() => {
+        const loadInitialListings = async () => {
+          try {
+            setIsLoadingInitial(true);
+            const listings = await fetchListings(currentUser?.id);
+            setInitialListings(listings);
+          } catch (error) {
+            console.error('Error loading initial listings:', error);
+            toast({ 
+              title: "İlanlar Yüklenemedi", 
+              description: "Ana sayfa ilanları yüklenirken bir sorun oluştu.", 
+              variant: "destructive" 
+            });
+          } finally {
+            setIsLoadingInitial(false);
+          }
+        };
+
+        loadInitialListings();
+      }, [currentUser?.id]);
 
       const {
         selectedCategories,
@@ -116,6 +141,18 @@
         newPath.push(category);
         handleCategorySelect(newPath);
       };
+
+      // Show loading state while initial listings are loading
+      if (isLoadingInitial) {
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-background">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">İlanlar yükleniyor...</p>
+            </div>
+          </div>
+        );
+      }
 
       return (
         <motion.div

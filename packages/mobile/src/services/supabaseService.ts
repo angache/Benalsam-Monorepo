@@ -58,7 +58,7 @@ import {
     updateInventoryItem as updateInventoryItemService,
     deleteInventoryItem as deleteInventoryItemService
 } from './inventoryService';
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { User, UserProfile, AuthCredentials, RegisterData, ApiResponse } from '../types';
 import { AuthenticationError, DatabaseError, ValidationError, handleError } from '../utils/errors';
 

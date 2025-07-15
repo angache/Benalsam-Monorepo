@@ -223,7 +223,7 @@ export const getSentOffers = async (userId: string): Promise<Offer[]> => {
     }
 
     // Format data
-    const formattedData = data?.map(offer => ({
+    const formattedData = data?.map((offer: any) => ({
       ...offer,
       listing: {
         ...offer.listings,
@@ -257,7 +257,7 @@ export const getReceivedOffers = async (userId: string): Promise<Offer[]> => {
       throw new DatabaseError('Failed to fetch user listings', listingsError);
     }
 
-    const listingIds = userListings.map(listing => listing.id);
+    const listingIds = userListings.map((listing: any) => listing.id);
 
     if (listingIds.length === 0) {
       return []; // Kullanıcının hiç ilanı yoksa boş array dön
@@ -296,7 +296,7 @@ export const getReceivedOffers = async (userId: string): Promise<Offer[]> => {
     }
 
     // Format data
-    const formattedData = data?.map(offer => ({
+    const formattedData = data?.map((offer: any) => ({
       ...offer,
       listing: offer.listings,
       user: offer.profiles,
@@ -389,7 +389,7 @@ export const getOffersForListing = async (listingId: string): Promise<Offer[]> =
     }
 
     // Format data
-    const formattedData = data?.map(offer => ({
+    const formattedData = data?.map((offer: any) => ({
       ...offer,
       user: offer.profiles
     })) || [];

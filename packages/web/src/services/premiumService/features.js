@@ -1,4 +1,4 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { incrementUserUsage } from './usage';
 
 // Teklifi öne çıkar

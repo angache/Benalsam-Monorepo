@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 
 interface BlockedUserData {
   id: string;

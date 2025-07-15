@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 
 export const fetchUserProfile = async (userId: string) => {
   if (!userId) {

@@ -1,50 +1,95 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
-export const createReview = async (reviewData) => {
-  const { reviewer_id, reviewee_id, offer_id, rating, comment } = reviewData;
+// Error handling helper
+const handleError = (error, title = "Hata", description = "Bir sorun oluştu") => {
+  console.error(`Error in ${title}:`, error);
+  toast({ 
+    title: title, 
+    description: error?.message || description, 
+    variant: "destructive" 
+  });
+  return null;
+};
 
+// Validation helper
+const validateReviewData = (reviewData) => {
+  const { reviewer_id, reviewee_id, offer_id, rating } = reviewData;
+  
   if (!reviewer_id || !reviewee_id || !offer_id || !rating) {
     toast({ title: "Eksik Bilgi", description: "Yorum oluşturmak için gerekli tüm alanlar doldurulmalıdır.", variant: "destructive" });
+    return false;
+  }
+  return true;
+};
+
+export const createReview = async (reviewData) => {
+  if (!validateReviewData(reviewData)) {
     return null;
   }
 
-  const { data, error } = await supabase
-    .from('user_reviews')
-    .insert([{ reviewer_id, reviewee_id, offer_id, rating, comment }])
-    .select()
-    .single();
+  const { reviewer_id, reviewee_id, offer_id, rating, comment } = reviewData;
 
-  if (error) {
-    console.error('Error creating review:', error);
-    if (error.code === '23505') { // Unique constraint violation
-        toast({ title: "Yorum Zaten Var", description: "Bu takas için daha önce yorum yaptınız.", variant: "destructive" });
-    } else {
-        toast({ title: "Yorum Oluşturulamadı", description: error.message, variant: "destructive" });
+  try {
+    const { data, error } = await supabase
+      .from('user_reviews')
+      .insert([{ reviewer_id, reviewee_id, offer_id, rating, comment }])
+      .select(`
+        *,
+        reviewer:profiles!reviewer_id (id, name, avatar_url),
+        reviewee:profiles!reviewee_id (id, name, avatar_url),
+        offers (
+          id,
+          listing_id,
+          listings(id, title)
+        )
+      `)
+      .single();
+
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        return handleError(error, "Yorum Zaten Var", "Bu takas için daha önce yorum yaptınız");
+      } else {
+        return handleError(error, "Yorum Oluşturulamadı", error.message);
+      }
     }
-    return null;
+
+    toast({ 
+      title: "Yorum Gönderildi! ⭐", 
+      description: "Yorumunuz başarıyla gönderildi." 
+    });
+
+    return data;
+  } catch (error) {
+    return handleError(error, "Beklenmedik Hata", "Yorum oluşturulurken bir sorun oluştu");
   }
-  return data;
 };
 
 export const fetchUserReviews = async (userId) => {
   if (!userId) return [];
-  const { data, error } = await supabase
-    .from('user_reviews')
-    .select(`
-      *,
-      reviewer:profiles!reviewer_id (id, name, avatar_url),
-      offers (id, listing_id, listings(id, title))
-    `)
-    .eq('reviewee_id', userId)
-    .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching user reviews:', error);
-    toast({ title: "Yorumlar Yüklenemedi", description: error.message, variant: "destructive" });
+  try {
+    const { data, error } = await supabase
+      .from('user_reviews')
+      .select(`
+        *,
+        reviewer:profiles!reviewer_id (id, name, avatar_url),
+        reviewee:profiles!reviewee_id (id, name, avatar_url),
+        offers (id, listing_id, listings(id, title))
+      `)
+      .eq('reviewee_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error in fetchUserReviews:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchUserReviews:', error);
     return [];
   }
-  return data;
 };
 
 export const canUserReview = async (reviewerId, offerId) => {

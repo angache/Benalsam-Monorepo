@@ -1,5 +1,5 @@
 
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 import { addPremiumSorting, processFetchedListings } from './core.js';
 import { getListingHistory, getLastSearch } from '@/services/userActivityService.js';

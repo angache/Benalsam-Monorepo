@@ -3,8 +3,6 @@
 // ===========================
 // Export all types from the types module
 export * from './types/index';
-// Export Supabase client and services
-export { supabase, db } from './services/supabaseClient';
 // ===========================
 // SHARED UTILITIES
 // ===========================

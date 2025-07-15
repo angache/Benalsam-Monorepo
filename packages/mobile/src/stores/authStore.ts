@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabaseClient';
 import { AuthChangeEvent } from '@supabase/supabase-js';
 import { fcmTokenService } from '../services/fcmTokenService';
@@ -223,6 +224,14 @@ export const useAuthStore = create<AuthState>()(
           
           // Önce session kontrolü
           const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          console.log('🔍 [AuthStore] Session check during profile fetch:', {
+            hasSession: !!session,
+            sessionError: sessionError?.message,
+            sessionUser: session?.user?.id,
+            requestedUser: userId,
+            sessionExpiresAt: session?.expires_at
+          });
+          
           if (sessionError) {
             console.error('❌ [AuthStore] Session error:', sessionError);
             throw sessionError;
@@ -243,7 +252,10 @@ export const useAuthStore = create<AuthState>()(
             .eq('id', userId)
             .single();
 
-          if (error) throw error;
+          if (error) {
+            console.error('❌ [AuthStore] Profile fetch error:', error);
+            throw error;
+          }
 
           const user: User = {
             id: data.id,
@@ -253,7 +265,11 @@ export const useAuthStore = create<AuthState>()(
             created_at: data.created_at,
           };
 
-          console.log('✅ [AuthStore] User profile fetched successfully:', user.id);
+          console.log('✅ [AuthStore] Profile fetched successfully:', {
+            userId: user.id,
+            email: user.email,
+            username: user.username
+          });
           set({ user });
         } catch (error) {
           console.error('❌ [AuthStore] Error fetching user profile:', error);
@@ -266,18 +282,56 @@ export const useAuthStore = create<AuthState>()(
           console.log('🟡 [AuthStore] Starting initialization...');
           set({ loading: true });
           
-          // Check current session
-          const { data: { session } } = await supabase.auth.getSession();
-          console.log('🔵 [AuthStore] Current session:', session ? 'Exists' : 'None');
+          // Check current session with detailed logging
+          let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          console.log('🔵 [AuthStore] Initial session check result:', {
+            hasSession: !!session,
+            sessionError: sessionError?.message,
+            sessionUser: session?.user?.id,
+            sessionExpiresAt: session?.expires_at,
+            sessionAccessToken: session?.access_token ? 'EXISTS' : 'MISSING',
+            sessionRefreshToken: session?.refresh_token ? 'EXISTS' : 'MISSING',
+            currentTime: new Date().toISOString()
+          });
+          
+          // If no session, try to refresh
+          if (!session) {
+            console.log('🔄 [AuthStore] No session found, attempting to refresh...');
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (refreshError) {
+              console.error('❌ [AuthStore] Session refresh failed:', refreshError);
+              // Session refresh failed, clear user state and force re-login
+              console.log('🔄 [AuthStore] Clearing user state due to session failure');
+              set({ user: null, loading: false, initialized: true });
+              return;
+            } else {
+              session = refreshData.session;
+              console.log('🔄 [AuthStore] Session refresh result:', {
+                hasSession: !!session,
+                sessionUser: session?.user?.id,
+                sessionExpiresAt: session?.expires_at
+              });
+            }
+          }
           
           if (session?.user) {
             console.log('🟢 [AuthStore] Found existing session, fetching profile...');
             await get().fetchUserProfile(session.user.id);
+          } else {
+            console.log('🔴 [AuthStore] No session found during initialization');
+            // Clear user state if no session
+            set({ user: null });
           }
 
           // Setup auth state listener
           supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
-            console.log('🔄 [AuthStore] Auth state changed:', event, session ? 'Session exists' : 'No session');
+            console.log('🔄 [AuthStore] Auth state changed:', {
+              event,
+              hasSession: !!session,
+              sessionUser: session?.user?.id,
+              sessionExpiresAt: session?.expires_at
+            });
             
             if (event === 'SIGNED_IN') {
               console.log('🟢 [AuthStore] User signed in, fetching profile...');
@@ -298,6 +352,8 @@ export const useAuthStore = create<AuthState>()(
               if (session?.user) {
                 await get().fetchUserProfile(session.user.id);
               }
+            } else if (event === 'TOKEN_REFRESHED') {
+              console.log('🔄 [AuthStore] Token refreshed, session updated');
             }
             
             set({ loading: false });

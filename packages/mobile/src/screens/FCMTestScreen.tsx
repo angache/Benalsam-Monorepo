@@ -13,7 +13,7 @@ import { fcmTokenService, FCMToken } from '../services/fcmTokenService';
 import { notificationService, NotificationPayload } from '../services/notificationService';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { supabase } from '../services/supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { useThemeColors } from '../stores/themeStore';
 
 export default function FCMTestScreen() {

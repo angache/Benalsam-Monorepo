@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 
 export const followUser = async (followerId: string, followingId: string) => {
   if (!followerId || !followingId) {

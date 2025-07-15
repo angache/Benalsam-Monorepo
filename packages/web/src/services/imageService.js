@@ -1,5 +1,4 @@
-import { supabase } from '@benalsam/shared-types';
-
+import { supabase } from '@/lib/supabaseClient';
 export const uploadImages = async (files, userId, bucket) => {
   const uploadPromises = files.map(file => {
     const fileExt = file.name.split('.').pop();

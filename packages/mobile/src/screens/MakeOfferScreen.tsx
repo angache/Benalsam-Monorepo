@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
-import { supabase } from '../services/supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { createOffer } from '../services/offerService';
 import { fetchUserInventory } from '../services/inventoryService';
 import { getUserActivePlan, checkOfferLimit, incrementUserUsage } from '../services/premiumService';

@@ -13,7 +13,7 @@ export interface User {
     provider?: string;
     [key: string]: any;
   };
-  user_metadata?: {
+  user_metadata?: { 
     [key: string]: any;
   };
   aud?: string;

@@ -1,11 +1,31 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast.js';
 
-export const followCategory = async (userId, categoryName) => {
+// Error handling helper
+const handleError = (error, title = "Hata", description = "Bir sorun oluştu") => {
+  console.error(`Error in ${title}:`, error);
+  toast({ 
+    title: title, 
+    description: error?.message || description, 
+    variant: "destructive" 
+  });
+  return null;
+};
+
+// Validation helper
+const validateCategoryData = (userId, categoryName) => {
   if (!userId || !categoryName) {
-    toast({ title: "Hata", description: "Kullanıcı ID'si veya kategori adı eksik.", variant: "destructive" });
+    toast({ title: "Eksik Bilgi", description: "Kullanıcı ID'si veya kategori adı eksik.", variant: "destructive" });
+    return false;
+  }
+  return true;
+};
+
+export const followCategory = async (userId, categoryName) => {
+  if (!validateCategoryData(userId, categoryName)) {
     return null;
   }
+
   try {
     const { data, error } = await supabase
       .from('user_followed_categories')
@@ -18,24 +38,25 @@ export const followCategory = async (userId, categoryName) => {
         toast({ title: "Bilgi", description: "Bu kategoriyi zaten takip ediyorsunuz." });
         return { user_id: userId, category_name: categoryName, already_following: true };
       }
-      console.error('Error following category:', error);
-      toast({ title: "Kategori Takip Edilemedi", description: error.message, variant: "destructive" });
-      return null;
+      return handleError(error, "Kategori Takip Edilemedi", error.message);
     }
-    toast({ title: "Kategori Takip Edildi", description: `"${categoryName}" kategorisi başarıyla takip edildi.` });
+
+    toast({ 
+      title: "Kategori Takip Edildi! 📌", 
+      description: `"${categoryName}" kategorisi başarıyla takip edildi.` 
+    });
+
     return data;
-  } catch (e) {
-    console.error('Unexpected error in followCategory:', e);
-    toast({ title: "Beklenmedik Hata", description: "Kategori takip edilirken bir hata oluştu.", variant: "destructive" });
-    return null;
+  } catch (error) {
+    return handleError(error, "Beklenmedik Hata", "Kategori takip edilirken bir hata oluştu");
   }
 };
 
 export const unfollowCategory = async (userId, categoryName) => {
-  if (!userId || !categoryName) {
-    toast({ title: "Hata", description: "Kullanıcı ID'si veya kategori adı eksik.", variant: "destructive" });
+  if (!validateCategoryData(userId, categoryName)) {
     return false;
   }
+
   try {
     const { error } = await supabase
       .from('user_followed_categories')
@@ -44,16 +65,17 @@ export const unfollowCategory = async (userId, categoryName) => {
       .eq('category_name', categoryName);
 
     if (error) {
-      console.error('Error unfollowing category:', error);
-      toast({ title: "Kategori Takipten Çıkılamadı", description: error.message, variant: "destructive" });
-      return false;
+      return handleError(error, "Kategori Takipten Çıkılamadı", error.message);
     }
-    toast({ title: "Kategori Takipten Çıkıldı", description: `"${categoryName}" kategorisi takipten çıkarıldı.` });
+
+    toast({ 
+      title: "Kategori Takipten Çıkıldı", 
+      description: `"${categoryName}" kategorisi takipten çıkarıldı.` 
+    });
+
     return true;
-  } catch (e) {
-    console.error('Unexpected error in unfollowCategory:', e);
-    toast({ title: "Beklenmedik Hata", description: "Kategori takipten çıkarılırken bir hata oluştu.", variant: "destructive" });
-    return false;
+  } catch (error) {
+    return handleError(error, "Beklenmedik Hata", "Kategori takipten çıkarılırken bir hata oluştu");
   }
 };
 
@@ -61,6 +83,7 @@ export const checkIfFollowingCategory = async (userId, categoryName) => {
   if (!userId || !categoryName) {
     return false;
   }
+
   try {
     const { count, error } = await supabase
       .from('user_followed_categories')
@@ -69,18 +92,19 @@ export const checkIfFollowingCategory = async (userId, categoryName) => {
       .eq('category_name', categoryName);
 
     if (error) {
-      console.error('Error checking category follow status:', error);
+      console.error('Error in checkIfFollowingCategory:', error);
       return false;
     }
     return count > 0;
-  } catch (e) {
-    console.error('Unexpected error in checkIfFollowingCategory:', e);
+  } catch (error) {
+    console.error('Error in checkIfFollowingCategory:', error);
     return false;
   }
 };
 
 export const fetchFollowedCategories = async (userId) => {
   if (!userId) return [];
+
   try {
     const { data, error } = await supabase
       .from('user_followed_categories')
@@ -89,14 +113,13 @@ export const fetchFollowedCategories = async (userId) => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching followed categories:', error);
-      toast({ title: "Takip Edilen Kategoriler Yüklenemedi", description: error.message, variant: "destructive" });
+      console.error('Error in fetchFollowedCategories:', error);
       return [];
     }
-    return data;
-  } catch (e) {
-    console.error('Unexpected error in fetchFollowedCategories:', e);
-    toast({ title: "Beklenmedik Hata", description: "Takip edilen kategoriler yüklenirken bir hata oluştu.", variant: "destructive" });
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchFollowedCategories:', error);
     return [];
   }
 };

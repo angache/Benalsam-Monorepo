@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 
 export const createListingReport = async (reportData: any) => {
   const { reporter_id, listing_id, reason, details } = reportData;

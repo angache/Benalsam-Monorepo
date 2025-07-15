@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
-import { supabase } from './supabaseClient';
+import { supabase } from '../services/supabaseClient';
 
 // Notification handler'ı ayarla
 Notifications.setNotificationHandler({

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores';
 import { calculateTrustScore, updateTrustScore } from '../../services/trustScoreService';
-import { supabase } from '../../services/supabaseClient';
+import { supabase  } from '../../../services/supabaseClient';
 
 // Query keys
 export const trustScoreKeys = {

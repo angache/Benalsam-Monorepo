@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { fetchUserProfile } from '@/services/profileService.js';
 
 interface User {

@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const getSessionId = async () => {

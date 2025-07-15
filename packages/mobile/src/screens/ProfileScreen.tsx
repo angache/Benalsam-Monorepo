@@ -25,7 +25,7 @@ import { getTrustLevelColor, getTrustLevelDescription } from '../services/trustS
 import ListingCard from '../components/ListingCard';
 import { ArrowLeft, ChevronRight, List, Heart, FileText, MessageCircle, Settings, MapPin, Users, Award, Eye, ShoppingBag, Upload, Camera, Image as IconImage, Instagram, Twitter, Linkedin, Facebook, Globe, Youtube } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { supabase } from '../services/supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 
 const ProfileAvatar = ({ profile }: { profile: any }) => {

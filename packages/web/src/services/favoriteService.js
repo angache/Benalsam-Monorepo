@@ -1,11 +1,31 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast.js';
 
-export const addFavorite = async (userId, listingId) => {
+// Error handling helper
+const handleError = (error, title = "Hata", description = "Bir sorun oluştu") => {
+  console.error(`Error in ${title}:`, error);
+  toast({ 
+    title: title, 
+    description: error?.message || description, 
+    variant: "destructive" 
+  });
+  return null;
+};
+
+// Validation helper
+const validateFavoriteData = (userId, listingId) => {
   if (!userId || !listingId) {
-    toast({ title: "Hata", description: "Kullanıcı veya ilan ID'si eksik.", variant: "destructive" });
+    toast({ title: "Eksik Bilgi", description: "Kullanıcı veya ilan ID'si eksik.", variant: "destructive" });
+    return false;
+  }
+  return true;
+};
+
+export const addFavorite = async (userId, listingId) => {
+  if (!validateFavoriteData(userId, listingId)) {
     return null;
   }
+
   try {
     const { data, error } = await supabase
       .from('user_favorites')
@@ -14,28 +34,29 @@ export const addFavorite = async (userId, listingId) => {
       .single();
 
     if (error) {
-      if (error.code === '23505') { 
+      if (error.code === '23505') {
         toast({ title: "Bilgi", description: "Bu ilan zaten favorilerinizde." });
         return { listing_id: listingId, user_id: userId, already_favorited: true };
       }
-      console.error('Error adding favorite:', error);
-      toast({ title: "Favori Eklenemedi", description: error.message, variant: "destructive" });
-      return null;
+      return handleError(error, "Favori Eklenemedi", error.message);
     }
-    toast({ title: "Favorilere Eklendi", description: "İlan favorilerinize eklendi." });
+
+    toast({ 
+      title: "Favorilere Eklendi! ❤️", 
+      description: "İlan favorilerinize eklendi." 
+    });
+
     return data;
-  } catch (e) {
-    console.error('Unexpected error in addFavorite:', e);
-    toast({ title: "Beklenmedik Hata", description: "Favori eklenirken bir hata oluştu.", variant: "destructive" });
-    return null;
+  } catch (error) {
+    return handleError(error, "Beklenmedik Hata", "Favori eklenirken bir hata oluştu");
   }
 };
 
 export const removeFavorite = async (userId, listingId) => {
-  if (!userId || !listingId) {
-    toast({ title: "Hata", description: "Kullanıcı veya ilan ID'si eksik.", variant: "destructive" });
+  if (!validateFavoriteData(userId, listingId)) {
     return false;
   }
+
   try {
     const { error } = await supabase
       .from('user_favorites')
@@ -44,16 +65,17 @@ export const removeFavorite = async (userId, listingId) => {
       .eq('listing_id', listingId);
 
     if (error) {
-      console.error('Error removing favorite:', error);
-      toast({ title: "Favori Kaldırılamadı", description: error.message, variant: "destructive" });
-      return false;
+      return handleError(error, "Favori Kaldırılamadı", error.message);
     }
-    toast({ title: "Favorilerden Kaldırıldı", description: "İlan favorilerinizden kaldırıldı." });
+
+    toast({ 
+      title: "Favorilerden Kaldırıldı", 
+      description: "İlan favorilerinizden kaldırıldı." 
+    });
+
     return true;
-  } catch (e) {
-    console.error('Unexpected error in removeFavorite:', e);
-    toast({ title: "Beklenmedik Hata", description: "Favori kaldırılırken bir hata oluştu.", variant: "destructive" });
-    return false;
+  } catch (error) {
+    return handleError(error, "Beklenmedik Hata", "Favori kaldırılırken bir hata oluştu");
   }
 };
 

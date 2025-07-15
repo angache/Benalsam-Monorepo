@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createListingReport } from '@/services/reportService';
 import { useToast } from '@/components/ui/use-toast.js'; 
 import { useAuthStore } from '@/stores';
-import { supabase } from '@benalsam/shared-types';
-
+import { supabase } from '@/lib/supabaseClient';
 const reportReasons = [
   "Yasaklı ürün veya hizmet",
   "Yanlış veya yanıltıcı kategori",

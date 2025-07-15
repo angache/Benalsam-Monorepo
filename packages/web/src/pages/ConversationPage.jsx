@@ -17,7 +17,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import MessageStatus from '@/components/MessageStatus';
-import { supabase } from '@benalsam/shared-types';import { formatDate } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
+import { formatDate } from '@benalsam/shared-types';
 
 
 

@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { ApiResponse, OfferAttachment } from '../types';
 import { ValidationError, DatabaseError, handleError } from '../utils/errors';
 

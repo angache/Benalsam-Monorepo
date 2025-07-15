@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/stores';
 import { fetchInventoryItems } from '@/services/inventoryService';
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   checkOfferLimit, 
   incrementUserUsage, 
@@ -117,7 +117,7 @@ const MakeOfferPage = () => {
         .insert([{
           listing_id: listing.id,
           offering_user_id: currentUser.id,
-          inventory_item_id: offerData.selectedItemId,
+          offered_item_id: offerData.selectedItemId,
           message: offerData.message,
           status: 'pending'
         }])

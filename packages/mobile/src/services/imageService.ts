@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 
 export const uploadImages = async (files: any[], userId: string, bucket: string) => {
   // Debug: Authentication kontrolü

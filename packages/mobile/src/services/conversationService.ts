@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase  } from '../services/supabaseClient';
 import { Conversation, Message } from '../types';
 import { ValidationError, DatabaseError } from '../utils/errors';
 

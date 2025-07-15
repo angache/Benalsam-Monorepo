@@ -8,8 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 import { dopingOptions } from '@/config/dopingOptions.js';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Loader2 } from 'lucide-react';
-import { supabase } from '@benalsam/shared-types';
-
+import { supabase } from '@/lib/supabaseClient';
 const DopingModal = ({ isOpen, onClose, listing, onSuccess }) => {
   const [selectedDopings, setSelectedDopings] = useState({});
   const [isPurchasing, setIsPurchasing] = useState(false);

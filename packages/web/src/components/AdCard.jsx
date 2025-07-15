@@ -2,8 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@benalsam/shared-types';
-
+import { supabase } from '@/lib/supabaseClient';
 const AdCard = ({ ad }) => {
   const handleAdClick = async (adId) => {
     supabase.rpc('increment_ad_clicks', { ad_id: adId }).then(({ error }) => {

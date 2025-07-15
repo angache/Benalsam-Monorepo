@@ -2,8 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchFilteredListings } from '@/services/listingService/fetchers.js';
 import { saveLastSearch } from '@/services/userActivityService.js';
-import { supabase } from '@benalsam/shared-types';
-
+import { supabase } from '@/lib/supabaseClient';
 const PAGE_SIZE = 16;
 
 export const useHomePageData = ({ initialListings, currentUser }) => {

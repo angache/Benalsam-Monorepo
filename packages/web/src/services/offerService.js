@@ -1,15 +1,35 @@
-import { supabase } from '@benalsam/shared-types';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 import { addUserActivity } from '@/services/userActivityService.js';
 
-export const createOffer = async (offerData) => {
+// Error handling helper
+const handleError = (error, title = "Hata", description = "Bir sorun oluştu") => {
+  console.error(`Error in ${title}:`, error);
+  toast({ 
+    title: title, 
+    description: error?.message || description, 
+    variant: "destructive" 
+  });
+  return null;
+};
+
+// Validation helper
+const validateOfferData = (offerData) => {
   if (!offerData.listingId || !offerData.offering_user_id) {
     toast({ title: "Eksik Bilgi", description: "Teklif oluşturmak için gerekli bilgiler eksik.", variant: "destructive" });
-    return null;
+    return false;
   }
 
   if (!offerData.offeredItemId && !offerData.offeredPrice) {
     toast({ title: "Eksik Teklif", description: "En az bir ürün seçin veya nakit teklifi yapın.", variant: "destructive" });
+    return false;
+  }
+
+  return true;
+};
+
+export const createOffer = async (offerData) => {
+  if (!validateOfferData(offerData)) {
     return null;
   }
 
@@ -46,15 +66,43 @@ export const createOffer = async (offerData) => {
     const { data, error } = await supabase
       .from('offers')
       .insert([insertPayload])
-      .select()
+      .select(`
+        *,
+        listings (
+          id,
+          title,
+          main_image_url,
+          user_id,
+          profiles!listings_user_id_fkey (
+            id,
+            name,
+            avatar_url
+          )
+        ),
+        profiles (
+          id,
+          name,
+          avatar_url
+        ),
+        inventory_items!offers_offered_item_id_fkey (
+          id,
+          name,
+          category,
+          main_image_url,
+          image_url
+        )
+      `)
       .single();
 
     if (error) {
-      console.error('Error creating offer:', error);
-      toast({ title: "Teklif Gönderilemedi", description: error.message, variant: "destructive" });
-      return null;
+      return handleError(error, "Teklif Gönderilemedi", "Teklif oluşturulamadı");
     }
 
+    if (!data) {
+      return handleError(null, "Teklif Gönderilemedi", "Teklif oluşturulamadı");
+    }
+
+    // Add user activity
     await addUserActivity(
       offerData.offering_user_id,
       'offer_sent',
@@ -63,11 +111,25 @@ export const createOffer = async (offerData) => {
       data.id
     );
 
-    return data;
+    // Format data like mobile version
+    const formattedData = {
+      ...data,
+      listing: {
+        ...data.listings,
+        user: data.listings?.profiles
+      },
+      user: data.profiles,
+      inventory_item: data.inventory_items
+    };
+
+    toast({ 
+      title: "Teklif Gönderildi! 🎉", 
+      description: "Teklifiniz başarıyla gönderildi." 
+    });
+
+    return formattedData;
   } catch (error) {
-    console.error('Error in createOffer:', error);
-    toast({ title: "Beklenmedik Hata", description: "Teklif gönderilirken bir sorun oluştu.", variant: "destructive" });
-    return null;
+    return handleError(error, "Beklenmedik Hata", "Teklif gönderilirken bir sorun oluştu");
   }
 };
 

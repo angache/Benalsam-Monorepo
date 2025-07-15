@@ -1,5 +1,4 @@
-import { supabase } from '@benalsam/shared-types';
-
+import { supabase } from '@/lib/supabaseClient';
 const VALID_ACTIVITY_TYPES = [
   'listing_created',
   'listing_updated', 
