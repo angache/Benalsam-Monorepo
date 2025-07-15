@@ -1,35 +1,35 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Heart, 
-  MessageSquare, 
-  Share2, 
-  Flag, 
-  ShoppingBag,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Loader2
-} from 'lucide-react';
+import { Heart, MessageSquare, Share2, Flag, ShoppingBag, CheckCircle, Clock, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/stores';
+import { trackEvent } from '@/services/analyticsService.js';
 
 const ListingActions = ({ 
   listing, 
   currentUser, 
-  inventoryItems,
-  isFetchingInventory,
+  inventoryItems, 
+  isFetchingInventory, 
   isFavorited, 
   onToggleFavorite, 
   onStartConversation 
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { currentUser: storeUser } = useAuthStore();
+  
+  const [isMakingOffer, setIsMakingOffer] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
+  // Use store user if prop is undefined
+  const user = currentUser || storeUser;
+
   const handleToggleFavorite = async () => {
-    if (!currentUser) {
+    if (!user) {
       toast({
         title: "Giriş Gerekli",
         description: "Favorilere eklemek için giriş yapmalısınız.",
@@ -44,12 +44,12 @@ const ListingActions = ({
   };
 
   const handleMakeOffer = () => {
-    if (!currentUser) {
+    if (!user) {
       navigate('/auth?action=register');
       return;
     }
 
-    if (currentUser.id === listing.user_id) {
+    if (user.id === listing.user_id) {
       toast({
         title: "Kendi İlanınız",
         description: "Kendi ilanınıza teklif yapamazsınız.",
@@ -105,7 +105,7 @@ const ListingActions = ({
   };
 
   const handleReport = () => {
-    if (!currentUser) {
+    if (!user) {
       toast({
         title: "Giriş Gerekli",
         description: "İlan bildirmek için giriş yapmalısınız.",
@@ -169,7 +169,7 @@ const ListingActions = ({
   };
 
   const statusInfo = getListingStatusInfo();
-  const isOwner = currentUser && currentUser.id === listing.user_id;
+  const isOwner = user && user.id === listing.user_id;
   const canMakeOffer = 
     listing.status === 'active' && 
     (!listing.expires_at || new Date(listing.expires_at) > new Date()) &&
@@ -192,7 +192,7 @@ const ListingActions = ({
       )}
 
       <div className="flex flex-col sm:flex-row gap-3">
-        {!currentUser ? (
+        {!user ? (
           <Button 
             onClick={() => navigate('/auth?action=register')}
             className="flex-1 btn-primary text-primary-foreground"
@@ -242,7 +242,7 @@ const ListingActions = ({
           onClick={onStartConversation}
           variant="outline"
           className="flex-1"
-          disabled={!currentUser || isOwner}
+          disabled={!user || isOwner}
         >
           <MessageSquare className="w-4 h-4 mr-2" />
           Mesaj Gönder

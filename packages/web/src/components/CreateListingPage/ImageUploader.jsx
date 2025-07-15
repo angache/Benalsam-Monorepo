@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
     import { toast } from '@/components/ui/use-toast';
     import { Upload, Star as StarIcon, CheckCircle, Trash2, Search, Crown, Pencil } from 'lucide-react';
     import { checkImageLimit, showPremiumUpgradeToast } from '@/services/premiumService';
-    import { useAppContext } from '@/contexts/AppContext';
+    import { useAuthStore } from '@/stores';
     import { compressImage } from '@/lib/imageUtils';
     import ImageEditorModal from '@/components/ImageEditorModal';
     
@@ -21,7 +21,7 @@ import React, { useRef, useState } from 'react';
       maxImages = MAX_IMAGES_DEFAULT,
       onOpenStockModal
     }) => {
-      const { currentUser } = useAppContext();
+      const { currentUser } = useAuthStore();
       const fileInputRef = useRef(null);
       const [editorState, setEditorState] = useState({ isOpen: false, image: null, index: -1 });
     

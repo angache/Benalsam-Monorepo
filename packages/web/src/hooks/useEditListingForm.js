@@ -6,11 +6,11 @@ import { categoriesConfig, getCategoryPath } from '@/config/categories';
 import { turkishProvincesAndDistricts } from '@/config/locations';
 import { updateListing } from '@/services/listingService/mutations';
 import { processImagesForSupabase } from '@/services/imageService';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 export const useEditListingForm = (listingId) => {
   const navigate = useNavigate();
-  const { currentUser } = useAppContext();
+  const { currentUser } = useAuthStore();
 
   const defaultFormData = {
     title: '',

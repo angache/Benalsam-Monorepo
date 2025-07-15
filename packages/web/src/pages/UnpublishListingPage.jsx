@@ -8,12 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@benalsam/shared-types';
 import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 const UnpublishListingPage = () => {
   const { listingId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [listing, setListing] = useState(null);
   const [reason, setReason] = useState('');
   const [otherReason, setOtherReason] = useState('');

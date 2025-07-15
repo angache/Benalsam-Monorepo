@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@benalsam/shared-types';
 import { categoriesConfig, getCategoryPath } from '@/config/categories';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 export const useInventoryForm = (itemId) => {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export const useInventoryForm = (itemId) => {
     handleUpdateInventoryItem, 
     isUploading, 
     uploadProgress 
-  } = useAppContext();
+  } = useAuthStore();
 
   const isEditMode = !!itemId;
 

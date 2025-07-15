@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 import { supabase } from '@benalsam/shared-types';
 import MyListingsHeader from '@/components/MyListingsPage/MyListingsHeader.jsx';
 import ListingCard from '@/components/MyListingsPage/ListingCard.jsx';
@@ -13,7 +13,7 @@ import { statusConfig, getListingStatus, getStatusBadge, getPremiumBadges } from
 
 const MyListingsPage = () => {
   const navigate = useNavigate();
-  const { currentUser, loadingAuth } = useAppContext();
+  const { currentUser, loadingAuth } = useAuthStore();
   const [myListings, setMyListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('all');

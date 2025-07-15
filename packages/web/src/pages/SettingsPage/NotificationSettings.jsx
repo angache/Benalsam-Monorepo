@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button.jsx';
 import { Switch } from '@/components/ui/switch.jsx';
 import { Label } from '@/components/ui/label.jsx';
 import { Save, BellOff, BellRing, Mail, Smartphone } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 const defaultPreferences = {
   new_offer_email: true,
@@ -18,7 +18,7 @@ const defaultPreferences = {
 };
 
 const NotificationSettings = () => {
-  const { currentUser, setCurrentUser } = useAppContext();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const [preferences, setPreferences] = useState(defaultPreferences);
   const [isLoading, setIsLoading] = useState(true);
 

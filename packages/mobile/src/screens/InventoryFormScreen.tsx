@@ -257,7 +257,18 @@ const InventoryFormScreen = () => {
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting || !validateForm() || !user) return;
+    console.log('🔍 [InventoryForm] Submit attempt...');
+    console.log('🔍 [InventoryForm] User from store:', user);
+    console.log('🔍 [InventoryForm] Is submitting:', isSubmitting);
+    console.log('🔍 [InventoryForm] Form valid:', validateForm());
+    
+    if (isSubmitting || !validateForm() || !user) {
+      console.log('❌ [InventoryForm] Submit blocked - reasons:');
+      console.log('  - Is submitting:', isSubmitting);
+      console.log('  - Form valid:', validateForm());
+      console.log('  - User exists:', !!user);
+      return;
+    }
 
     setIsSubmitting(true);
     setUploadProgress(0);
@@ -292,7 +303,27 @@ const InventoryFormScreen = () => {
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      Alert.alert('Hata', 'Bir hata oluştu. Lütfen tekrar deneyin.');
+      
+      // Session expired error'ını kontrol et
+      if (error instanceof Error && error.message === 'SESSION_EXPIRED') {
+        Alert.alert(
+          'Oturum Süresi Doldu',
+          'Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.',
+          [
+            {
+              text: 'Giriş Yap',
+              onPress: () => {
+                // AuthStore'u temizle
+                useAuthStore.getState().reset();
+                // Login sayfasına yönlendir
+                navigation.navigate('Login');
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Hata', 'Bir hata oluştu. Lütfen tekrar deneyin.');
+      }
     } finally {
       setIsSubmitting(false);
       setUploadProgress(0);

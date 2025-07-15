@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DatePicker } from "@/components/ui/date-picker.jsx";
 import { Upload, Save, User, MapPin, CalendarDays, Users } from 'lucide-react';
 import { turkishProvincesAndDistricts } from '@/config/locations';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 const generateBoringAvatarUrl = (name, userId) => {
   const cleanedName = name ? String(name).replace(/[^a-zA-Z0-9]/g, '') : '';
@@ -19,7 +19,7 @@ const generateBoringAvatarUrl = (name, userId) => {
 };
 
 const ProfileSettings = () => {
-  const { currentUser, setCurrentUser } = useAppContext();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

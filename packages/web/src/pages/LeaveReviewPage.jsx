@@ -9,12 +9,12 @@ import { createReview, canUserReview } from '@/services/reviewService';
 import { supabase } from '@benalsam/shared-types';
 import { useToast } from '@/components/ui/use-toast.js'; 
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 const LeaveReviewPage = () => {
   const { offerId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const { toast } = useToast();
 
   const [offer, setOffer] = useState(null);

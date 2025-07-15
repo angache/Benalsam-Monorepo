@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageSquare, Loader2, Search, ArrowLeft } from 'lucide-react';
 import { getUserConversations, getUnreadMessageCounts } from '@/services/conversationService';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -63,7 +63,7 @@ const ConversationsListPage = () => {
   const [unreadCounts, setUnreadCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {

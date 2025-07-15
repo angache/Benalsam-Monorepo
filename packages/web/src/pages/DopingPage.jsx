@@ -9,12 +9,12 @@ import { toast } from '@/components/ui/use-toast';
 import { dopingOptions } from '@/config/dopingOptions.js';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@benalsam/shared-types';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 const DopingPage = () => {
   const { listingId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [listing, setListing] = useState(null);
   const [selectedDopings, setSelectedDopings] = useState({});
   const [isPurchasing, setIsPurchasing] = useState(false);

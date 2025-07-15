@@ -56,6 +56,12 @@ export const addInventoryItem = async (itemData: any, currentUserId: string, onP
     return data;
   } catch (e) {
     console.error('Unexpected error in addInventoryItem:', e);
+    
+    // Authentication session expired error'ını kontrol et
+    if (e instanceof Error && e.message.includes('Authentication session expired')) {
+      throw new Error('SESSION_EXPIRED');
+    }
+    
     return null;
   }
 };
@@ -98,6 +104,12 @@ export const updateInventoryItem = async (itemData: any, currentUserId: string, 
     return data;
   } catch (e) {
     console.error('Unexpected error in updateInventoryItem:', e);
+    
+    // Authentication session expired error'ını kontrol et
+    if (e instanceof Error && e.message.includes('Authentication session expired')) {
+      throw new Error('SESSION_EXPIRED');
+    }
+    
     return null;
   }
 };

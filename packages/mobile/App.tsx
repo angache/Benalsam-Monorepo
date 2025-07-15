@@ -1,3 +1,6 @@
+// Polyfills must be imported first
+import './src/utils/polyfills';
+
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';

@@ -5,10 +5,10 @@ import { toast } from '@/components/ui/use-toast';
 import { updateOfferStatus as updateOfferStatusService } from '@/services/offerService';
 import { getOrCreateConversation as getOrCreateConversationService } from '@/services/conversationService';
 import { addFavorite, removeFavorite, fetchUserFavoriteStatusForListings } from '@/services/favoriteService.js';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 export const useListingDetail = (listingId, setListings) => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 

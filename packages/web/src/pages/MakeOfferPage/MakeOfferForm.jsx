@@ -16,7 +16,7 @@ import {
   showPremiumUpgradeToast
 } from '@/services/premiumService';
 
-const MakeOfferForm = ({ 
+const MakeOfferForm = React.memo(({ 
   listing, 
   inventoryItems, 
   userPlan, 
@@ -115,7 +115,6 @@ const MakeOfferForm = ({
   const selectedInventoryItem = inventoryItems.find(item => item.id === selectedItemId);
   const isPremiumUser = userPlan?.plan_slug !== 'basic';
   const isInventoryEmpty = inventoryItems.length === 0;
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-6 glass-effect rounded-2xl">
       {isInventoryEmpty && (
@@ -297,6 +296,6 @@ const MakeOfferForm = ({
       </div>
     </form>
   );
-};
+});
 
 export default MakeOfferForm;

@@ -8,11 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { fetchReceivedOffers, updateOfferStatus } from '@/services/offerService';
 import { getOrCreateConversation } from '@/services/conversationService';
 import { canUserReview } from '@/services/reviewService';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 const ReceivedOffersPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [receivedOffers, setReceivedOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingOfferId, setUpdatingOfferId] = useState(null);

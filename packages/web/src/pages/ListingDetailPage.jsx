@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, AlertTriangle, ListChecks, Clock as ClockIcon, XCircle, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth.js';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 import { useListingDetail } from '@/hooks/useListingDetail.js';
 import { getUrgencyColor, formatDate, getStatusColor } from '@/components/ListingDetailPage/utils.js';
 
@@ -26,8 +25,8 @@ const ListingDetailPage = ({ setListings, onToggleFavorite }) => {
   const { listingId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser } = useAuth();
-  const { inventoryItems, isFetchingInventory } = useAppContext();
+  const { currentUser } = useAuthStore();
+  const { inventoryItems, isFetchingInventory } = useAuthStore();
   
   const {
     listing,

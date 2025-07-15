@@ -93,7 +93,7 @@ export const fetchOfferDetails = async (offerId) => {
           user_id,
           profiles:user_id(id, name, avatar_url, rating, total_ratings)
         ),
-        inventory_items(id, name, category, main_image_url, image_url)
+        inventory_items!offers_offered_item_id_fkey(id, name, category, main_image_url, image_url)
       `)
       .eq('id', offerId)
       .single();
@@ -241,7 +241,7 @@ export const fetchSentOffers = async (userId) => {
           user_id,
           profiles:user_id(id, name, avatar_url)
         ),
-        inventory_items(id, name, category, main_image_url, image_url)
+        inventory_items!offers_offered_item_id_fkey(id, name, category, main_image_url, image_url)
       `)
       .eq('offering_user_id', userId)
       .order('created_at', { ascending: false });
@@ -270,7 +270,7 @@ export const fetchReceivedOffers = async (userId) => {
         *,
         profiles:offering_user_id(id, name, avatar_url, rating, total_ratings),
         listings!offers_listing_id_fkey!inner(id, title, main_image_url, image_url, budget, status, user_id),
-        inventory_items(id, name, category, main_image_url, image_url)
+        inventory_items!offers_offered_item_id_fkey(id, name, category, main_image_url, image_url)
       `)
       .eq('listings.user_id', userId)
       .order('created_at', { ascending: false });

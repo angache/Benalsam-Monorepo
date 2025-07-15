@@ -6,10 +6,10 @@ import { Textarea } from '@/components/ui/textarea.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx";
 import { Input } from '@/components/ui/input.jsx';
 import { Send, MessageSquare, Bug, Lightbulb, Upload } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 
 const FeedbackSection = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [feedbackType, setFeedbackType] = useState('suggestion');
   const [message, setMessage] = useState('');
   const [screenshotFile, setScreenshotFile] = useState(null);

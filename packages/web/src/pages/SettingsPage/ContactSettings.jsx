@@ -4,10 +4,10 @@ import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { Save, Mail, Phone, Link as LinkIcon, CheckCircle, AlertCircle } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 const ContactSettings = () => {
-  const { currentUser, setCurrentUser } = useAppContext();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const [email, setEmail] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');

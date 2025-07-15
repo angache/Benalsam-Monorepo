@@ -3,7 +3,7 @@ import React from 'react';
     import { motion } from 'framer-motion';
     import { ArrowLeft, Tag, Info, FileImage as ImageIcon, Building, Loader2 } from 'lucide-react';
     import { Button } from '@/components/ui/button';
-    import { useAppContext } from '@/contexts/AppContext.jsx';
+    import { useAuthStore } from '@/stores';
     import { useInventoryForm } from '@/components/InventoryFormPage/useInventoryForm.js';
     import InventoryFormField from '@/components/InventoryFormPage/InventoryFormField.jsx';
     import InventoryCategorySelector from '@/components/InventoryFormPage/InventoryCategorySelector.jsx';
@@ -14,7 +14,7 @@ import React from 'react';
     const InventoryFormPage = () => {
       const { itemId } = useParams();
       const navigate = useNavigate();
-      const { loadingAuth: authLoading } = useAppContext(); 
+      const { loadingAuth: authLoading } = useAuthStore(); 
       
       const {
         formData,

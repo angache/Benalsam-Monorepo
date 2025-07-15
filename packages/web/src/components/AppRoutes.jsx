@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 import HomePage from '@/pages/HomePage';
 import ProfilePage from '@/pages/ProfilePage.jsx';
@@ -48,7 +48,7 @@ import PremiumSettings from '@/pages/SettingsPage/PremiumSettings.jsx';
 import PremiumDashboard from '@/pages/PremiumDashboard/index';
 
 const ProtectedRoute = ({ children }) => {
-  const { currentUser, loadingAuth } = useAppContext();
+  const { user: currentUser, loading: loadingAuth } = useAuthStore();
   const location = useLocation();
 
   if (loadingAuth) {
@@ -77,37 +77,23 @@ const MainContent = ({ children }) => {
 };
 
 
-const AppRoutes = ({
-  listings,
-  setListings,
-  onToggleFavorite,
-  inventoryItems, 
-  loadInitialData, 
-}) => {
+const AppRoutes = ({ currentUser }) => {
   const location = useLocation();
-  const { currentUser } = useAppContext();
 
   return (
     <MainContent>
       <Routes location={location} key={location.pathname}>
         <Route 
           path="/" 
-          element={
-            <HomePage 
-              listings={listings} 
-              setListings={setListings} 
-              onToggleFavorite={onToggleFavorite}
-              currentUser={currentUser}
-            />
-          } 
+          element={<HomePage />}
         />
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/arama" element={<SearchResultsPage onToggleFavorite={onToggleFavorite} />} />
+        <Route path="/arama" element={<SearchResultsPage />} />
 
         <Route path="/ilan-olustur" element={<ProtectedRoute><CreateListingPage /></ProtectedRoute>} />
         <Route path="/teklif-yap/:listingId" element={<ProtectedRoute><MakeOfferPage /></ProtectedRoute>} />
         <Route path="/sikayet-et/:listingId" element={<ProtectedRoute><ReportListingPage /></ProtectedRoute>} />
-        <Route path="/degerlendirme/:offerId" element={<ProtectedRoute><LeaveReviewPage onReviewSubmitted={loadInitialData} /></ProtectedRoute>} />
+        <Route path="/degerlendirme/:offerId" element={<ProtectedRoute><LeaveReviewPage /></ProtectedRoute>} />
         <Route path="/ilan-duzenle/:listingId" element={<ProtectedRoute><EditListingPage /></ProtectedRoute>} />
         <Route path="/stok-gorsel-ara" element={<ProtectedRoute><StockImageSearchPage /></ProtectedRoute>} />
         <Route path="/kategori-takip-et" element={<ProtectedRoute><FollowCategoryPage /></ProtectedRoute>} />
@@ -144,12 +130,7 @@ const AppRoutes = ({
 
         <Route 
           path="/ilan/:listingId" 
-          element={
-            <ListingDetailPage 
-              setListings={setListings} 
-              onToggleFavorite={onToggleFavorite}
-            />
-          } 
+          element={<ListingDetailPage />}
         />
         <Route 
           path="/gonderdigim-teklifler" 
@@ -166,15 +147,15 @@ const AppRoutes = ({
         />
          <Route 
           path="/favorilerim" 
-          element={<ProtectedRoute><FavoritesPage onToggleFavorite={onToggleFavorite} /></ProtectedRoute>} 
+          element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} 
         />
         <Route 
           path="/takip-edilenler/:userId" 
-          element={<ProtectedRoute><FollowingPage onToggleFavorite={onToggleFavorite} /></ProtectedRoute>} 
+          element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} 
         />
         <Route 
           path="/takip-edilenler" 
-          element={<ProtectedRoute><FollowingPage onToggleFavorite={onToggleFavorite}/></ProtectedRoute>} 
+          element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} 
         />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         

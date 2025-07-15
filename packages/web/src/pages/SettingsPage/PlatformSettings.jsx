@@ -4,7 +4,7 @@ import { toast } from '@/components/ui/use-toast.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx";
 import { Save, Palette, Globe, MapPin, DollarSign, ListChecks } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { categoriesConfig } from '@/config/categories.js'; 
 import { turkishProvincesAndDistricts } from '@/config/locations';
@@ -20,7 +20,7 @@ const defaultPreferences = {
 };
 
 const PlatformSettings = () => {
-  const { currentUser, setCurrentUser } = useAppContext();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [preferences, setPreferences] = useState(defaultPreferences);
   const [districts, setDistricts] = useState([]);

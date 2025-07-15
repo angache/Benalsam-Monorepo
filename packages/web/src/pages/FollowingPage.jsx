@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Loader2, WifiOff, Rss, PlusCircle, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button.jsx';
 import { toast } from '@/components/ui/use-toast.js';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 import { 
   fetchFollowingUsers, 
   fetchUserProfile,
@@ -16,7 +16,7 @@ import FollowCategoryModal from '@/components/FollowingPage/FollowCategoryModal.
 
 const FollowingPage = ({ onToggleFavorite }) => {
   const { userId: routeUserId } = useParams();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState('users'); 
   
   const [followingUsers, setFollowingUsers] = useState([]);

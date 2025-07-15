@@ -15,7 +15,7 @@ import {
   subscribeToMessageStatusChanges
 } from '@/services/conversationService';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 import MessageStatus from '@/components/MessageStatus';
 import { supabase } from '@benalsam/shared-types';import { formatDate } from '@benalsam/shared-types';
 
@@ -24,7 +24,7 @@ import { supabase } from '@benalsam/shared-types';import { formatDate } from '@b
 const ConversationPage = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [conversationDetails, setConversationDetails] = useState(null);

@@ -5,7 +5,7 @@ import { Package, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import InventoryItemCard from '@/components/InventoryItemCard';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 
 const InventoryPage = () => { 
@@ -16,7 +16,7 @@ const InventoryPage = () => {
     inventoryItems, 
     isFetchingInventory, 
     handleDeleteInventoryItem 
-  } = useAppContext();
+  } = useAuthStore();
 
   const isLoadingPage = useMemo(() => {
     return loadingAuth || (currentUser && isFetchingInventory && inventoryItems.length === 0);

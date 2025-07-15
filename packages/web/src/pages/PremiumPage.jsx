@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { getPlanFeatures, getUserActivePlan, getUserMonthlyUsage, createSubscription } from '@/services/premiumService';
 import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 
 const PremiumPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [plans] = useState(getPlanFeatures());
   const [userPlan, setUserPlan] = useState(null);
   const [usage, setUsage] = useState(null);

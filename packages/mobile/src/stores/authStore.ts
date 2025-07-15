@@ -219,6 +219,24 @@ export const useAuthStore = create<AuthState>()(
 
       fetchUserProfile: async (userId: string) => {
         try {
+          console.log('🔍 [AuthStore] Fetching user profile for ID:', userId);
+          
+          // Önce session kontrolü
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) {
+            console.error('❌ [AuthStore] Session error:', sessionError);
+            throw sessionError;
+          }
+          
+          if (!session) {
+            console.error('❌ [AuthStore] No session found during profile fetch');
+            set({ user: null });
+            return;
+          }
+          
+          console.log('✅ [AuthStore] Session found, user ID:', session.user.id);
+          console.log('✅ [AuthStore] Session user matches requested ID:', session.user.id === userId);
+          
           const { data, error } = await supabase
             .from('profiles')
             .select('*')
@@ -235,9 +253,11 @@ export const useAuthStore = create<AuthState>()(
             created_at: data.created_at,
           };
 
+          console.log('✅ [AuthStore] User profile fetched successfully:', user.id);
           set({ user });
         } catch (error) {
-          console.error('Error fetching user profile:', error);
+          console.error('❌ [AuthStore] Error fetching user profile:', error);
+          set({ user: null });
         }
       },
 

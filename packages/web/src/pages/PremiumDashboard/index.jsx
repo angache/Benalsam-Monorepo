@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
-import { useAppContext } from '@/contexts/AppContext';
+import { useAuthStore } from '@/stores';
 import { 
   getUserActivePlan, 
   getUserMonthlyUsage, 
@@ -19,7 +19,7 @@ import LoadingSpinner from './LoadingSpinner';
 import NonPremiumView from './NonPremiumView';
 
 const PremiumDashboard = () => {
-  const { currentUser } = useAppContext();
+  const { currentUser } = useAuthStore();
   const [userPlan, setUserPlan] = useState(null);
   const [usage, setUsage] = useState(null);
   const [isPremium, setIsPremium] = useState(false);

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea.jsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx"; 
 import { createListingReport } from '@/services/reportService';
 import { useToast } from '@/components/ui/use-toast.js'; 
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 import { supabase } from '@benalsam/shared-types';
 
 const reportReasons = [
@@ -25,7 +25,7 @@ const reportReasons = [
 const ReportListingPage = () => {
   const { listingId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const { toast } = useToast();
 
   const [listingTitle, setListingTitle] = useState('');

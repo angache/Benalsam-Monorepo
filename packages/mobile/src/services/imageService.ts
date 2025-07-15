@@ -1,10 +1,34 @@
 import { supabase } from './supabaseClient';
 
 export const uploadImages = async (files: any[], userId: string, bucket: string) => {
+  // Debug: Authentication kontrolü
+  console.log('🔍 [ImageUpload] Starting upload process...');
+  console.log('🔍 [ImageUpload] User ID:', userId);
+  console.log('🔍 [ImageUpload] Bucket:', bucket);
+  console.log('🔍 [ImageUpload] Files count:', files.length);
+  
+  // Authentication session kontrolü
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    console.error('❌ [ImageUpload] Session error:', sessionError);
+    throw new Error('Authentication session error');
+  }
+  
+  if (!session) {
+    console.error('❌ [ImageUpload] No active session found');
+    console.error('❌ [ImageUpload] User exists in store but no Supabase session');
+    throw new Error('Authentication session expired. Please log in again.');
+  }
+  
+  console.log('✅ [ImageUpload] Session found, user ID:', session.user.id);
+  console.log('✅ [ImageUpload] Session user matches provided userId:', session.user.id === userId);
+  
   const uploadPromises = files.map(async (file, index) => {
     // React Native için dosya formatını düzelt
     const fileExt = file.name?.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${userId}/${Date.now()}-${Math.random()}.${fileExt}`;
+    
+    console.log(`📁 [ImageUpload] File ${index + 1} path:`, fileName);
     
     // MIME type'ı dosya uzantısından belirle
     let mimeType = 'image/jpeg'; // default
@@ -24,6 +48,7 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
           name: file.name,
           type: mimeType,
         } as any;
+        console.log(`📁 [ImageUpload] File ${index + 1} processed as local file:`, file.uri);
       } catch (error) {
         console.error(`❌ Error processing local file ${index + 1}:`, error);
         throw error;
@@ -31,9 +56,12 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
     } else {
       // Bu büyük ihtimalle önceden yüklenmiş dosya, doğrudan kullan
       fileToUpload = file;
+      console.log(`📁 [ImageUpload] File ${index + 1} processed as existing file`);
     }
 
     try {
+      console.log(`🚀 [ImageUpload] Starting upload for file ${index + 1}...`);
+      
       // Supabase'e upload - contentType'ı manuel belirt
       const { data, error } = await supabase.storage
         .from(bucket)
@@ -46,10 +74,13 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
       if (error) {
         console.error(`❌ Image upload error for file ${index + 1}:`, error);
         console.error('❌ Error details:', {
-          message: error.message
+          message: error.message,
+          name: error.name
         });
         throw error;
       }
+
+      console.log(`✅ [ImageUpload] File ${index + 1} uploaded successfully:`, data.path);
 
       // Public URL oluştur
       const { data: publicData } = supabase.storage
@@ -57,6 +88,7 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
         .getPublicUrl(fileName);
 
       const publicUrl = publicData.publicUrl;
+      console.log(`🔗 [ImageUpload] File ${index + 1} public URL:`, publicUrl);
 
       return { fileName, url: publicUrl };
     } catch (error) {
@@ -112,8 +144,25 @@ export const processImagesForSupabase = async (
   onProgress_unused?: (progress: number) => void, 
   initialImageUrls: string[] = []
 ) => {
-  // Sadece yeni görselleri yükle (isUploaded: false olanlar)
-  const filesToUpload = images.filter(img => img.file && !img.isUploaded).map(img => img.file);
+  // Mobil için: uri'den dosya objesi oluştur
+  const filesToUpload = images
+    .filter(img => !img.isUploaded && (img.uri || img.file))
+    .map(img => {
+      if (img.uri && img.uri.startsWith('file://')) {
+        // Mobil local dosya - dosya objesi oluştur
+        return {
+          uri: img.uri,
+          name: img.name || `image_${Date.now()}.jpg`,
+          type: 'image/jpeg'
+        };
+      } else if (img.file) {
+        // Web dosyası
+        return img.file;
+      }
+      return null;
+    })
+    .filter(Boolean);
+
   const urlsToDelete = initialImageUrls.length > 0 ? initialImageUrls : [];
   
   // Yeni görselleri yükle
@@ -130,8 +179,8 @@ export const processImagesForSupabase = async (
     if (img.isStockImage && img.uri) {
       // Stok görsel - URL zaten mevcut
       finalImageUrls[index] = img.uri;
-    } else if (img.file && !img.isUploaded) {
-      // Yeni yüklenen görsel
+    } else if ((img.uri && img.uri.startsWith('file://')) || (img.file && !img.isUploaded)) {
+      // Yeni yüklenen görsel (mobil veya web)
       finalImageUrls[index] = uploadedImageUrls[uploadedIndex];
       uploadedIndex++;
     } else {

@@ -4,10 +4,10 @@ import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { Save, Shield, Lock, Smartphone, LogOut, KeyRound } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 
 const SecuritySettings = () => {
-  const { currentUser } = useAppContext();
+  const { currentUser } = useAuthStore();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

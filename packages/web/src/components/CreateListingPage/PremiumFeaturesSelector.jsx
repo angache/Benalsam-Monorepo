@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { checkUserPremiumStatus } from '@/services/premiumService';
-import { useAppContext } from '@/contexts/AppContext';
+import { useAuthStore } from '@/stores';
 
 const premiumFeatures = [
   {
@@ -44,7 +44,7 @@ const PremiumFeaturesSelector = ({
   onFeatureChange, 
   disabled = false 
 }) => {
-  const { currentUser } = useAppContext();
+  const { currentUser } = useAuthStore();
   const [isPremiumUser, setIsPremiumUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 

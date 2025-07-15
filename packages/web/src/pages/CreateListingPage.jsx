@@ -3,7 +3,7 @@ import React, { useState, useCallback, useMemo } from 'react';
     import { motion, AnimatePresence } from 'framer-motion';
     import { Loader2, Tag } from 'lucide-react';
     import { toast } from '@/components/ui/use-toast';
-    import { useAppContext } from '@/contexts/AppContext.jsx';
+    import { useAuthStore } from '@/stores';
     import { useCreateListingForm } from '@/components/CreateListingPage/useCreateListingForm.js';
     import { checkListingLimit, incrementUserUsage, showPremiumUpgradeToast } from '@/services/premiumService';
     import ListingRulesModal from '@/components/ListingRulesModal.jsx';
@@ -30,7 +30,7 @@ import React, { useState, useCallback, useMemo } from 'react';
     
     const CreateListingPage = () => {
       const navigate = useNavigate();
-      const { currentUser, loadingAuth, handleCreateListing, isUploading, uploadProgress } = useAppContext();
+      const { currentUser, loadingAuth, handleCreateListing, isUploading, uploadProgress } = useAuthStore();
       const [currentStep, setCurrentStep] = useState(1);
       const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
       const [isStockModalOpen, setIsStockModalOpen] = useState(false);

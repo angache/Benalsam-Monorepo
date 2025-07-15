@@ -19,12 +19,13 @@ import {
 import { fetchSentOffers, deleteOffer } from '@/services/offerService';
 import { getOrCreateConversation } from '@/services/conversationService';
 import { canUserReview } from '@/services/reviewService';
-import { useAuth } from '@/hooks/useAuth.js';import { formatDate } from '@benalsam/shared-types';
+import { useAuthStore } from '@/stores';
+import { formatDate } from '@benalsam/shared-types';
 
 
 const SentOffersPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [sentOffers, setSentOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingOfferId, setDeletingOfferId] = useState(null);

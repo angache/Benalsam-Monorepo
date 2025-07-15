@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/stores';
+import { fetchInventoryItems } from '@/services/inventoryService';
 import { supabase } from '@benalsam/shared-types';
-import { useAuth } from '@/hooks/useAuth.js';
-import { useAppData } from '@/hooks/useAppData.js';
 import { 
   checkOfferLimit, 
   incrementUserUsage, 
@@ -21,16 +21,20 @@ import PlanInfoCard from './MakeOfferPage/PlanInfoCard.jsx';
 const MakeOfferPage = () => {
   const { listingId } = useParams();
   const navigate = useNavigate();
-  const { currentUser, loadingAuth } = useAuth();
-  const { inventoryItems, handleSubmitOffer, isSubmittingOffer, isFetchingInventory, fetchUserInventory } = useAppData(currentUser, loadingAuth, () => navigate('/auth?action=login'));
+  const { user: currentUser } = useAuthStore();
   
   const [listing, setListing] = useState(null);
-  const [loadingListing, setLoadingListing] = useState(true);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [loadingListing, setLoadingListing] = useState(false);
+  const [isFetchingInventory, setIsFetchingInventory] = useState(false);
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
 
   useEffect(() => {
-    if (loadingAuth || !currentUser) {
+    // Kullanıcı yoksa loading'i durdur
+    if (!currentUser) {
+      setLoadingListing(false);
       return;
     }
     
@@ -70,12 +74,30 @@ const MakeOfferPage = () => {
     };
 
     fetchData();
-    if (currentUser.id) {
-      fetchUserInventory(currentUser.id);
-    }
-  }, [currentUser, listingId, navigate, loadingAuth, fetchUserInventory]);
+  }, [currentUser?.id, listingId]);
 
-  const handleOfferSubmit = async (offerData) => {
+  // Envanter yükleme
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const fetchInventory = async () => {
+      setIsFetchingInventory(true);
+      try {
+        const data = await fetchInventoryItems(currentUser.id);
+        console.log('Inventory data loaded:', data);
+        setInventoryItems(data || []);
+      } catch (error) {
+        console.error('Inventory yükleme hatası:', error);
+        setInventoryItems([]);
+      } finally {
+        setIsFetchingInventory(false);
+      }
+    };
+
+    fetchInventory();
+  }, [currentUser?.id]);
+
+  const handleOfferSubmit = useCallback(async (offerData) => {
     if (!currentUser) {
       toast({ title: "Giriş Gerekli", description: "Teklif yapmak için giriş yapmalısınız.", variant: "destructive" });
       return;
@@ -88,36 +110,58 @@ const MakeOfferPage = () => {
       return;
     }
 
-    const createdOffer = await handleSubmitOffer(offerData, listing.title);
-    if (createdOffer) {
+    setIsSubmittingOffer(true);
+    try {
+      const { data, error } = await supabase
+        .from('offers')
+        .insert([{
+          listing_id: listing.id,
+          offering_user_id: currentUser.id,
+          inventory_item_id: offerData.selectedItemId,
+          message: offerData.message,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        toast({ title: "Teklif Gönderilemedi", description: error.message, variant: "destructive" });
+        return;
+      }
+
       if (offerData.attachments && offerData.attachments.length > 0) {
         for (const file of offerData.attachments) {
-          await addOfferAttachment(createdOffer.id, file);
+          await addOfferAttachment(data.id, file);
         }
       }
       
       await incrementUserUsage(currentUser.id, 'offer');
+      toast({ title: "Başarılı!", description: "Teklifiniz başarıyla gönderildi." });
       navigate(`/ilan/${listing.id}`);
+    } catch (error) {
+      console.error('Teklif gönderme hatası:', error);
+      toast({ title: "Hata", description: "Teklif gönderilirken bir sorun oluştu.", variant: "destructive" });
+    } finally {
+      setIsSubmittingOffer(false);
     }
-  };
+  }, [currentUser?.id, userPlan, listing]);
 
-  if (loadingAuth || isFetchingInventory) {
+  const isLoading = useMemo(() => {
+    return loadingListing || isFetchingInventory || !listing;
+  }, [loadingListing, isFetchingInventory, listing]);
+
+  const loadingText = useMemo(() => {
+    if (loadingListing) return 'İlan yükleniyor...';
+    if (isFetchingInventory) return 'Envanter yükleniyor...';
+    return 'Yükleniyor...';
+  }, [loadingListing, isFetchingInventory]);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">{loadingAuth ? 'Kimlik doğrulanıyor...' : 'Envanter yükleniyor...'}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loadingListing || !listing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">İlan yükleniyor...</p>
+          <p className="text-muted-foreground">{loadingText}</p>
         </div>
       </div>
     );

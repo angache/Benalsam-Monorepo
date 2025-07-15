@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchFilteredListings } from '@/services/listingService/fetchers';
-import { useAppContext } from '@/contexts/AppContext';
+import { useAuthStore } from '@/stores';
 import { toast } from '@/components/ui/use-toast';
 
 import ListingCard from '@/components/ListingCard';
@@ -17,7 +17,7 @@ import AdBanner from '@/components/AdBanner';
 const PAGE_SIZE = 16;
 
 const SearchResultsPage = ({ onToggleFavorite }) => {
-  const { currentUser } = useAppContext();
+  const { currentUser } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 

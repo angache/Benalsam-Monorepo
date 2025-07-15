@@ -12,7 +12,7 @@ import { fetchUserReviews } from '@/services/reviewService';
 import { followUser, unfollowUser, checkIfFollowing, fetchFollowers, fetchFollowingUsers } from '@/services/followService.js';
 import { incrementProfileView } from '@/services/profileService.js';
 import { cn } from '@/lib/utils';
-import { useAppContext } from '@/contexts/AppContext.jsx';
+import { useAuthStore } from '@/stores';
 import TrustScoreModal from '@/components/TrustScoreModal';
 
 const generateBoringAvatarUrl = (name, userId) => {
@@ -104,7 +104,7 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
   const navigate = useNavigate();
   const rLocation = routerLocation(); 
   const { theme } = useContext(ThemeContext);
-  const { currentUser } = useAppContext();
+  const { currentUser } = useAuthStore();
   const [profile, setProfile] = useState(null);
   const [userListings, setUserListings] = useState([]);
   const [userReviews, setUserReviews] = useState([]);

@@ -78,94 +78,92 @@ const ListingCard = ({ listing, size = 'normal', onToggleFavorite, currentUser, 
         isSmall ? 'w-56 sm:w-64 min-w-[224px] sm:min-w-[250px] flex-shrink-0' : ''
       )}
     >
-      <Link to={`/ilan/${listing.id}`} className="block">
-        <div className={`relative overflow-hidden ${isSmall ? 'h-32 sm:h-36' : 'h-40 sm:h-48 md:h-56'}`}>
-          {statusInfo && (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
-              <div className="text-center text-white p-2 sm:p-4">
-                <p className="font-bold text-sm sm:text-lg">
-                  {statusInfo.text}
-                </p>
-                {listing.status === 'inactive' && listing.deactivation_reason && <p className="text-xs sm:text-sm opacity-80 mt-1">({listing.deactivation_reason})</p>}
-                {listing.status === 'rejected' && listing.rejection_reason && <p className="text-xs sm:text-sm opacity-80 mt-1">Neden: {listing.rejection_reason}</p>}
-              </div>
+      <div className={`relative overflow-hidden ${isSmall ? 'h-32 sm:h-36' : 'h-40 sm:h-48 md:h-56'}`}>
+        {statusInfo && (
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
+            <div className="text-center text-white p-2 sm:p-4">
+              <p className="font-bold text-sm sm:text-lg">
+                {statusInfo.text}
+              </p>
+              {listing.status === 'inactive' && listing.deactivation_reason && <p className="text-xs sm:text-sm opacity-80 mt-1">({listing.deactivation_reason})</p>}
+              {listing.status === 'rejected' && listing.rejection_reason && <p className="text-xs sm:text-sm opacity-80 mt-1">Neden: {listing.rejection_reason}</p>}
             </div>
-          )}
-          {cardImageUrl ? (
-            <img 
-              src={cardImageUrl}
-              alt={listing.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <ImageIcon className={`text-muted-foreground ${isSmall ? 'w-8 h-8 sm:w-12 sm:h-12' : 'w-12 h-12 sm:w-16 sm:h-16'}`} />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10"></div>
-          
-          <div className="absolute top-1 sm:top-2 left-1 sm:left-2 flex flex-wrap gap-1 z-10">
-            <div className={`px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md transition-colors ${getUrgencyColor(listing.urgency)}`}>
-              {listing.urgency}
-            </div>
-            {listing.is_urgent_premium && (
-              <div className="px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md bg-red-600 flex items-center gap-1">
-                <Zap size={10} className="sm:w-3 sm:h-3" /> Acil
-              </div>
-            )}
-            {listing.is_featured && (
-              <div className="px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md bg-purple-600 flex items-center gap-1">
-                <Star size={10} className="sm:w-3 sm:h-3" /> Öne Çıkan
-              </div>
-            )}
-            {listing.is_showcase && (
-              <div className="px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md bg-cyan-500 flex items-center gap-1">
-                <Eye size={10} className="sm:w-3 sm:h-3" /> Vitrin
-              </div>
-            )}
           </div>
-
-          {onToggleFavorite && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-1 sm:top-2 right-1 sm:right-2 text-white hover:text-red-500 hover:bg-black/30 rounded-full p-1 sm:p-1.5 transition-colors z-20 w-6 h-6 sm:w-8 sm:h-8"
-              onClick={handleFavoriteClick}
-              aria-label={isFavorited ? "Favorilerden kaldır" : "Favorilere ekle"}
-            >
-              <Heart className={cn("w-3 h-3 sm:w-5 sm:h-5", isFavorited ? "fill-red-500 text-red-500" : "text-white")} />
-            </Button>
+        )}
+        {cardImageUrl ? (
+          <img 
+            src={cardImageUrl}
+            alt={listing.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <ImageIcon className={`text-muted-foreground ${isSmall ? 'w-8 h-8 sm:w-12 sm:h-12' : 'w-12 h-12 sm:w-16 sm:h-16'}`} />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10"></div>
+        
+        <div className="absolute top-1 sm:top-2 left-1 sm:left-2 flex flex-wrap gap-1 z-10">
+          <div className={`px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md transition-colors ${getUrgencyColor(listing.urgency)}`}>
+            {listing.urgency}
+          </div>
+          {listing.is_urgent_premium && (
+            <div className="px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md bg-red-600 flex items-center gap-1">
+              <Zap size={10} className="sm:w-3 sm:h-3" /> Acil
+            </div>
           )}
-
-          {listing.user && !isSmall && (
-            <Link 
-              to={`/profil/${listing.user.id}`} 
-              className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 flex items-center space-x-1 sm:space-x-1.5 p-1 bg-black/40 hover:bg-black/60 rounded text-xs transition-colors z-20"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Avatar className="w-4 h-4 sm:w-6 sm:h-6 border border-primary/60">
-                <AvatarImage src={listing.user.avatar_url || `https://source.boringavatars.com/beam/30/${listing.user.name?.replace(/\s+/g, '') || 'user'}?colors=ff6b35,f7931e,ff8c42,1a0f0a,2d1810`} alt={listing.user.name} />
-                <AvatarFallback className="text-xs bg-muted text-muted-foreground">{listing.user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex items-center">
-                <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-yellow-400 mr-0.5" />
-                <span className="text-xs text-white font-medium">{listing.user.rating?.toFixed(1) || 'N/A'}</span>
-              </div>
-            </Link>
+          {listing.is_featured && (
+            <div className="px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md bg-purple-600 flex items-center gap-1">
+              <Star size={10} className="sm:w-3 sm:h-3" /> Öne Çıkan
+            </div>
+          )}
+          {listing.is_showcase && (
+            <div className="px-1 sm:px-2 py-0.5 rounded text-xs font-semibold text-white shadow-md bg-cyan-500 flex items-center gap-1">
+              <Eye size={10} className="sm:w-3 sm:h-3" /> Vitrin
+            </div>
           )}
         </div>
-      </Link>
+
+        {onToggleFavorite && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-1 sm:top-2 right-1 sm:right-2 text-white hover:text-red-500 hover:bg-black/30 rounded-full p-1 sm:p-1.5 transition-colors z-20 w-6 h-6 sm:w-8 sm:h-8"
+            onClick={handleFavoriteClick}
+            aria-label={isFavorited ? "Favorilerden kaldır" : "Favorilere ekle"}
+          >
+            <Heart className={cn("w-3 h-3 sm:w-5 sm:h-5", isFavorited ? "fill-red-500 text-red-500" : "text-white")} />
+          </Button>
+        )}
+
+        {listing.user && !isSmall && (
+          <Link 
+            to={`/profil/${listing.user.id}`} 
+            className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 flex items-center space-x-1 sm:space-x-1.5 p-1 bg-black/40 hover:bg-black/60 rounded text-xs transition-colors z-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Avatar className="w-4 h-4 sm:w-6 sm:h-6 border border-primary/60">
+              <AvatarImage src={listing.user.avatar_url || `https://source.boringavatars.com/beam/30/${listing.user.name?.replace(/\s+/g, '') || 'user'}?colors=ff6b35,f7931e,ff8c42,1a0f0a,2d1810`} alt={listing.user.name} />
+              <AvatarFallback className="text-xs bg-muted text-muted-foreground">{listing.user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="flex items-center">
+              <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-yellow-400 mr-0.5" />
+              <span className="text-xs text-white font-medium">{listing.user.rating?.toFixed(1) || 'N/A'}</span>
+            </div>
+          </Link>
+        )}
+
+        <Link to={`/ilan/${listing.id}`} className="absolute inset-0 z-10" aria-label={`${listing.title} detay sayfasına git`} />
+      </div>
       
       <div className={`${isSmall ? 'p-2 sm:p-3' : 'p-3 sm:p-4'} flex-1 flex flex-col bg-card`}>
-        <Link to={`/ilan/${listing.id}`} className="block">
-          <h3 className={cn(
-            `${isSmall ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} font-semibold text-card-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors`,
-            { 'font-extrabold text-amber-300': listing.has_bold_border }
-          )}>
-            {listing.title}
-          </h3>
-        </Link>
+        <h3 className={cn(
+          `${isSmall ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} font-semibold text-card-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors`,
+          { 'font-extrabold text-amber-300': listing.has_bold_border }
+        )}>
+          {listing.title}
+        </h3>
         <span className={`inline-block px-1 sm:px-2 py-0.5 bg-primary/10 text-primary ${isSmall ? 'text-xs' : 'text-xs sm:text-sm'} font-medium rounded-full mb-1 sm:mb-1.5 w-fit`}>
           {listing.category?.split(' > ')[0]}
         </span>

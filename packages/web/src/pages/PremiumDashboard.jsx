@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 import { 
   getUserActivePlan, 
   getUserMonthlyUsage, 
@@ -15,7 +15,7 @@ import {
 } from '@/services/premiumService';
 
 const PremiumDashboard = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [userPlan, setUserPlan] = useState(null);
   const [usage, setUsage] = useState(null);
   const [isPremium, setIsPremium] = useState(false);

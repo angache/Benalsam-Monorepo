@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@benalsam/shared-types';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 import { toast } from '@/components/ui/use-toast.js';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
-  const { setCurrentUser, setLoadingAuth: setAuthLoadingHook } = useAuth();
+  const { setCurrentUser, setLoadingAuth: setAuthLoadingHook } = useAuthStore();
   const [message, setMessage] = useState('Doğrulama işleniyor, lütfen bekleyin...');
   const [error, setError] = useState('');
 
@@ -58,7 +58,7 @@ const AuthCallbackPage = () => {
             setCurrentUser(profile);
           }
           
-          // The toast for email confirmation will now be handled by useAuth hook globally
+          // The toast for email confirmation will now be handled by useAuthStore hook globally
           // to avoid duplication and ensure it shows only once.
           // toast({ title: "Doğrulama Başarılı!", description: "Hesabınız başarıyla doğrulandı." });
           navigate('/'); 

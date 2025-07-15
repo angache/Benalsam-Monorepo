@@ -7,10 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Check, Crown, Star, Zap, Eye, MessageSquare, Camera, TrendingUp, FileText, Users, Shield, Sparkles, X } from 'lucide-react';
 import { getPlanFeatures, getUserActivePlan, getUserMonthlyUsage, createSubscription } from '@/services/premiumService';
 import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 
 const PremiumModal = ({ isOpen, onOpenChange, feature, currentUsage }) => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [plans] = useState(getPlanFeatures());
   const [userPlan, setUserPlan] = useState(null);
   const [usage, setUsage] = useState(null);

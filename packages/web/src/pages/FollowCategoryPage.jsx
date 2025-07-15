@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx";
 import { followCategory } from '@/services/supabaseService';
 import { categoriesConfig } from '@/config/categories.js';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 const FollowCategoryPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
 

@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import ListingCard from '@/components/ListingCard';
 import { toast } from '@/components/ui/use-toast';
 import { fetchUserFavoriteListings } from '@/services/supabaseService';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuthStore } from '@/stores';
 
 const FavoritesPage = ({ onToggleFavorite }) => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [favoriteListings, setFavoriteListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

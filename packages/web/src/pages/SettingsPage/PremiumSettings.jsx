@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 import { 
   getUserActivePlan, 
   getUserMonthlyUsage, 
@@ -15,7 +15,7 @@ import {
 } from '@/services/premiumService';
 
 const PremiumSettings = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthStore();
   const [userPlan, setUserPlan] = useState(null);
   const [usage, setUsage] = useState(null);
   const [plans] = useState(getPlanFeatures());

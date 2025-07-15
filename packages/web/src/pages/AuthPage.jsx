@@ -5,12 +5,12 @@ import { Mail, Key, User, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@benalsam/shared-types';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores';
 
 const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { handleAuthSuccess: onAuthSuccessGlobal } = useAuth();
+  const { signIn, signUp } = useAuthStore();
 
   const queryParams = new URLSearchParams(location.search);
   const initialAction = queryParams.get('action') === 'register' ? 'register' : 'login';
@@ -69,46 +69,21 @@ const AuthPage = () => {
     setErrors({});
 
     if (action === 'register') {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-            avatar_url: `https://source.boringavatars.com/beam/120/${formData.name.replace(/\s+/g, '') || 'benalsamUser'}?colors=ff6b35,f7931e,ff8c42,1a0f0a,2d1810`
-          }
-        }
-      });
-
-      if (error) {
-        toast({ title: "Kayıt Başarısız", description: error.message, variant: "destructive" });
-      } else if (data.user) {
-         const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            name: formData.name, 
-            avatar_url: `https://source.boringavatars.com/beam/120/${formData.name.replace(/\s+/g, '') || 'benalsamUser'}?colors=ff6b35,f7931e,ff8c42,1a0f0a,2d1810`,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-            console.error("Error updating profile on signup:", profileError);
-            toast({ title: "Profil Güncelleme Hatası", description: "Kayıt başarılı ancak profil güncellenemedi.", variant: "warning" });
-        }
-        await onAuthSuccessGlobal(true); // Pass true for new user
+      const result = await signUp(formData.email, formData.password, formData.name);
+      
+      if (result.error) {
+        toast({ title: "Kayıt Başarısız", description: result.error, variant: "destructive" });
+      } else {
+        toast({ title: "Başarılı!", description: "Hesabınız başarıyla oluşturuldu.", variant: "default" });
         navigate('/');
       }
     } else { 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        toast({ title: "Giriş Başarısız", description: error.message, variant: "destructive" });
+      const result = await signIn(formData.email, formData.password);
+      
+      if (result.error) {
+        toast({ title: "Giriş Başarısız", description: result.error, variant: "destructive" });
       } else {
-        await onAuthSuccessGlobal(false); // Pass false for existing user
+        toast({ title: "Başarılı!", description: "Başarıyla giriş yaptınız.", variant: "default" });
         navigate('/');
       }
     }

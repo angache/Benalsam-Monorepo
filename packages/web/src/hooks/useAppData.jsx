@@ -88,7 +88,7 @@ export const useAppData = (currentUser, loadingAuth, openAuthModal) => {
       setUnreadMessagesCount(0);
     }
     setIsDataLoading(false);
-  }, [currentUser?.id, fetchUserInventory, fetchNotifications, fetchUnreadMessageCount]);
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (!loadingAuth) {
