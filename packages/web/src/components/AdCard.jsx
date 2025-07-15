@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 
 const AdCard = ({ ad }) => {
   const handleAdClick = async (adId) => {

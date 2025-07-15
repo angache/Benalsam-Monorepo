@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { toast } from '@/components/ui/use-toast';
 import { fetchUserFavoriteStatusForListings } from '@/services/favoriteService.js';
 

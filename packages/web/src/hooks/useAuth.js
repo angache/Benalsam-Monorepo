@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { fetchUserProfile } from '@/services/supabaseService';
 import { toast } from '@/components/ui/use-toast';
 

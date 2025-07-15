@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button.jsx";
 import { Label } from "@/components/ui/label.jsx"; 
 import { Textarea } from "@/components/ui/textarea.jsx"; 
 import { createReview, canUserReview } from '@/services/reviewService';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { useToast } from '@/components/ui/use-toast.js'; 
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth.js';

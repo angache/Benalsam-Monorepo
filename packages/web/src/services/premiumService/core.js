@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 
 // Kullanıcının aktif planını getir
 export const getUserActivePlan = async (userId) => {

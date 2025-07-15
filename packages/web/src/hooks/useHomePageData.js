@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchFilteredListings } from '@/services/listingService/fetchers.js';
 import { saveLastSearch } from '@/services/userActivityService.js';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 
 const PAGE_SIZE = 16;
 

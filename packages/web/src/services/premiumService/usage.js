@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 
 // Kullanım artırma
 export const incrementUserUsage = async (userId, type) => {

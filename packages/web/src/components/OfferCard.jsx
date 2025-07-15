@@ -7,22 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { featureOffer, checkPremiumFeature, showPremiumUpgradeToast } from '@/services/premiumService';
-import PremiumModal from '@/components/PremiumModal';
+import PremiumModal from '@/components/PremiumModal';import { formatDate } from '@benalsam/shared-types';
+
 
 const OfferCard = ({ offer, currentUser, onAccept, onReject, onMessage, showActions = true }) => {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isFeaturingOffer, setIsFeaturingOffer] = useState(false);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
+  
   const handleFeatureOffer = async () => {
     if (!currentUser) return;
 

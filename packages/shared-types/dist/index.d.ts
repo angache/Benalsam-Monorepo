@@ -43,3 +43,7 @@ export declare const getTrustLevel: (trustScore: number) => "bronze" | "silver" 
  * Get trust level color
  */
 export declare const getTrustLevelColor: (level: "bronze" | "silver" | "gold" | "platinum") => string;
+/**
+ * Format phone number for display
+ */
+export declare const formatPhoneNumber: (phone: string) => string;

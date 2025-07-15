@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient.js';
+import { supabase } from '@benalsam/shared-types';
 import { toast } from '@/components/ui/use-toast.js';
 
 export const addFavorite = async (userId, listingId) => {

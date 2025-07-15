@@ -17,7 +17,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth.js';
 import MessageStatus from '@/components/MessageStatus';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';import { formatDate } from '@benalsam/shared-types';
+
 
 
 const ConversationPage = () => {
@@ -201,12 +202,7 @@ const ConversationPage = () => {
 
   const otherParticipant = getOtherParticipant();
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Bilinmiyor";
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  };
-
+  
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background">

@@ -145,4 +145,24 @@ export const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platin
     case 'bronze': return '#CD7F32';
     default: return '#C0C0C0';
   }
+};
+
+/**
+ * Format phone number for display
+ */
+export const formatPhoneNumber = (phone: string): string => {
+  // Remove all non-digit characters
+  const cleaned = phone.replace(/\D/g, '');
+  
+  // Turkish phone number format: +90 5XX XXX XX XX
+  if (cleaned.length === 11 && cleaned.startsWith('90')) {
+    return `+${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8, 10)} ${cleaned.slice(10)}`;
+  }
+  
+  // Turkish mobile number without country code: 5XX XXX XX XX
+  if (cleaned.length === 10 && cleaned.startsWith('5')) {
+    return `+90 ${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 8)} ${cleaned.slice(8)}`;
+  }
+  
+  return phone; // Return original if format doesn't match
 }; 

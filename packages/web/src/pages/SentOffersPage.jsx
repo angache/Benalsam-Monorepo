@@ -19,7 +19,8 @@ import {
 import { fetchSentOffers, deleteOffer } from '@/services/offerService';
 import { getOrCreateConversation } from '@/services/conversationService';
 import { canUserReview } from '@/services/reviewService';
-import { useAuth } from '@/hooks/useAuth.js';
+import { useAuth } from '@/hooks/useAuth.js';import { formatDate } from '@benalsam/shared-types';
+
 
 const SentOffersPage = () => {
   const navigate = useNavigate();
@@ -114,12 +115,7 @@ const SentOffersPage = () => {
     navigate(`/degerlendirme/${offer.id}`);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Bilinmiyor";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
-
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

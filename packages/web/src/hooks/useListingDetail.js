@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { toast } from '@/components/ui/use-toast';
 import { updateOfferStatus as updateOfferStatusService } from '@/services/offerService';
 import { getOrCreateConversation as getOrCreateConversationService } from '@/services/conversationService';

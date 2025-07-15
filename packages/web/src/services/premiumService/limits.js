@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { getUserActivePlan, getUserMonthlyUsage } from './core';
 
 // İlan limiti kontrolü

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import ListingCard from '@/components/ListingCard';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';

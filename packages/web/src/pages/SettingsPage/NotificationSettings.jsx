@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button.jsx';
 import { Switch } from '@/components/ui/switch.jsx';

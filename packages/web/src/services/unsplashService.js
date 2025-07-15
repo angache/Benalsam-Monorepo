@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 
 export const searchUnsplashImages = async (query) => {
   if (!query || query.trim() === '') {

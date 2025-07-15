@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Mail, Key, User, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { useAuth } from '@/hooks/useAuth';
 
 const AuthPage = () => {

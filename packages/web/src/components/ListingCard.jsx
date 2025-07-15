@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
+import { formatDate } from '@benalsam/shared-types';
+
 
 const ListingCard = ({ listing, size = 'normal', onToggleFavorite, currentUser, isFavoritedOverride = null }) => {
   const navigate = useNavigate();
@@ -19,19 +21,7 @@ const ListingCard = ({ listing, size = 'normal', onToggleFavorite, currentUser, 
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Bilinmiyor";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 1) return 'Bugün';
-    if (diffDays === 2) return 'Dün';
-    if (diffDays <= 7) return `${diffDays -1} gün önce`;
-    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-  };
-
+  
   const cardImageUrl = listing.main_image_url || listing.image_url || `https://source.unsplash.com/random/400x300/?${listing.category?.split(' > ')[0].replace(/\s/g, '+') || 'product'}&sig=${listing.id}`;
   
   const isSmall = size === 'small';

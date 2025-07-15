@@ -10,26 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
+import { formatDate } from '@benalsam/shared-types';
+
 
 const ConversationCard = ({ conversation, currentUser, onClick, unreadCount }) => {
   const otherUser = conversation.user1_id === currentUser.id ? conversation.user2 : conversation.user1;
   const lastMessage = conversation.last_message;
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 1 && date.getDate() === now.getDate()) {
-      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-    }
-    if (diffDays < 7) {
-      return new Intl.DateTimeFormat('tr-TR', { weekday: 'long' }).format(date);
-    }
-    return date.toLocaleDateString('tr-TR');
-  };
 
   const isUnread = unreadCount > 0;
 

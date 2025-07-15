@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/ui/use-toast';
 import { dopingOptions } from '@/config/dopingOptions.js';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@benalsam/shared-types';
 import { useAuth } from '@/hooks/useAuth.js';
 
 const DopingPage = () => {
