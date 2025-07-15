@@ -67,21 +67,11 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const MainContent = ({ children }) => {
-  const location = useLocation();
-  const showSidebarAd = !['/', '/auth', '/ilan-olustur'].includes(location.pathname) && !location.pathname.startsWith('/mesajlar');
-
   return (
     <div className="flex-grow flex">
       <main className="flex-grow">
         {children}
       </main>
-      {showSidebarAd && (
-        <aside className="hidden lg:block w-72 flex-shrink-0 p-6">
-          <div className="sticky top-24">
-            <AdBanner placement="sidebar" />
-          </div>
-        </aside>
-      )}
     </div>
   );
 };
