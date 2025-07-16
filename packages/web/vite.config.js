@@ -216,7 +216,52 @@ export default defineConfig({
 				'@babel/traverse',
 				'@babel/generator',
 				'@babel/types'
-			]
-		}
+			],
+			output: {
+				manualChunks: {
+					// Vendor chunks
+					vendor: ['react', 'react-dom'],
+					router: ['react-router-dom'],
+					ui: ['framer-motion', 'lucide-react'],
+					query: ['@tanstack/react-query'],
+					supabase: ['@supabase/supabase-js'],
+					
+					// Feature chunks
+					auth: [
+						'@/pages/AuthPage.jsx',
+						'@/pages/AuthCallbackPage.jsx',
+						'@/stores/authStore.ts'
+					],
+					listings: [
+						'@/pages/HomePage',
+						'@/pages/ListingDetailPage',
+						'@/pages/CreateListingPage.jsx',
+						'@/pages/EditListingPage.jsx',
+						'@/pages/MyListingsPage.jsx',
+						'@/pages/SearchResultsPage.jsx'
+					],
+					profile: [
+						'@/pages/ProfilePage.jsx',
+						'@/pages/SettingsPage/SettingsLayout.jsx'
+					],
+					messaging: [
+						'@/pages/ConversationPage',
+						'@/pages/ConversationsListPage.jsx'
+					],
+					offers: [
+						'@/pages/MakeOfferPage.jsx',
+						'@/pages/SentOffersPage',
+						'@/pages/ReceivedOffersPage'
+					],
+					premium: [
+						'@/pages/PremiumPage.jsx',
+						'@/pages/PremiumDashboard',
+						'@/pages/DopingPage.jsx'
+					]
+				}
+			}
+		},
+		chunkSizeWarningLimit: 1000,
+		sourcemap: false
 	}
 });

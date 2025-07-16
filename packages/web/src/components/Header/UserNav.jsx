@@ -15,6 +15,7 @@ import {
 import { checkUserPremiumStatus } from '@/services/premiumService';
 import { generateBoringAvatarUrl } from '@/lib/avatarUtils';
 import { useProfile } from '@/hooks/queries/useProfile';
+import { preloadChunk } from '@/hooks/usePreload.js';
 
 const UserNav = ({ currentUser, onLogout, onLoginClick, onRegisterClick, unreadMessagesCount }) => {
   const [isPremiumUser, setIsPremiumUser] = useState(false);
@@ -81,12 +82,20 @@ const UserNav = ({ currentUser, onLogout, onLoginClick, onRegisterClick, unreadM
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to={`/profil/${currentUser.id}`} className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to={`/profil/${currentUser.id}`} 
+            onMouseEnter={() => preloadChunk('profile')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <UserCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Profilim
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/mesajlarim" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/mesajlarim" 
+            onMouseEnter={() => preloadChunk('messaging')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <MessageSquare className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" />
             <span>Mesajlarım</span>
             {unreadMessagesCount > 0 && (
@@ -95,40 +104,68 @@ const UserNav = ({ currentUser, onLogout, onLoginClick, onRegisterClick, unreadM
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/ilanlarim" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/ilanlarim" 
+            onMouseEnter={() => preloadChunk('listings')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <FileText className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> İlanlarım
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/envanterim" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/envanterim" 
+            onMouseEnter={() => preloadChunk('listings')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <Package className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Envanterim
           </Link>
         </DropdownMenuItem>
          <DropdownMenuItem asChild>
-          <Link to="/favorilerim" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/favorilerim" 
+            onMouseEnter={() => preloadChunk('listings')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <Heart className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Favorilerim
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/takip-edilenler" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/takip-edilenler" 
+            onMouseEnter={() => preloadChunk('profile')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <Users className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Takip Ettiklerim
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/aldigim-teklifler" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/aldigim-teklifler" 
+            onMouseEnter={() => preloadChunk('offers')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <MessageSquare className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Aldığım Teklifler
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/gonderdigim-teklifler" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/gonderdigim-teklifler" 
+            onMouseEnter={() => preloadChunk('offers')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <MessageSquare className="mr-2 h-3 w-3 sm:h-4 sm:w-4 rotate-180 text-primary" /> Gönderdiğim Teklifler
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {!isPremiumUser && (
           <DropdownMenuItem asChild>
-            <Link to="/ayarlar/premium" className="cursor-pointer flex items-center text-xs sm:text-sm group">
+            <Link 
+              to="/ayarlar/premium" 
+              onMouseEnter={() => preloadChunk('premium')}
+              className="cursor-pointer flex items-center text-xs sm:text-sm group"
+            >
               <div className="mr-2 h-3 w-3 sm:h-4 sm:w-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
                 <Crown className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
               </div>
@@ -144,19 +181,31 @@ const UserNav = ({ currentUser, onLogout, onLoginClick, onRegisterClick, unreadM
         {isPremiumUser && (
           <>
             <DropdownMenuItem asChild>
-              <Link to="/premium-dashboard" className="cursor-pointer flex items-center text-xs sm:text-sm">
+              <Link 
+                to="/premium-dashboard" 
+                onMouseEnter={() => preloadChunk('premium')}
+                className="cursor-pointer flex items-center text-xs sm:text-sm"
+              >
                 <Crown className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" /> Premium Dashboard
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/ayarlar/premium" className="cursor-pointer flex items-center text-xs sm:text-sm">
+              <Link 
+                to="/ayarlar/premium" 
+                onMouseEnter={() => preloadChunk('premium')}
+                className="cursor-pointer flex items-center text-xs sm:text-sm"
+              >
                 <Crown className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" /> Premium Ayarlar
               </Link>
             </DropdownMenuItem>
           </>
         )}
          <DropdownMenuItem asChild>
-          <Link to="/ayarlar" className="cursor-pointer flex items-center text-xs sm:text-sm">
+          <Link 
+            to="/ayarlar" 
+            onMouseEnter={() => preloadChunk('profile')}
+            className="cursor-pointer flex items-center text-xs sm:text-sm"
+          >
             <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" /> Ayarlar
           </Link>
         </DropdownMenuItem>

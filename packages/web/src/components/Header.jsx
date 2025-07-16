@@ -7,6 +7,7 @@ import { ThemeContext } from '@/contexts/ThemeContext';
 import NotificationBell from '@/components/NotificationBell';
 import UserNav from '@/components/Header/UserNav';
 import MobileMenu from '@/components/Header/MobileMenu';
+import { preloadChunk } from '@/hooks/usePreload.js';
 
 const Header = ({ 
   currentUser, 
@@ -65,11 +66,20 @@ const Header = ({
               />
             )}
 
-            <Button onClick={onCreateClick} className="btn-primary text-primary-foreground hidden md:flex text-xs lg:text-sm px-2 lg:px-4 py-1 lg:py-2">
+            <Button 
+              onClick={onCreateClick} 
+              onMouseEnter={() => preloadChunk('listings')}
+              className="btn-primary text-primary-foreground hidden md:flex text-xs lg:text-sm px-2 lg:px-4 py-1 lg:py-2"
+            >
               <Plus className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" /> İlan Oluştur
             </Button>
             
-            <Button onClick={onCreateClick} size="icon" className="btn-primary text-primary-foreground md:hidden h-7 w-7 sm:h-8 sm:w-8">
+            <Button 
+              onClick={onCreateClick} 
+              onMouseEnter={() => preloadChunk('listings')}
+              size="icon" 
+              className="btn-primary text-primary-foreground md:hidden h-7 w-7 sm:h-8 sm:w-8"
+            >
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
 

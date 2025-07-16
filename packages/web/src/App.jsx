@@ -10,6 +10,8 @@ import { ThemeContext } from '@/contexts/ThemeContext';
 import { useAuthStore } from '@/stores';
 import AppRoutes from '@/components/AppRoutes.jsx';
 import AppErrorBoundary from '@/components/ErrorBoundaries/AppErrorBoundary';
+import { usePreload } from '@/hooks/usePreload.js';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +35,12 @@ function App() {
   
   // Auth store automatically initializes on mount
   // No need to call initialize() manually
+
+  // Code splitting preload strategy
+  usePreload(currentUser);
+  
+  // Performance monitoring
+  usePerformanceMonitor();
 
   useEffect(() => {
     console.log('🔐 Auth Store State:', { currentUser, loadingAuth });

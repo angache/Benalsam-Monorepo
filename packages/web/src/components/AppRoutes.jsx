@@ -1,53 +1,64 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores';
 import PageErrorBoundary from '@/components/ErrorBoundaries/PageErrorBoundary';
 
-import HomePage from '@/pages/HomePage';
-import ProfilePage from '@/pages/ProfilePage.jsx';
-import InventoryPage from '@/pages/InventoryPage';
-import MyListingsPage from '@/pages/MyListingsPage.jsx';
-import ListingDetailPage from '@/pages/ListingDetailPage';
-import SentOffersPage from '@/pages/SentOffersPage';
-import ReceivedOffersPage from '@/pages/ReceivedOffersPage';
-import ConversationPage from '@/pages/ConversationPage';
-import ConversationsListPage from '@/pages/ConversationsListPage.jsx';
-import AuthCallbackPage from '@/pages/AuthCallbackPage.jsx';
-import FavoritesPage from '@/pages/FavoritesPage.jsx'; 
-import FollowingPage from '@/pages/FollowingPage.jsx';
-import NotFoundPage from '@/pages/NotFoundPage';
-import AdBanner from '@/components/AdBanner';
-import SearchResultsPage from '@/pages/SearchResultsPage.jsx';
+// Lazy loaded components for code splitting
+const HomePage = lazy(() => import('@/pages/HomePage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage.jsx'));
+const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
+const MyListingsPage = lazy(() => import('@/pages/MyListingsPage.jsx'));
+const ListingDetailPage = lazy(() => import('@/pages/ListingDetailPage'));
+const SentOffersPage = lazy(() => import('@/pages/SentOffersPage'));
+const ReceivedOffersPage = lazy(() => import('@/pages/ReceivedOffersPage'));
+const ConversationPage = lazy(() => import('@/pages/ConversationPage'));
+const ConversationsListPage = lazy(() => import('@/pages/ConversationsListPage.jsx'));
+const AuthCallbackPage = lazy(() => import('@/pages/AuthCallbackPage.jsx'));
+const FavoritesPage = lazy(() => import('@/pages/FavoritesPage.jsx')); 
+const FollowingPage = lazy(() => import('@/pages/FollowingPage.jsx'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const AdBanner = lazy(() => import('@/components/AdBanner'));
+const SearchResultsPage = lazy(() => import('@/pages/SearchResultsPage.jsx'));
 
-import CreateListingPage from '@/pages/CreateListingPage.jsx';
-import AuthPage from '@/pages/AuthPage.jsx';
-import MakeOfferPage from '@/pages/MakeOfferPage.jsx';
-import ReportListingPage from '@/pages/ReportListingPage.jsx';
-import LeaveReviewPage from '@/pages/LeaveReviewPage.jsx';
-import InventoryFormPage from '@/pages/InventoryFormPage.jsx';
-import EditListingPage from '@/pages/EditListingPage.jsx';
-import StockImageSearchPage from '@/pages/StockImageSearchPage.jsx';
-import FollowCategoryPage from '@/pages/FollowCategoryPage.jsx';
-import ListingRulesPage from '@/pages/ListingRulesPage.jsx';
-import DopingPage from '@/pages/DopingPage.jsx';
-import PremiumPage from '@/pages/PremiumPage.jsx';
-import TrustScorePage from '@/pages/TrustScorePage.jsx';
-import UnpublishListingPage from '@/pages/UnpublishListingPage.jsx';
-import ErrorTestComponent from '@/components/ErrorBoundaries/ErrorTestComponent';
+const CreateListingPage = lazy(() => import('@/pages/CreateListingPage.jsx'));
+const AuthPage = lazy(() => import('@/pages/AuthPage.jsx'));
+const MakeOfferPage = lazy(() => import('@/pages/MakeOfferPage.jsx'));
+const ReportListingPage = lazy(() => import('@/pages/ReportListingPage.jsx'));
+const LeaveReviewPage = lazy(() => import('@/pages/LeaveReviewPage.jsx'));
+const InventoryFormPage = lazy(() => import('@/pages/InventoryFormPage.jsx'));
+const EditListingPage = lazy(() => import('@/pages/EditListingPage.jsx'));
+const StockImageSearchPage = lazy(() => import('@/pages/StockImageSearchPage.jsx'));
+const FollowCategoryPage = lazy(() => import('@/pages/FollowCategoryPage.jsx'));
+const ListingRulesPage = lazy(() => import('@/pages/ListingRulesPage.jsx'));
+const DopingPage = lazy(() => import('@/pages/DopingPage.jsx'));
+const PremiumPage = lazy(() => import('@/pages/PremiumPage.jsx'));
+const TrustScorePage = lazy(() => import('@/pages/TrustScorePage.jsx'));
+const UnpublishListingPage = lazy(() => import('@/pages/UnpublishListingPage.jsx'));
+const ErrorTestComponent = lazy(() => import('@/components/ErrorBoundaries/ErrorTestComponent'));
 
-import SettingsLayout from '@/pages/SettingsPage/SettingsLayout.jsx';
-import ProfileSettings from '@/pages/SettingsPage/ProfileSettings.jsx';
-import ContactSettings from '@/pages/SettingsPage/ContactSettings.jsx';
-import SecuritySettings from '@/pages/SettingsPage/SecuritySettings.jsx';
-import NotificationSettings from '@/pages/SettingsPage/NotificationSettings.jsx';
-import PlatformSettings from '@/pages/SettingsPage/PlatformSettings.jsx';
-import AccountSettings from '@/pages/SettingsPage/AccountSettings.jsx';
-import FeedbackSection from '@/pages/SettingsPage/FeedbackSection.jsx';
-import PlaceholderSettings from '@/pages/SettingsPage/PlaceholderSettings.jsx';
-import PremiumSettings from '@/pages/SettingsPage/PremiumSettings.jsx';
-import PremiumDashboard from '@/pages/PremiumDashboard/index';
+const SettingsLayout = lazy(() => import('@/pages/SettingsPage/SettingsLayout.jsx'));
+const ProfileSettings = lazy(() => import('@/pages/SettingsPage/ProfileSettings.jsx'));
+const ContactSettings = lazy(() => import('@/pages/SettingsPage/ContactSettings.jsx'));
+const SecuritySettings = lazy(() => import('@/pages/SettingsPage/SecuritySettings.jsx'));
+const NotificationSettings = lazy(() => import('@/pages/SettingsPage/NotificationSettings.jsx'));
+const PlatformSettings = lazy(() => import('@/pages/SettingsPage/PlatformSettings.jsx'));
+const AccountSettings = lazy(() => import('@/pages/SettingsPage/AccountSettings.jsx'));
+const FeedbackSection = lazy(() => import('@/pages/SettingsPage/FeedbackSection.jsx'));
+const PlaceholderSettings = lazy(() => import('@/pages/SettingsPage/PlaceholderSettings.jsx'));
+const PremiumSettings = lazy(() => import('@/pages/SettingsPage/PremiumSettings.jsx'));
+const PremiumDashboard = lazy(() => import('@/pages/PremiumDashboard/index'));
+
+// Loading component for Suspense fallback
+const PageLoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center">
+      <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+      <p className="text-muted-foreground">Sayfa yükleniyor...</p>
+    </div>
+  </div>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading: loadingAuth, initialized } = useAuthStore();
@@ -80,11 +91,13 @@ const MainContent = ({ children }) => {
   );
 };
 
-// Helper function to wrap components with PageErrorBoundary
+// Helper function to wrap components with PageErrorBoundary and Suspense
 const withPageErrorBoundary = (Component, pageName) => {
   return (
     <PageErrorBoundary pageName={pageName}>
-      <Component />
+      <Suspense fallback={<PageLoadingSpinner />}>
+        <Component />
+      </Suspense>
     </PageErrorBoundary>
   );
 };
