@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Box,
   Drawer,
   List,
   ListItem,
@@ -8,203 +7,192 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Box,
   Typography,
-  Avatar,
-  Chip,
+  useTheme,
 } from '@mui/material';
 import {
-  Dashboard,
+  Home,
   Users,
-  Package,
-  FolderOpen,
   Settings,
   BarChart3,
-  Bell,
   LogOut,
+  Package,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import type { SidebarProps } from '../../types';
 
-const DRAWER_WIDTH = 280;
-
-interface SidebarProps {
-  open: boolean;
-  onToggle: () => void;
-}
-
-const menuItems = [
+const navigationItems = [
   {
+    id: 'dashboard',
     title: 'Dashboard',
     path: '/',
-    icon: Dashboard,
+    icon: Home,
   },
   {
-    title: 'Kullanıcılar',
-    path: '/users',
-    icon: Users,
-  },
-  {
-    title: 'İlanlar',
+    id: 'listings',
+    title: 'İlan Yönetimi',
     path: '/listings',
     icon: Package,
   },
   {
-    title: 'Kategoriler',
-    path: '/categories',
-    icon: FolderOpen,
+    id: 'users',
+    title: 'Kullanıcı Yönetimi',
+    path: '/users',
+    icon: Users,
   },
   {
-    title: 'Analytics',
+    id: 'analytics',
+    title: 'Analitik',
     path: '/analytics',
     icon: BarChart3,
   },
   {
-    title: 'Bildirimler',
-    path: '/notifications',
-    icon: Bell,
-  },
-  {
+    id: 'settings',
     title: 'Ayarlar',
     path: '/settings',
     icon: Settings,
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ open, onToggle }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temporary' }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const theme = useTheme();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (variant === 'temporary') {
+      onClose();
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <Box
-        sx={{
-          p: 2,
-          borderBottom: 1,
-          borderColor: 'divider',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
+  return (
+    <Drawer
+      variant={variant}
+      anchor="left"
+      open={open}
+      onClose={onClose}
+      sx={{
+        '& .MuiDrawer-paper': {
+          width: theme.spacing(35),
+          boxSizing: 'border-box',
+          background: 'linear-gradient(180deg, #2c3e50 0%, #34495e 100%)',
+          color: 'white',
+          borderRight: 'none',
+          boxShadow: '4px 0 20px rgba(0, 0, 0, 0.1)',
+        },
+      }}
+    >
+      <Box 
+        sx={{ 
+          p: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <Avatar
-          sx={{
-            bgcolor: 'primary.main',
-            width: 40,
-            height: 40,
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            fontWeight: 700,
+            fontSize: '1.25rem',
+            textAlign: 'center',
           }}
         >
-          {user?.firstName?.charAt(0) || 'A'}
-        </Avatar>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle1" fontWeight="bold">
-            {user?.firstName} {user?.lastName}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {user?.email}
-          </Typography>
-        </Box>
-        <Chip
-          label={user?.role}
-          size="small"
-          color="primary"
-          variant="outlined"
-        />
+          BenAlsam Admin
+        </Typography>
       </Box>
-
-      {/* Navigation Menu */}
-      <List sx={{ flex: 1, py: 1 }}>
-        {menuItems.map((item) => {
+      
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+      
+      <List sx={{ flexGrow: 1, pt: 2 }}>
+        {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           
           return (
-            <ListItem key={item.path} disablePadding>
+            <ListItem key={item.id} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
-                onClick={() => navigate(item.path)}
                 selected={isActive}
+                onClick={() => handleNavigation(item.path)}
                 sx={{
                   mx: 1,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'primary.contrastText',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
                     '&:hover': {
-                      backgroundColor: 'primary.dark',
+                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
                     },
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: 2,
                   },
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: isActive ? 'primary.contrastText' : 'inherit',
+                    color: isActive ? 'white' : 'rgba(255, 255, 255, 0.7)',
+                    minWidth: 40,
                   }}
                 >
                   <Icon size={20} />
                 </ListItemIcon>
-                <ListItemText primary={item.title} />
+                <ListItemText 
+                  primary={item.title} 
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontWeight: isActive ? 600 : 400,
+                      fontSize: '0.95rem',
+                    }
+                  }}
+                />
               </ListItemButton>
             </ListItem>
           );
         })}
       </List>
-
-      {/* Logout */}
-      <Divider />
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleLogout} sx={{ mx: 1, borderRadius: 1 }}>
-            <ListItemIcon>
+      
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+      
+      <List sx={{ pt: 2 }}>
+        <ListItem disablePadding sx={{ mb: 1 }}>
+          <ListItemButton 
+            onClick={handleLogout}
+            sx={{
+              mx: 1,
+              borderRadius: 2,
+              color: 'rgba(255, 255, 255, 0.8)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
               <LogOut size={20} />
             </ListItemIcon>
-            <ListItemText primary="Çıkış Yap" />
+            <ListItemText 
+              primary="Çıkış Yap" 
+              sx={{
+                '& .MuiListItemText-primary': {
+                  fontSize: '0.95rem',
+                }
+              }}
+            />
           </ListItemButton>
         </ListItem>
       </List>
-    </Box>
-  );
-
-  return (
-    <>
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        open={open}
-        onClose={onToggle}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': {
-            boxSizing: 'border-box',
-            width: DRAWER_WIDTH,
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Desktop Drawer */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          '& .MuiDrawer-paper': {
-            boxSizing: 'border-box',
-            width: DRAWER_WIDTH,
-          },
-        }}
-        open
-      >
-        {drawerContent}
-      </Drawer>
-    </>
+    </Drawer>
   );
 }; 

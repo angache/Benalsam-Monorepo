@@ -1,11 +1,9 @@
 import { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { prisma } from '@/config/database';
-import { jwtConfig } from '@/config/app';
-import { AuthenticatedRequest, JwtPayload } from '@/types';
-import { AdminRole } from '@prisma/client';
-import { ApiResponseUtil } from '@/utils/response';
-import logger from '@/config/logger';
+import { supabase } from '../config/database';
+import { AuthenticatedRequest, JwtPayload, AdminRole } from '../types';
+import { ApiResponseUtil } from '../utils/response';
+import { jwtUtils } from '../utils/jwt';
+import logger from '../config/logger';
 
 export interface AuthMiddlewareOptions {
   requiredRole?: AdminRole;
@@ -26,23 +24,25 @@ export const authenticateToken = async (
       return;
     }
 
-    const decoded = jwt.verify(token, jwtConfig.secret) as JwtPayload;
+    const decoded = jwtUtils.verify(token);
     
-    // Get admin user from database
-    const admin = await prisma.adminUser.findUnique({
-      where: { id: decoded.adminId },
-    });
+    // Get admin user from Supabase
+    const { data: admin, error } = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('id', decoded.adminId)
+      .single();
 
-    if (!admin || !admin.isActive) {
+    if (error || !admin || !admin.is_active) {
       ApiResponseUtil.unauthorized(res, 'Invalid or inactive admin account');
       return;
     }
 
     // Update last login
-    await prisma.adminUser.update({
-      where: { id: admin.id },
-      data: { lastLogin: new Date() },
-    });
+    await supabase
+      .from('admin_users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', admin.id);
 
     req.admin = admin;
     next();
@@ -127,13 +127,15 @@ export const optionalAuth = async (
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-      const decoded = jwt.verify(token, jwtConfig.secret) as JwtPayload;
+      const decoded = jwtUtils.verify(token);
       
-      const admin = await prisma.adminUser.findUnique({
-        where: { id: decoded.adminId },
-      });
+      const { data: admin, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', decoded.adminId)
+        .single();
 
-      if (admin && admin.isActive) {
+      if (admin && admin.is_active) {
         req.admin = admin;
       }
     }

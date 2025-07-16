@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth';
+import { listingsRouter } from './listings';
 
 const router = Router();
 
@@ -19,19 +20,14 @@ router.get('/health', (req, res) => {
 // Auth routes
 router.use('/auth', authRoutes);
 
+// Listings routes
+router.use('/listings', listingsRouter);
+
 // Placeholder routes for future modules
 router.get('/users', (req, res) => {
   res.status(501).json({
     success: false,
     message: 'Users module not implemented yet',
-    error: 'NOT_IMPLEMENTED',
-  });
-});
-
-router.get('/listings', (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'Listings module not implemented yet',
     error: 'NOT_IMPLEMENTED',
   });
 });

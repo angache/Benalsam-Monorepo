@@ -14,6 +14,7 @@ import {
 import { Menu as MenuIcon, Bell, User, Settings, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -23,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const theme = useTheme();
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,29 +54,59 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     <AppBar
       position="fixed"
       sx={{
-        width: { md: `calc(100% - 280px)` },
-        ml: { md: '280px' },
+        width: { 
+          xs: '100%',
+          md: `calc(100% - ${theme.spacing(35)})` 
+        },
+        ml: { md: theme.spacing(35) },
         zIndex: (theme) => theme.zIndex.drawer + 1,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        transition: theme.transitions.create(['width', 'margin'], {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
       }}
     >
-      <Toolbar>
+      <Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
         <IconButton
           color="inherit"
           aria-label="open drawer"
           edge="start"
           onClick={onMenuClick}
-          sx={{ mr: 2, display: { md: 'none' } }}
+          sx={{ 
+            mr: 2,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            }
+          }}
         >
           <MenuIcon />
         </IconButton>
 
-        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+        <Typography 
+          variant="h6" 
+          noWrap 
+          component="div" 
+          sx={{ 
+            flexGrow: 1,
+            fontWeight: 600,
+            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+          }}
+        >
           BenAlsam Admin Panel
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {/* Notifications */}
-          <IconButton color="inherit">
+          <IconButton 
+            color="inherit"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
+          >
             <Badge badgeContent={4} color="error">
               <Bell size={20} />
             </Badge>
@@ -83,16 +115,25 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           {/* Profile Menu */}
           <IconButton
             onClick={handleProfileMenuOpen}
-            sx={{ ml: 1 }}
+            sx={{ 
+              ml: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
           >
             <Avatar
               sx={{
-                width: 32,
-                height: 32,
-                bgcolor: 'primary.dark',
+                width: 36,
+                height: 36,
+                background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: '1rem',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
               }}
             >
-              {user?.firstName?.charAt(0) || 'A'}
+              {user?.name?.charAt(0) || 'A'}
             </Avatar>
           </IconButton>
         </Box>
@@ -110,18 +151,36 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             vertical: 'top',
             horizontal: 'right',
           }}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              minWidth: 180,
+              borderRadius: 2,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+              '& .MuiMenuItem-root': {
+                py: 1.5,
+                px: 2,
+                borderRadius: 1,
+                mx: 1,
+                my: 0.5,
+                '&:hover': {
+                  backgroundColor: 'rgba(102, 126, 234, 0.08)',
+                }
+              }
+            }
+          }}
         >
           <MenuItem onClick={handleProfile}>
-            <User size={16} style={{ marginRight: 8 }} />
+            <User size={16} style={{ marginRight: 12 }} />
             Profil
           </MenuItem>
           <MenuItem onClick={handleSettings}>
-            <Settings size={16} style={{ marginRight: 8 }} />
+            <Settings size={16} style={{ marginRight: 12 }} />
             Ayarlar
           </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <LogOut size={16} style={{ marginRight: 8 }} />
+          <Divider sx={{ my: 1 }} />
+          <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+            <LogOut size={16} style={{ marginRight: 12 }} />
             Çıkış Yap
           </MenuItem>
         </Menu>

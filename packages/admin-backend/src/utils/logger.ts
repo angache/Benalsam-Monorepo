@@ -1,15 +1,7 @@
 import winston from 'winston';
-import path from 'path';
-
-// Create logs directory if it doesn't exist
-import fs from 'fs';
-const logsDir = path.join(__dirname, '../../logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
 
 // Create logger instance
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -19,14 +11,9 @@ const logger = winston.createLogger({
   defaultMeta: { service: 'admin-backend' },
   transports: [
     // Write all logs with importance level of `error` or less to `error.log`
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'error.log'), 
-      level: 'error' 
-    }),
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
     // Write all logs with importance level of `info` or less to `combined.log`
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'combined.log') 
-    }),
+    new winston.transports.File({ filename: 'logs/combined.log' }),
   ],
 });
 
@@ -39,13 +26,4 @@ if (process.env.NODE_ENV !== 'production') {
       winston.format.simple()
     )
   }));
-}
-
-// Create a stream object for Morgan
-export const logStream = {
-  write: (message: string) => {
-    logger.info(message.trim());
-  },
-};
-
-export default logger; 
+} 

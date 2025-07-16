@@ -1,5 +1,15 @@
 import { Response } from 'express';
-import { ApiResponse, PaginationInfo } from '@/types';
+import { ApiResponse } from '../types';
+
+// PaginationInfo type definition
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
 
 export class ApiResponseUtil {
   static success<T>(

@@ -1,18 +1,78 @@
 import { Request } from 'express';
-import { AdminRole as PrismaAdminRole, ModerationDecisionType as PrismaModerationDecisionType } from '@prisma/client';
 
-// Admin User Types
-export interface AdminUser {
-  id: string;
+// Admin Role enum
+export enum AdminRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
+  MODERATOR = 'MODERATOR',
+  SUPPORT = 'SUPPORT'
+}
+
+// Moderation Decision Type enum
+export enum ModerationDecisionType {
+  APPROVE = 'APPROVE',
+  REJECT = 'REJECT',
+  WARN = 'WARN',
+  BAN = 'BAN',
+  SUSPEND = 'SUSPEND'
+}
+
+// Extend Express Request interface
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
+  admin?: {
+    id: string;
+    email: string;
+    role: AdminRole;
+    permissions?: any;
+  };
+}
+
+// Database configuration
+export interface DatabaseConfig {
+  url: string;
+  key: string;
+}
+
+// API Response types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+  };
+}
+
+// Pagination types
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  filters?: Record<string, any>;
+}
+
+// Auth types
+export interface LoginCredentials {
   email: string;
-  firstName: string;
-  lastName: string;
-  role: AdminRole;
-  permissions?: Permission[];
-  isActive: boolean;
-  lastLogin?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  password: string;
+}
+
+export interface LoginDto {
+  email: string;
+  password: string;
 }
 
 export interface CreateAdminUserDto {
@@ -21,34 +81,98 @@ export interface CreateAdminUserDto {
   firstName: string;
   lastName: string;
   role?: AdminRole;
-  permissions?: Permission[];
-}
-
-export interface UpdateAdminUserDto {
-  firstName?: string;
-  lastName?: string;
-  role?: AdminRole;
-  permissions?: Permission[];
-  isActive?: boolean;
-}
-
-// Authentication Types
-export interface LoginDto {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  admin: AdminUser;
-  token: string;
-  refreshToken: string;
+  permissions?: any;
 }
 
 export interface JwtPayload {
   adminId: string;
   email: string;
   role: AdminRole;
-  permissions?: Permission[];
+  permissions?: any;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  data: {
+    admin: AdminUser;
+    token: string;
+    refreshToken: string;
+  };
+  message: string;
+}
+
+// Admin User types
+export interface AdminUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: AdminRole;
+  permissions?: any;
+  isActive: boolean;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+
+// Listing types
+export interface Listing {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  condition?: string;
+  status: ListingStatus;
+  views: number;
+  favorites: number;
+  userId: string;
+  moderatedAt?: string;
+  moderatedBy?: string;
+  moderationReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  images?: string[];
+  location?: {
+    city: string;
+    district: string;
+    neighborhood?: string;
+  };
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+}
+
+export enum ListingStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED',
+  SOLD = 'SOLD',
+}
+
+// User types
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+  status: UserStatus;
+  trustScore: number;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  BANNED = 'BANNED',
+  SUSPENDED = 'SUSPENDED',
 }
 
 // Permission Types
@@ -118,61 +242,6 @@ export interface UserActivity {
   ipAddress?: string;
   userAgent?: string;
   createdAt: Date;
-}
-
-// API Response Types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-  pagination?: PaginationInfo;
-}
-
-export interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-}
-
-// Request Types
-export interface AuthenticatedRequest extends Request {
-  admin?: AdminUser;
-  user?: any; // For compatibility with existing code
-}
-
-// Enums
-export type AdminRole = PrismaAdminRole;
-
-export type ModerationDecisionType = PrismaModerationDecisionType;
-
-// Filter Types
-export interface UserFilter {
-  search?: string;
-  role?: AdminRole;
-  isActive?: boolean;
-  dateFrom?: Date;
-  dateTo?: Date;
-}
-
-export interface ListingFilter {
-  search?: string;
-  category?: string;
-  status?: string;
-  userId?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
-}
-
-export interface ReportFilter {
-  status?: string;
-  type?: string;
-  priority?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
 }
 
 // Dashboard Types
@@ -251,31 +320,30 @@ export interface AppError extends Error {
   code?: string;
 }
 
-// Config Types
-export interface DatabaseConfig {
-  url: string;
-  host?: string;
-  port?: number;
-  username?: string;
-  password?: string;
-  database?: string;
+// Enums are already defined above
+
+// Filter Types
+export interface UserFilter {
+  search?: string;
+  role?: AdminRole;
+  isActive?: boolean;
+  dateFrom?: Date;
+  dateTo?: Date;
 }
 
-export interface JwtConfig {
-  secret: string;
-  expiresIn: string;
-  refreshExpiresIn: string;
+export interface ListingFilter {
+  search?: string;
+  category?: string;
+  status?: string;
+  userId?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
 }
 
-export interface ServerConfig {
-  port: number;
-  nodeEnv: string;
-  apiVersion: string;
-}
-
-export interface SecurityConfig {
-  bcryptRounds: number;
-  rateLimitWindowMs: number;
-  rateLimitMaxRequests: number;
-  corsOrigin: string[];
+export interface ReportFilter {
+  status?: string;
+  type?: string;
+  priority?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
 } 

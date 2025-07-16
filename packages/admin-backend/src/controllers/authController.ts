@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { prisma } from '@/config/database';
-import { jwtConfig, securityConfig } from '@/config/app';
-import { LoginDto, CreateAdminUserDto, JwtPayload } from '@/types';
-import { AdminRole } from '@prisma/client';
-import { ApiResponseUtil } from '@/utils/response';
-import logger from '@/config/logger';
+import { supabase } from '../config/database';
+import { securityConfig } from '../config/app';
+import { LoginDto, CreateAdminUserDto, JwtPayload, AdminRole } from '../types';
+import { ApiResponseUtil } from '../utils/response';
+import { jwtUtils } from '../utils/jwt';
+import logger from '../config/logger';
 
 export class AuthController {
   // Admin login
@@ -14,30 +13,41 @@ export class AuthController {
     try {
       const { email, password }: LoginDto = req.body;
 
+      logger.info(`Login attempt for email: ${email}`);
+
       // Validate input
       if (!email || !password) {
         ApiResponseUtil.badRequest(res, 'Email and password are required');
         return;
       }
 
-      // Find admin user
-      const admin = await prisma.adminUser.findUnique({
-        where: { email: email.toLowerCase() },
-      });
+      // Find admin user from Supabase
+      const { data: admin, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('email', email.toLowerCase())
+        .single();
 
-      if (!admin) {
+      logger.info(`Supabase query result:`, { admin: !!admin, error });
+
+      if (error || !admin) {
+        logger.error(`Admin not found or error:`, error);
         ApiResponseUtil.unauthorized(res, 'Invalid credentials');
         return;
       }
 
+      logger.info(`Admin found: ${admin.email}, is_active: ${admin.is_active}`);
+
       // Check if admin is active
-      if (!admin.isActive) {
+      if (!admin.is_active) {
         ApiResponseUtil.unauthorized(res, 'Account is deactivated');
         return;
       }
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, admin.password);
+      logger.info(`Password validation result: ${isPasswordValid}`);
+      
       if (!isPasswordValid) {
         ApiResponseUtil.unauthorized(res, 'Invalid credentials');
         return;
@@ -48,36 +58,33 @@ export class AuthController {
         adminId: admin.id,
         email: admin.email,
         role: admin.role,
-        permissions: admin.permissions as any,
+        permissions: admin.permissions || [],
       };
 
-      const token = jwt.sign(payload, jwtConfig.secret, {
-        expiresIn: jwtConfig.expiresIn,
-      });
-
-      const refreshToken = jwt.sign(payload, jwtConfig.secret, {
-        expiresIn: jwtConfig.refreshExpiresIn,
-      });
+      const token = jwtUtils.sign(payload);
+      const refreshToken = jwtUtils.signRefresh(payload);
 
       // Update last login
-      await prisma.adminUser.update({
-        where: { id: admin.id },
-        data: { lastLogin: new Date() },
-      });
+      await supabase
+        .from('admin_users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', admin.id);
 
       // Log activity
-      await prisma.adminActivityLog.create({
-        data: {
-          adminId: admin.id,
+      await supabase
+        .from('admin_activity_logs')
+        .insert({
+          admin_id: admin.id,
           action: 'LOGIN',
           resource: 'auth',
-          ipAddress: req.ip,
-          userAgent: req.get('User-Agent'),
-        },
-      });
+          ip_address: req.ip,
+          user_agent: req.get('User-Agent'),
+        });
 
       // Remove password from response
       const { password: _, ...adminWithoutPassword } = admin;
+
+      logger.info(`Login successful for: ${admin.email}`);
 
       ApiResponseUtil.success(res, {
         admin: adminWithoutPassword,
@@ -102,9 +109,11 @@ export class AuthController {
       }
 
       // Check if email already exists
-      const existingAdmin = await prisma.adminUser.findUnique({
-        where: { email: email.toLowerCase() },
-      });
+      const { data: existingAdmin } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
 
       if (existingAdmin) {
         ApiResponseUtil.conflict(res, 'Email already exists');
@@ -115,29 +124,38 @@ export class AuthController {
       const hashedPassword = await bcrypt.hash(password, securityConfig.bcryptRounds);
 
       // Create admin user
-      const newAdmin = await prisma.adminUser.create({
-        data: {
+      const { data: newAdmin, error } = await supabase
+        .from('admin_users')
+        .insert({
           email: email.toLowerCase(),
           password: hashedPassword,
-          firstName,
-          lastName,
+          first_name: firstName,
+          last_name: lastName,
           role: role || AdminRole.ADMIN,
           permissions: permissions || [],
-        },
-      });
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        logger.error('Create admin error:', error);
+        ApiResponseUtil.internalServerError(res, 'Failed to create admin user');
+        return;
+      }
 
       // Log activity
-      await prisma.adminActivityLog.create({
-        data: {
-          adminId: (req as any).admin.id,
+      await supabase
+        .from('admin_activity_logs')
+        .insert({
+          admin_id: (req as any).admin.id,
           action: 'CREATE_ADMIN',
           resource: 'admin_users',
-          resourceId: newAdmin.id,
-          details: { createdAdminEmail: email },
-          ipAddress: req.ip,
-          userAgent: req.get('User-Agent'),
-        },
-      });
+          resource_id: newAdmin.id,
+          details: { created_admin_email: email },
+          ip_address: req.ip,
+          user_agent: req.get('User-Agent'),
+        });
 
       // Remove password from response
       const { password: _, ...adminWithoutPassword } = newAdmin;
@@ -183,8 +201,8 @@ export class AuthController {
       const updateData: any = {};
 
       // Update basic info
-      if (firstName) updateData.firstName = firstName;
-      if (lastName) updateData.lastName = lastName;
+      if (firstName) updateData.first_name = firstName;
+      if (lastName) updateData.last_name = lastName;
 
       // Update password if provided
       if (currentPassword && newPassword) {
@@ -200,22 +218,30 @@ export class AuthController {
       }
 
       // Update admin
-      const updatedAdmin = await prisma.adminUser.update({
-        where: { id: admin.id },
-        data: updateData,
-      });
+      const { data: updatedAdmin, error } = await supabase
+        .from('admin_users')
+        .update(updateData)
+        .eq('id', admin.id)
+        .select()
+        .single();
+
+      if (error) {
+        logger.error('Update profile error:', error);
+        ApiResponseUtil.internalServerError(res, 'Failed to update profile');
+        return;
+      }
 
       // Log activity
-      await prisma.adminActivityLog.create({
-        data: {
-          adminId: admin.id,
+      await supabase
+        .from('admin_activity_logs')
+        .insert({
+          admin_id: admin.id,
           action: 'UPDATE_PROFILE',
           resource: 'admin_users',
-          resourceId: admin.id,
-          ipAddress: req.ip,
-          userAgent: req.get('User-Agent'),
-        },
-      });
+          resource_id: admin.id,
+          ip_address: req.ip,
+          user_agent: req.get('User-Agent'),
+        });
 
       // Remove password from response
       const { password: _, ...adminWithoutPassword } = updatedAdmin;
@@ -238,14 +264,16 @@ export class AuthController {
       }
 
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, jwtConfig.secret) as JwtPayload;
+      const decoded = jwtUtils.verify(refreshToken);
 
       // Get admin user
-      const admin = await prisma.adminUser.findUnique({
-        where: { id: decoded.adminId },
-      });
+      const { data: admin, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', decoded.adminId)
+        .single();
 
-      if (!admin || !admin.isActive) {
+      if (error || !admin || !admin.is_active) {
         ApiResponseUtil.unauthorized(res, 'Invalid refresh token');
         return;
       }
@@ -255,16 +283,11 @@ export class AuthController {
         adminId: admin.id,
         email: admin.email,
         role: admin.role,
-        permissions: admin.permissions as any,
+        permissions: admin.permissions || [],
       };
 
-      const newToken = jwt.sign(payload, jwtConfig.secret, {
-        expiresIn: jwtConfig.expiresIn,
-      });
-
-      const newRefreshToken = jwt.sign(payload, jwtConfig.secret, {
-        expiresIn: jwtConfig.refreshExpiresIn,
-      });
+      const newToken = jwtUtils.sign(payload);
+      const newRefreshToken = jwtUtils.signRefresh(payload);
 
       ApiResponseUtil.success(res, {
         token: newToken,
@@ -283,21 +306,21 @@ export class AuthController {
 
       if (admin) {
         // Log activity
-        await prisma.adminActivityLog.create({
-          data: {
-            adminId: admin.id,
+        await supabase
+          .from('admin_activity_logs')
+          .insert({
+            admin_id: admin.id,
             action: 'LOGOUT',
             resource: 'auth',
-            ipAddress: req.ip,
-            userAgent: req.get('User-Agent'),
-          },
-        });
+            ip_address: req.ip,
+            user_agent: req.get('User-Agent'),
+          });
       }
 
       ApiResponseUtil.success(res, null, 'Logout successful');
     } catch (error) {
       logger.error('Logout error:', error);
-      ApiResponseUtil.internalServerError(res, 'Logout failed');
+      ApiResponseUtil.success(res, null, 'Logout successful');
     }
   }
 } 

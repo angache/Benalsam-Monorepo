@@ -1,13 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AdminUser } from '../types';
+import type { User } from '../services/api';
 import { apiService } from '../services/api';
 
 interface AuthState {
   // State
-  user: AdminUser | null;
+  user: User | null;
   token: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -15,8 +14,7 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  refreshAuth: () => Promise<boolean>;
-  setUser: (user: AdminUser) => void;
+  setUser: (user: User) => void;
   setToken: (token: string) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
@@ -29,7 +27,6 @@ export const useAuthStore = create<AuthState>()(
       // Initial state
       user: null,
       token: null,
-      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -41,30 +38,15 @@ export const useAuthStore = create<AuthState>()(
           
           const response = await apiService.login({ email, password });
           
-          if (response.success) {
-            const { admin, token, refreshToken } = response.data;
-            
-            set({
-              user: admin,
-              token,
-              refreshToken,
-              isAuthenticated: true,
-              isLoading: false,
-              error: null,
-            });
-
-            // Store tokens in localStorage
-            localStorage.setItem('admin_token', token);
-            localStorage.setItem('admin_refresh_token', refreshToken);
-            
-            return true;
-          } else {
-            set({
-              isLoading: false,
-              error: response.message || 'Login failed',
-            });
-            return false;
-          }
+          set({
+            user: response.user,
+            token: response.token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+          
+          return true;
         } catch (error: unknown) {
           const errorMessage = error instanceof Error ? error.message : 'Login failed';
           set({
@@ -76,57 +58,21 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        // Clear tokens from localStorage
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_refresh_token');
-        
         set({
           user: null,
           token: null,
-          refreshToken: null,
           isAuthenticated: false,
           isLoading: false,
           error: null,
         });
       },
 
-      refreshAuth: async () => {
-        try {
-          const { refreshToken } = get();
-          if (!refreshToken) return false;
-
-          const response = await apiService.refreshToken();
-          
-          if (response.success) {
-            const { admin, token, refreshToken: newRefreshToken } = response.data;
-            
-            set({
-              user: admin,
-              token,
-              refreshToken: newRefreshToken,
-              isAuthenticated: true,
-            });
-
-            // Update tokens in localStorage
-            localStorage.setItem('admin_token', token);
-            localStorage.setItem('admin_refresh_token', newRefreshToken);
-            
-            return true;
-          }
-          return false;
-        } catch {
-          get().logout();
-          return false;
-        }
-      },
-
-      setUser: (user: AdminUser) => {
+      setUser: (user: User) => {
         set({ user });
       },
 
       setToken: (token: string) => {
         set({ token, isAuthenticated: true });
-        localStorage.setItem('admin_token', token);
       },
 
       setError: (error: string | null) => {
@@ -146,7 +92,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }

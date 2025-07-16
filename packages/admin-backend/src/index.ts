@@ -7,9 +7,8 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
 
-import { serverConfig, securityConfig } from '@/config/app';
-import logger from '@/config/logger';
-import { logStream } from '@/config/logger';
+import { serverConfig, securityConfig } from './config/app';
+import logger, { logStream } from './config/logger';
 
 // Load environment variables
 dotenv.config();
