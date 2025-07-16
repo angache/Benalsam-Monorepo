@@ -48,10 +48,11 @@ import PremiumSettings from '@/pages/SettingsPage/PremiumSettings.jsx';
 import PremiumDashboard from '@/pages/PremiumDashboard/index';
 
 const ProtectedRoute = ({ children }) => {
-  const { user: currentUser, loading: loadingAuth } = useAuthStore();
+  const { currentUser, loading: loadingAuth, initialized } = useAuthStore();
   const location = useLocation();
 
-  if (loadingAuth) {
+  // Show loading spinner while auth is initializing
+  if (loadingAuth || !initialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -59,6 +60,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
+  // Only redirect to login if auth is initialized and user is not authenticated
   if (!currentUser) {
     return <Navigate to="/auth?action=login" state={{ from: location }} replace />;
   }

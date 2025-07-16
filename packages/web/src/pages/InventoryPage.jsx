@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Plus, Loader2 } from 'lucide-react';
@@ -6,17 +6,46 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import InventoryItemCard from '@/components/InventoryItemCard';
 import { useAuthStore } from '@/stores';
+import { fetchInventoryItems, deleteInventoryItem } from '@/services/supabaseService';
 
 
 const InventoryPage = () => { 
   const navigate = useNavigate();
-  const { 
-    currentUser, 
-    loadingAuth, 
-    inventoryItems, 
-    isFetchingInventory, 
-    handleDeleteInventoryItem 
-  } = useAuthStore();
+  const { currentUser, loadingAuth } = useAuthStore();
+  
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [isFetchingInventory, setIsFetchingInventory] = useState(false);
+
+  // Fetch inventory items when component mounts or user changes
+  useEffect(() => {
+    if (currentUser?.id) {
+      setIsFetchingInventory(true);
+      
+      // Add timeout to prevent hanging requests
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Inventory fetch timeout')), 10000)
+      );
+      
+      Promise.race([
+        fetchInventoryItems(currentUser.id),
+        timeoutPromise
+      ])
+        .then(items => {
+          setInventoryItems(items || []);
+        })
+        .catch(error => {
+          console.error('Error fetching inventory:', error);
+          if (error.message.includes('timeout')) {
+            toast({ title: "Zaman Aşımı", description: "Envanter yüklenirken zaman aşımı oluştu. Lütfen tekrar deneyin.", variant: "destructive" });
+          } else {
+            toast({ title: "Hata", description: "Envanter yüklenirken bir sorun oluştu.", variant: "destructive" });
+          }
+        })
+        .finally(() => {
+          setIsFetchingInventory(false);
+        });
+    }
+  }, [currentUser?.id]);
 
   const isLoadingPage = useMemo(() => {
     return loadingAuth || (currentUser && isFetchingInventory && inventoryItems.length === 0);
@@ -40,9 +69,17 @@ const InventoryPage = () => {
   }
 
   const handleDelete = async (itemId) => {
-    const success = await handleDeleteInventoryItem(itemId);
-    if (!success) {
-      toast({ title: "Silme Başarısız", description: "Ürün silinirken bir hata oluştu.", variant: "destructive"});
+    try {
+      const success = await deleteInventoryItem(currentUser.id, itemId);
+      if (success) {
+        setInventoryItems(prev => prev.filter(item => item.id !== itemId));
+        toast({ title: "Başarılı", description: "Ürün başarıyla silindi." });
+      } else {
+        toast({ title: "Silme Başarısız", description: "Ürün silinirken bir hata oluştu.", variant: "destructive"});
+      }
+    } catch (error) {
+      console.error('Error deleting inventory item:', error);
+      toast({ title: "Hata", description: "Ürün silinirken bir sorun oluştu.", variant: "destructive"});
     }
   };
 

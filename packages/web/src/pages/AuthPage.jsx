@@ -10,7 +10,14 @@ import { useAuthStore } from '@/stores';
 const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp } = useAuthStore();
+  const { signIn, signUp, currentUser } = useAuthStore();
+
+  // Redirect to home if already authenticated
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/', { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   const queryParams = new URLSearchParams(location.search);
   const initialAction = queryParams.get('action') === 'register' ? 'register' : 'login';

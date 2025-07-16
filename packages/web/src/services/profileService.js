@@ -27,11 +27,18 @@ export const fetchUserProfile = async (userId) => {
   }
 
   try {
-    const { data, error, status } = await supabase
+    // Add timeout to prevent hanging requests
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
+    );
+    
+    const fetchPromise = supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
+
+    const { data, error, status } = await Promise.race([fetchPromise, timeoutPromise]);
 
     if (error && status !== 406) { 
       console.error('Error in fetchUserProfile:', { message: error.message, details: error.details, hint: error.hint, code: error.code });

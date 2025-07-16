@@ -28,12 +28,10 @@ function App() {
   const { theme } = useContext(ThemeContext);
   const isConversationPage = location.pathname.startsWith('/mesajlar/');
   
-  const { user: currentUser, loading: loadingAuth, initialize } = useAuthStore();
+  const { currentUser, loading: loadingAuth, initialize } = useAuthStore();
   
-  useEffect(() => {
-    console.log('🔐 App: Calling initialize...');
-    initialize();
-  }, [initialize]);
+  // Auth store automatically initializes on mount
+  // No need to call initialize() manually
 
   useEffect(() => {
     console.log('🔐 Auth Store State:', { currentUser, loadingAuth });

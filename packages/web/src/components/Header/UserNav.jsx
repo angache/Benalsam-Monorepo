@@ -14,9 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { checkUserPremiumStatus } from '@/services/premiumService';
 import { generateBoringAvatarUrl } from '@/lib/avatarUtils';
+import { useProfile } from '@/hooks/queries/useProfile';
 
 const UserNav = ({ currentUser, onLogout, onLoginClick, onRegisterClick, unreadMessagesCount }) => {
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+  
+  // Get full profile data with React Query
+  const { data: profile } = useProfile(currentUser?.id);
 
   useEffect(() => {
     if (currentUser) {
@@ -40,8 +44,9 @@ const UserNav = ({ currentUser, onLogout, onLoginClick, onRegisterClick, unreadM
     );
   }
 
-  const displayName = currentUser.name || currentUser.user_metadata?.name || currentUser.email || 'Kullanıcı';
-  const displayAvatar = currentUser.avatar_url || currentUser.user_metadata?.avatar_url || generateBoringAvatarUrl(displayName, currentUser.id);
+  // Use profile data if available, otherwise fall back to basic user data
+  const displayName = profile?.name || currentUser.name || currentUser.user_metadata?.name || currentUser.email || 'Kullanıcı';
+  const displayAvatar = profile?.avatar_url || currentUser.avatar_url || currentUser.user_metadata?.avatar_url || generateBoringAvatarUrl(displayName, currentUser.id);
   const fallbackName = displayName.charAt(0).toUpperCase();
 
   return (

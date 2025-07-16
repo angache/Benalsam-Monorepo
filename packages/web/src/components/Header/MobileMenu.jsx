@@ -7,9 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { checkUserPremiumStatus } from '@/services/premiumService';
 import { generateBoringAvatarUrl } from '@/lib/avatarUtils';
+import { useProfile } from '@/hooks/queries/useProfile';
 
 const MobileMenu = ({ isOpen, setIsOpen, currentUser, onLogout, onLoginClick, onRegisterClick, onCreateClick, unreadMessagesCount }) => {
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+  
+  // Get full profile data with React Query
+  const { data: profile } = useProfile(currentUser?.id);
 
   useEffect(() => {
     if (currentUser) {
@@ -67,8 +71,8 @@ const MobileMenu = ({ isOpen, setIsOpen, currentUser, onLogout, onLoginClick, on
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-primary/50">
-                        <AvatarImage src={currentUser.avatar_url || currentUser.user_metadata?.avatar_url || generateBoringAvatarUrl(currentUser.name || currentUser.email, currentUser.id)} />
-                        <AvatarFallback className="text-sm">{(currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarImage src={profile?.avatar_url || currentUser.avatar_url || currentUser.user_metadata?.avatar_url || generateBoringAvatarUrl(currentUser.name || currentUser.email, currentUser.id)} />
+                        <AvatarFallback className="text-sm">{(profile?.name || currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       {isPremiumUser && (
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
@@ -78,7 +82,7 @@ const MobileMenu = ({ isOpen, setIsOpen, currentUser, onLogout, onLoginClick, on
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-foreground text-sm truncate">{currentUser.name || currentUser.user_metadata?.name || currentUser.email}</p>
+                        <p className="font-medium text-foreground text-sm truncate">{profile?.name || currentUser.name || currentUser.user_metadata?.name || currentUser.email}</p>
                         {isPremiumUser && (
                           <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-1.5 py-0.5">
                             Premium
