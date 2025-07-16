@@ -144,6 +144,17 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
     return [province, district, neighborhood].filter(Boolean).join(' / ') || "Konum belirtilmemiş";
   }, []);
 
+  // StatCard bileşenini component dışına taşıyoruz
+  const StatCard = useCallback(({ icon, label, value, onClick }) => (
+    <div 
+        className={cn("glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center", onClick && "cursor-pointer hover:bg-primary/10 transition-colors")}
+        onClick={onClick}
+    >
+      {icon}
+      <span className="text-2xl font-bold mt-1">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  ), []);
 
   // Profile view increment
   useEffect(() => {
@@ -239,17 +250,6 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
       </div>
     );
   }
-  
-  const StatCard = useCallback(({ icon, label, value, onClick }) => (
-    <div 
-        className={cn("glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center", onClick && "cursor-pointer hover:bg-primary/10 transition-colors")}
-        onClick={onClick}
-    >
-      {icon}
-      <span className="text-2xl font-bold mt-1">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
-  ), []);
 
 
 
