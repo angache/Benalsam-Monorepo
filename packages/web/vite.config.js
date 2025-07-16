@@ -225,6 +225,7 @@ export default defineConfig({
 					ui: ['framer-motion', 'lucide-react'],
 					query: ['@tanstack/react-query'],
 					supabase: ['@supabase/supabase-js'],
+					images: ['@/components/OptimizedImage.jsx', '@/hooks/useImageOptimization.js'],
 					
 					// Feature chunks
 					auth: [
@@ -258,10 +259,21 @@ export default defineConfig({
 						'@/pages/PremiumDashboard',
 						'@/pages/DopingPage.jsx'
 					]
+				},
+				// Image optimization settings
+				assetFileNames: (assetInfo) => {
+					const info = assetInfo.name.split('.');
+					const ext = info[info.length - 1];
+					if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+						return `assets/images/[name]-[hash][extname]`;
+					}
+					return `assets/[name]-[hash][extname]`;
 				}
 			}
 		},
 		chunkSizeWarningLimit: 1000,
-		sourcemap: false
+		sourcemap: false,
+		// Image optimization settings
+		assetsInlineLimit: 4096 // 4KB - inline small images as base64
 	}
 });

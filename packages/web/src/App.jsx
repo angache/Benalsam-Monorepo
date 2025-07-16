@@ -12,6 +12,7 @@ import AppRoutes from '@/components/AppRoutes.jsx';
 import AppErrorBoundary from '@/components/ErrorBoundaries/AppErrorBoundary';
 import { usePreload } from '@/hooks/usePreload.js';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor.js';
+import ImageOptimizationDebug from '@/components/ImageOptimizationDebug';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,6 +87,7 @@ function App() {
 
         {!isConversationPage && <Footer />}
         <Toaster />
+        <ImageOptimizationDebug />
       </div>
     </AppErrorBoundary>
   );

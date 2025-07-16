@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { searchUnsplashImages } from '@/services/unsplashService';
+import OptimizedImage from '@/components/OptimizedImage';
 
 const StockImageSearchPage = () => {
   const navigate = useNavigate();
@@ -115,10 +116,13 @@ const StockImageSearchPage = () => {
                     className="relative group cursor-pointer"
                     onClick={() => toggleImageSelection(image)}
                   >
-                    <img
+                    <OptimizedImage
                       src={image.urls.small}
                       alt={image.description}
                       className={`w-full h-40 object-cover rounded-lg transition-all ${isSelected ? 'ring-4 ring-primary ring-offset-2 ring-offset-background' : 'ring-0'}`}
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      quality={80}
+                      priority={false}
                     />
                     {isSelected && (
                       <div className="absolute top-2 right-2 bg-primary rounded-full p-1">

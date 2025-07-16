@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import OptimizedImage from '@/components/OptimizedImage';
 
 const ListingImages = ({ 
   images, 
@@ -49,11 +50,14 @@ const ListingImages = ({
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="aspect-[16/10] md:aspect-[16/9] w-full overflow-hidden rounded-xl shadow-lg relative"
         >
-          <img 
+          <OptimizedImage 
             src={currentImageUrl}
             alt={`${title} - Resim ${currentImageIndex + 1}`}
             className="w-full h-full object-cover"
-             />
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 60vw"
+            quality={90}
+            priority={true}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
           <div className={`absolute top-3 left-3 px-3 py-1 rounded-md text-sm font-semibold text-white shadow-md ${getUrgencyColor(urgency)}`}>
             {urgency}

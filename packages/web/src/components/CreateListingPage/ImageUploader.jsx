@@ -6,6 +6,7 @@ import React, { useRef, useState } from 'react';
     import { useAuthStore } from '@/stores';
     import { compressImage } from '@/lib/imageUtils';
     import ImageEditorModal from '@/components/ImageEditorModal';
+    import OptimizedImage from '@/components/OptimizedImage';
     
     const MAX_IMAGES_DEFAULT = 5;
     const MAX_FILE_SIZE_MB_DEFAULT = 2;
@@ -108,7 +109,14 @@ import React, { useRef, useState } from 'react';
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-3">
             {images.map((img, index) => (
               <div key={index} className="relative group aspect-square">
-                <img src={img.preview} alt={`Önizleme ${index + 1}`} className="w-full h-full object-cover rounded-md border border-border" />
+                <OptimizedImage 
+                  src={img.preview} 
+                  alt={`Önizleme ${index + 1}`} 
+                  className="w-full h-full object-cover rounded-md border border-border"
+                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
+                  quality={90}
+                  priority={false}
+                />
                 {!disabled && (
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-wrap items-center justify-center gap-1 p-1">
                     <Button type="button" variant="secondary" size="icon" onClick={() => handleEditImage(index)} className="h-7 w-7" title="Düzenle">

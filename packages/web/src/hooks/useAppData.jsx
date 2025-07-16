@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuthStore } from '@/stores';
 import { 
   fetchListings as fetchListingsService, 
   fetchInventoryItems as fetchInventoryItemsService,
@@ -17,7 +18,8 @@ import {
 import { getTotalUnreadMessages } from '@/services/conversationService';
 import { seedListings as seedListingsService, clearAllDatabase as clearAllDatabaseService } from '@/lib/seedDatabase'; 
 
-export const useAppData = (currentUser, loadingAuth, openAuthModal) => {
+export const useAppData = (openAuthModal) => {
+  const { currentUser, loadingAuth } = useAuthStore();
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);

@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import { formatDate } from '@benalsam/shared-types';
+import OptimizedImage from '@/components/OptimizedImage';
 
 
 const ListingCard = ({ listing, size = 'normal', onToggleFavorite, currentUser, isFavoritedOverride = null }) => {
@@ -91,11 +92,13 @@ const ListingCard = ({ listing, size = 'normal', onToggleFavorite, currentUser, 
           </div>
         )}
         {cardImageUrl ? (
-          <img 
+          <OptimizedImage 
             src={cardImageUrl}
             alt={listing.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
-            loading="lazy"
+            sizes={isSmall ? "(max-width: 640px) 224px, 250px" : "(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"}
+            quality={85}
+            priority={false}
           />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center">
