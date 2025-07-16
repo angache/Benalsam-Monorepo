@@ -91,7 +91,7 @@ export const fetchFollowingUsers = async (userId) => {
       .select(`
         following_id,
         created_at,
-        profiles:following_id (id, name, avatar_url, bio, location, followers_count, following_count)
+        profiles:following_id (id, name, avatar_url, bio, followers_count, following_count)
       `)
       .eq('follower_id', userId)
       .order('created_at', { ascending: false });
@@ -121,7 +121,7 @@ export const fetchFollowers = async (userId) => {
         .select(`
           follower_id,
           created_at,
-          profiles:follower_id (id, name, avatar_url, bio, location, followers_count, following_count)
+          profiles:follower_id (id, name, avatar_url, bio, followers_count, following_count)
         `)
         .eq('following_id', userId)
         .order('created_at', { ascending: false });
