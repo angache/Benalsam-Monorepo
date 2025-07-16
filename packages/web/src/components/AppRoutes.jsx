@@ -3,6 +3,7 @@ import React from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores';
+import PageErrorBoundary from '@/components/ErrorBoundaries/PageErrorBoundary';
 
 import HomePage from '@/pages/HomePage';
 import ProfilePage from '@/pages/ProfilePage.jsx';
@@ -34,6 +35,7 @@ import DopingPage from '@/pages/DopingPage.jsx';
 import PremiumPage from '@/pages/PremiumPage.jsx';
 import TrustScorePage from '@/pages/TrustScorePage.jsx';
 import UnpublishListingPage from '@/pages/UnpublishListingPage.jsx';
+import ErrorTestComponent from '@/components/ErrorBoundaries/ErrorTestComponent';
 
 import SettingsLayout from '@/pages/SettingsPage/SettingsLayout.jsx';
 import ProfileSettings from '@/pages/SettingsPage/ProfileSettings.jsx';
@@ -78,6 +80,15 @@ const MainContent = ({ children }) => {
   );
 };
 
+// Helper function to wrap components with PageErrorBoundary
+const withPageErrorBoundary = (Component, pageName) => {
+  return (
+    <PageErrorBoundary pageName={pageName}>
+      <Component />
+    </PageErrorBoundary>
+  );
+};
+
 
 const AppRoutes = ({ currentUser }) => {
   const location = useLocation();
@@ -87,35 +98,33 @@ const AppRoutes = ({ currentUser }) => {
       <Routes location={location} key={location.pathname}>
         <Route 
           path="/" 
-          element={<HomePage />}
+          element={withPageErrorBoundary(HomePage, 'Ana Sayfa')}
         />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/arama" element={<SearchResultsPage />} />
+        <Route path="/auth" element={withPageErrorBoundary(AuthPage, 'Giriş/Kayıt')} />
+        <Route path="/arama" element={withPageErrorBoundary(SearchResultsPage, 'Arama Sonuçları')} />
 
-        <Route path="/ilan-olustur" element={<ProtectedRoute><CreateListingPage /></ProtectedRoute>} />
-        <Route path="/teklif-yap/:listingId" element={<ProtectedRoute><MakeOfferPage /></ProtectedRoute>} />
-        <Route path="/sikayet-et/:listingId" element={<ProtectedRoute><ReportListingPage /></ProtectedRoute>} />
-        <Route path="/degerlendirme/:offerId" element={<ProtectedRoute><LeaveReviewPage /></ProtectedRoute>} />
-        <Route path="/ilan-duzenle/:listingId" element={<ProtectedRoute><EditListingPage /></ProtectedRoute>} />
-        <Route path="/stok-gorsel-ara" element={<ProtectedRoute><StockImageSearchPage /></ProtectedRoute>} />
-        <Route path="/kategori-takip-et" element={<ProtectedRoute><FollowCategoryPage /></ProtectedRoute>} />
-        <Route path="/ilan-kurallari" element={<ListingRulesPage />} />
-        <Route path="/doping/:listingId" element={<ProtectedRoute><DopingPage /></ProtectedRoute>} />
-        <Route path="/premium" element={<ProtectedRoute><PremiumPage /></ProtectedRoute>} />
-        <Route path="/guven-puani/:userId" element={<TrustScorePage />} />
-        <Route path="/ilan-kaldir/:listingId" element={<ProtectedRoute><UnpublishListingPage /></ProtectedRoute>} />
+        <Route path="/ilan-olustur" element={<ProtectedRoute>{withPageErrorBoundary(CreateListingPage, 'İlan Oluştur')}</ProtectedRoute>} />
+        <Route path="/teklif-yap/:listingId" element={<ProtectedRoute>{withPageErrorBoundary(MakeOfferPage, 'Teklif Yap')}</ProtectedRoute>} />
+        <Route path="/sikayet-et/:listingId" element={<ProtectedRoute>{withPageErrorBoundary(ReportListingPage, 'Şikayet Et')}</ProtectedRoute>} />
+        <Route path="/degerlendirme/:offerId" element={<ProtectedRoute>{withPageErrorBoundary(LeaveReviewPage, 'Değerlendirme')}</ProtectedRoute>} />
+        <Route path="/ilan-duzenle/:listingId" element={<ProtectedRoute>{withPageErrorBoundary(EditListingPage, 'İlan Düzenle')}</ProtectedRoute>} />
+        <Route path="/stok-gorsel-ara" element={<ProtectedRoute>{withPageErrorBoundary(StockImageSearchPage, 'Stok Görsel Ara')}</ProtectedRoute>} />
+        <Route path="/kategori-takip-et" element={<ProtectedRoute>{withPageErrorBoundary(FollowCategoryPage, 'Kategori Takip Et')}</ProtectedRoute>} />
+        <Route path="/ilan-kurallari" element={withPageErrorBoundary(ListingRulesPage, 'İlan Kuralları')} />
+        <Route path="/doping/:listingId" element={<ProtectedRoute>{withPageErrorBoundary(DopingPage, 'Doping')}</ProtectedRoute>} />
+        <Route path="/premium" element={<ProtectedRoute>{withPageErrorBoundary(PremiumPage, 'Premium')}</ProtectedRoute>} />
+        <Route path="/guven-puani/:userId" element={withPageErrorBoundary(TrustScorePage, 'Güven Puanı')} />
+        <Route path="/ilan-kaldir/:listingId" element={<ProtectedRoute>{withPageErrorBoundary(UnpublishListingPage, 'İlan Kaldır')}</ProtectedRoute>} />
         
         <Route 
           path="/profil/:userId" 
-          element={
-            <ProfilePage />
-          } 
+          element={withPageErrorBoundary(ProfilePage, 'Profil')}
         />
         <Route 
           path="/envanterim" 
           element={
             <ProtectedRoute>
-              <InventoryPage />
+              {withPageErrorBoundary(InventoryPage, 'Envanterim')}
             </ProtectedRoute>
           } 
         />
@@ -123,67 +132,72 @@ const AppRoutes = ({ currentUser }) => {
           path="/ilanlarim" 
           element={
             <ProtectedRoute>
-              <MyListingsPage />
+              {withPageErrorBoundary(MyListingsPage, 'İlanlarım')}
             </ProtectedRoute>
           } 
         />
-        <Route path="/envanter/yeni" element={<ProtectedRoute><InventoryFormPage /></ProtectedRoute>} />
-        <Route path="/envanter/duzenle/:itemId" element={<ProtectedRoute><InventoryFormPage /></ProtectedRoute>} />
+        <Route path="/envanter/yeni" element={<ProtectedRoute>{withPageErrorBoundary(InventoryFormPage, 'Yeni Envanter')}</ProtectedRoute>} />
+        <Route path="/envanter/duzenle/:itemId" element={<ProtectedRoute>{withPageErrorBoundary(InventoryFormPage, 'Envanter Düzenle')}</ProtectedRoute>} />
 
         <Route 
           path="/ilan/:listingId" 
-          element={<ListingDetailPage />}
+          element={withPageErrorBoundary(ListingDetailPage, 'İlan Detayı')}
         />
         <Route 
           path="/gonderdigim-teklifler" 
-          element={<ProtectedRoute><SentOffersPage /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(SentOffersPage, 'Gönderdiğim Teklifler')}</ProtectedRoute>} 
         />
         <Route 
           path="/aldigim-teklifler" 
-          element={<ProtectedRoute><ReceivedOffersPage /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(ReceivedOffersPage, 'Aldığım Teklifler')}</ProtectedRoute>} 
         />
-        <Route path="/mesajlarim" element={<ProtectedRoute><ConversationsListPage /></ProtectedRoute>} />
+        <Route path="/mesajlarim" element={<ProtectedRoute>{withPageErrorBoundary(ConversationsListPage, 'Mesajlarım')}</ProtectedRoute>} />
         <Route 
           path="/mesajlar/:conversationId" 
-          element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(ConversationPage, 'Mesajlaşma')}</ProtectedRoute>} 
         />
          <Route 
           path="/favorilerim" 
-          element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(FavoritesPage, 'Favorilerim')}</ProtectedRoute>} 
         />
         <Route 
           path="/takip-edilenler/:userId" 
-          element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(FollowingPage, 'Takip Edilenler')}</ProtectedRoute>} 
         />
         <Route 
           path="/takip-edilenler" 
-          element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(FollowingPage, 'Takip Edilenler')}</ProtectedRoute>} 
         />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/auth/callback" element={withPageErrorBoundary(AuthCallbackPage, 'Auth Callback')} />
         
         <Route 
           path="/premium-dashboard" 
-          element={<ProtectedRoute><PremiumDashboard /></ProtectedRoute>} 
+          element={<ProtectedRoute>{withPageErrorBoundary(PremiumDashboard, 'Premium Dashboard')}</ProtectedRoute>} 
         />
         
-        <Route path="/ayarlar" element={<ProtectedRoute><SettingsLayout /></ProtectedRoute>}>
+        {/* Test route - sadece development modunda */}
+        {process.env.NODE_ENV === 'development' && (
+          <Route path="/test-error" element={withPageErrorBoundary(ErrorTestComponent, 'Error Test')} />
+        )}
+        
+        <Route path="/ayarlar" element={<ProtectedRoute>{withPageErrorBoundary(SettingsLayout, 'Ayarlar')}</ProtectedRoute>}>
           <Route index element={<Navigate to="profil" replace />} />
-          <Route path="profil" element={<ProfileSettings />} />
-          <Route path="iletisim" element={<ContactSettings />} />
-          <Route path="guvenlik" element={<SecuritySettings />} />
-          <Route path="bildirimler" element={<NotificationSettings />} />
-          <Route path="platform" element={<PlatformSettings />} />
-          <Route path="hesap" element={<AccountSettings />} />
-          <Route path="premium" element={<PremiumSettings />} />
-          <Route path="geribildirim" element={<FeedbackSection />} />
+          <Route path="profil" element={withPageErrorBoundary(ProfileSettings, 'Profil Ayarları')} />
+          <Route path="iletisim" element={withPageErrorBoundary(ContactSettings, 'İletişim Ayarları')} />
+          <Route path="guvenlik" element={withPageErrorBoundary(SecuritySettings, 'Güvenlik Ayarları')} />
+          <Route path="bildirimler" element={withPageErrorBoundary(NotificationSettings, 'Bildirim Ayarları')} />
+          <Route path="platform" element={withPageErrorBoundary(PlatformSettings, 'Platform Ayarları')} />
+          <Route path="hesap" element={withPageErrorBoundary(AccountSettings, 'Hesap Ayarları')} />
+          <Route path="premium" element={withPageErrorBoundary(PremiumSettings, 'Premium Ayarları')} />
+          <Route path="geribildirim" element={withPageErrorBoundary(FeedbackSection, 'Geribildirim')} />
           
-          <Route path="sohbet" element={<PlaceholderSettings title="Sohbet" />} />
-          <Route path="istek-teklif" element={<PlaceholderSettings title="İstek ve Teklif Yönetimi" />} />
-          <Route path="odeme" element={<PlaceholderSettings title="Fatura ve Ödemeler" />} />
-          <Route path="gelistirici" element={<PlaceholderSettings title="Geliştirici" />} />
+          <Route path="sohbet" element={withPageErrorBoundary(() => <PlaceholderSettings title="Sohbet" />, 'Sohbet Ayarları')} />
+          <Route path="istek-teklif" element={withPageErrorBoundary(() => <PlaceholderSettings title="İstek ve Teklif Yönetimi" />, 'İstek Teklif Ayarları')} />
+          <Route path="odeme" element={withPageErrorBoundary(() => <PlaceholderSettings title="Fatura ve Ödemeler" />, 'Ödeme Ayarları')} />
+          <Route path="gelistirici" element={withPageErrorBoundary(() => <PlaceholderSettings title="Geliştirici" />, 'Geliştirici Ayarları')} />
         </Route>
 
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path="*" element={withPageErrorBoundary(NotFoundPage, '404')} />
       </Routes>
     </MainContent>
   );

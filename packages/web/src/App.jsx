@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button.jsx';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { useAuthStore } from '@/stores';
 import AppRoutes from '@/components/AppRoutes.jsx';
+import AppErrorBoundary from '@/components/ErrorBoundaries/AppErrorBoundary';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,34 +53,33 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <div className="pattern-dots fixed inset-0 opacity-20 pointer-events-none -z-10"></div>
-      
-      {!isConversationPage && (
-        <Header 
-          onCreateClick={() => navigate('/ilan-olustur')}
-          currentUser={currentUser}
-          onLogout={() => useAuthStore.getState().signOut()}
-          onLoginClick={() => navigate('/auth?action=login')}
-          onRegisterClick={() => navigate('/auth?action=register')}
-        />
-      )}
-
-      <main className={cn(
-        "relative z-10 flex-grow flex flex-col",
-        !isConversationPage && "pt-16 sm:pt-20"
-      )}>
+    <AppErrorBoundary>
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <div className="pattern-dots fixed inset-0 opacity-20 pointer-events-none -z-10"></div>
         
+        {!isConversationPage && (
+          <Header 
+            onCreateClick={() => navigate('/ilan-olustur')}
+            currentUser={currentUser}
+            onLogout={() => useAuthStore.getState().signOut()}
+            onLoginClick={() => navigate('/auth?action=login')}
+            onRegisterClick={() => navigate('/auth?action=register')}
+          />
+        )}
 
+        <main className={cn(
+          "relative z-10 flex-grow flex flex-col",
+          !isConversationPage && "pt-16 sm:pt-20"
+        )}>
+          <AnimatePresence mode="wait">
+            <AppRoutes currentUser={currentUser} />
+          </AnimatePresence>
+        </main>
 
-        <AnimatePresence mode="wait">
-          <AppRoutes currentUser={currentUser} />
-        </AnimatePresence>
-      </main>
-
-      {!isConversationPage && <Footer />}
-      <Toaster />
-    </div>
+        {!isConversationPage && <Footer />}
+        <Toaster />
+      </div>
+    </AppErrorBoundary>
   );
 }
 
