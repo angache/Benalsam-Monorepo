@@ -103,8 +103,7 @@ const ProfileReviews = React.memo(({ reviews, currentUserId, onOpenLeaveReviewMo
 
 ProfileReviews.displayName = 'ProfileReviews';
 
-
-const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }) => {
+const ProfilePageOptimized = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }) => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const rLocation = routerLocation(); 
@@ -120,15 +119,15 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
   // React Query ile optimize edilmiş veri çekme
   const { 
     profile, 
-    listings: userListings, 
-    reviews: userReviews, 
+    listings, 
+    reviews, 
     isFollowing, 
     isLoading, 
     isError, 
     error, 
     refetch 
   } = useProfileData(userId, currentUser?.id);
-  
+
   // Memoized değerler
   const displayName = useMemo(() => {
     return profile?.name || profile?.username || "İsimsiz Kullanıcı";
@@ -144,7 +143,6 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
     return [province, district, neighborhood].filter(Boolean).join(' / ') || "Konum belirtilmemiş";
   }, []);
 
-
   // Profile view increment
   useEffect(() => {
     if (userId && currentUser && currentUser.id !== userId) {
@@ -155,7 +153,6 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
       }
     }
   }, [userId, currentUser]);
-
 
   const handleEditProfile = useCallback(() => {
     navigate('/ayarlar');
@@ -199,6 +196,18 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
     }
   }, [currentUser, isCurrentUserProfile, followLoading, profile, isFollowing, openAuthModal, queryClient]);
 
+  const StatCard = useCallback(({ icon, label, value, onClick }) => (
+    <div 
+        className={cn("glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center", onClick && "cursor-pointer hover:bg-primary/10 transition-colors")}
+        onClick={onClick}
+    >
+      {icon}
+      <span className="text-2xl font-bold mt-1">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  ), []);
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -210,6 +219,7 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
     );
   }
 
+  // Error state
   if (isError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
@@ -230,6 +240,7 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
     );
   }
 
+  // Profile not found
   if (!profile) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
@@ -239,19 +250,6 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
       </div>
     );
   }
-  
-  const StatCard = useCallback(({ icon, label, value, onClick }) => (
-    <div 
-        className={cn("glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center", onClick && "cursor-pointer hover:bg-primary/10 transition-colors")}
-        onClick={onClick}
-    >
-      {icon}
-      <span className="text-2xl font-bold mt-1">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
-  ), []);
-
-
 
   return (
     <motion.div 
@@ -308,7 +306,7 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-8 pt-6 border-t border-border/50">
-          <StatCard icon={<ShoppingBag className="w-6 h-6 text-primary"/>} label="İlan Sayısı" value={userListings.length} />
+          <StatCard icon={<ShoppingBag className="w-6 h-6 text-primary"/>} label="İlan Sayısı" value={listings.length} />
           <StatCard 
             icon={<Users className="w-6 h-6 text-purple-500"/>} 
             label="Takipçi" 
@@ -340,21 +338,21 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
             onClick={() => setActiveTab('ilanlar')}
             className={`py-3 px-6 font-medium transition-colors duration-200 ${activeTab === 'ilanlar' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            İlanlar ({userListings.length})
+            İlanlar ({listings.length})
           </button>
           <button 
             onClick={() => setActiveTab('yorumlar')}
             className={`py-3 px-6 font-medium transition-colors duration-200 ${activeTab === 'yorumlar' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            Yorumlar ({userReviews.length})
+            Yorumlar ({reviews.length})
           </button>
         </div>
       </div>
 
       {activeTab === 'ilanlar' && (
-        userListings.length > 0 ? (
+        listings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {userListings.map(listing => (
+            {listings.map(listing => (
               <ListingCard 
                   key={listing.id} 
                   listing={listing} 
@@ -380,7 +378,7 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
       )}
       {activeTab === 'yorumlar' && (
         <ProfileReviews 
-            reviews={userReviews} 
+            reviews={reviews} 
             currentUserId={currentUser?.id}
             onOpenLeaveReviewModal={onOpenLeaveReviewModal}
             profileData={profile}
@@ -390,4 +388,4 @@ const ProfilePage = ({ onOpenLeaveReviewModal, openAuthModal, onToggleFavorite }
   );
 };
 
-export default ProfilePage;
+export default ProfilePageOptimized; 
