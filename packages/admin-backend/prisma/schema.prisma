@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin Users
+model AdminUser {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  role        AdminRole @default(ADMIN)
+  permissions Json?    // Stored as JSON for flexibility
+  isActive    Boolean  @default(true)
+  lastLogin   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  activityLogs AdminActivityLog[]
+  moderationDecisions ModerationDecision[]
+  systemSettings SystemSetting[]
+
+  @@map("admin_users")
+}
+
+// Admin Activity Logs
+model AdminActivityLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  resource   String
+  resourceId String?
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("admin_activity_logs")
+}
+
+// Moderation Decisions
+model ModerationDecision {
+  id         String   @id @default(cuid())
+  adminId    String
+  reportId   String?
+  decision   ModerationDecisionType
+  reason     String?
+  duration   Int?     // Duration in days for temporary bans
+  createdAt  DateTime @default(now())
+
+  // Relations
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("moderation_decisions")
+}
+
+// System Settings
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedBy   String
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  admin AdminUser @relation(fields: [updatedBy], references: [id], onDelete: Cascade)
+
+  @@map("system_settings")
+}
+
+// Daily Statistics
+model DailyStat {
+  id                   String   @id @default(cuid())
+  date                 DateTime @unique
+  totalUsers           Int      @default(0)
+  newUsers             Int      @default(0)
+  activeUsers          Int      @default(0)
+  totalListings        Int      @default(0)
+  newListings          Int      @default(0)
+  activeListings       Int      @default(0)
+  totalRevenue         Float    @default(0)
+  premiumSubscriptions Int      @default(0)
+  reportsCount         Int      @default(0)
+  resolvedReports      Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("daily_stats")
+}
+
+// User Activities (for analytics)
+model UserActivity {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@map("user_activities")
+}
+
+// Enums
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+  SUPPORT
+}
+
+enum ModerationDecisionType {
+  APPROVE
+  REJECT
+  BAN_TEMPORARY
+  BAN_PERMANENT
+  WARNING
+  DELETE
+} 
