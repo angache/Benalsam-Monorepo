@@ -1,11 +1,54 @@
 import { Request } from 'express';
 
-// Admin Role enum
+// Admin Role enum - Genişletilmiş
 export enum AdminRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   MODERATOR = 'MODERATOR',
-  SUPPORT = 'SUPPORT'
+  SUPPORT = 'SUPPORT',
+  CATEGORY_MANAGER = 'CATEGORY_MANAGER',
+  ANALYTICS_MANAGER = 'ANALYTICS_MANAGER',
+  USER_MANAGER = 'USER_MANAGER',
+  CONTENT_MANAGER = 'CONTENT_MANAGER'
+}
+
+// Permission types
+export interface Permission {
+  id: string;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RolePermission {
+  id: string;
+  role: AdminRole;
+  permissionId: string;
+  permission?: Permission;
+  createdAt: string;
+}
+
+export interface UserPermission {
+  id: string;
+  adminId: string;
+  permissionId: string;
+  grantedBy?: string;
+  permission?: Permission;
+  createdAt: string;
+}
+
+export interface AdminRoleDefinition {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+  level: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Moderation Decision Type enum
@@ -28,7 +71,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
     role: AdminRole;
-    permissions?: any;
+    permissions?: Permission[];
   };
 }
 
@@ -81,14 +124,22 @@ export interface CreateAdminUserDto {
   firstName: string;
   lastName: string;
   role?: AdminRole;
-  permissions?: any;
+  permissions?: string[];
+}
+
+export interface UpdateAdminUserDto {
+  firstName?: string;
+  lastName?: string;
+  role?: AdminRole;
+  permissions?: string[];
+  isActive?: boolean;
 }
 
 export interface JwtPayload {
   adminId: string;
   email: string;
   role: AdminRole;
-  permissions?: any;
+  permissions?: Permission[];
 }
 
 export interface AuthResponse {
@@ -108,14 +159,40 @@ export interface AdminUser {
   firstName: string;
   lastName: string;
   role: AdminRole;
-  permissions?: any;
+  permissions?: Permission[];
   isActive: boolean;
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+// Admin Management types
+export interface AdminUserWithRole extends AdminUser {
+  roleDetails?: AdminRole;
+  userPermissions?: UserPermission[];
+}
 
+export interface CreateRoleDto {
+  name: string;
+  displayName: string;
+  description?: string;
+  level: number;
+  permissions: string[];
+}
+
+export interface UpdateRoleDto {
+  displayName?: string;
+  description?: string;
+  level?: number;
+  isActive?: boolean;
+  permissions?: string[];
+}
+
+// Permission check types
+export interface PermissionCheck {
+  resource: string;
+  action: string;
+}
 
 // Listing types
 export interface Listing {
@@ -173,13 +250,6 @@ export enum UserStatus {
   INACTIVE = 'INACTIVE',
   BANNED = 'BANNED',
   SUSPENDED = 'SUSPENDED',
-}
-
-// Permission Types
-export interface Permission {
-  resource: string;
-  action: string;
-  conditions?: Record<string, any>;
 }
 
 // Activity Log Types

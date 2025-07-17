@@ -1,22 +1,19 @@
 import { Router } from 'express';
 import { categoriesController } from '../controllers/categoriesController';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-// Apply auth middleware to all routes
-router.use(authenticateToken);
+// Get all categories - requires categories:view permission
+router.get('/', ...authMiddleware({ requiredPermissions: ['categories:view'] }), categoriesController.getCategories);
 
-// Get all categories
-router.get('/', categoriesController.getCategories);
+// Get single category by path - requires categories:view permission
+router.get('/:path(*)', ...authMiddleware({ requiredPermissions: ['categories:view'] }), categoriesController.getCategory);
 
-// Get single category by path
-router.get('/:path(*)', categoriesController.getCategory);
+// Update category - requires categories:edit permission
+router.put('/:path(*)', ...authMiddleware({ requiredPermissions: ['categories:edit'] }), categoriesController.updateCategory);
 
-// Update category
-router.put('/:path(*)', categoriesController.updateCategory);
-
-// Delete category
-router.delete('/:path(*)', categoriesController.deleteCategory);
+// Delete category - requires categories:delete permission
+router.delete('/:path(*)', ...authMiddleware({ requiredPermissions: ['categories:delete'] }), categoriesController.deleteCategory);
 
 export { router as categoriesRouter }; 

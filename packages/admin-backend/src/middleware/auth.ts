@@ -1,13 +1,16 @@
 import { Response, NextFunction } from 'express';
 import { supabase } from '../config/database';
-import { AuthenticatedRequest, JwtPayload, AdminRole } from '../types';
+import { AuthenticatedRequest, JwtPayload, AdminRole, Permission } from '../types';
 import { ApiResponseUtil } from '../utils/response';
 import { jwtUtils } from '../utils/jwt';
+import { PermissionService } from '../services/permissionService';
 import logger from '../config/logger';
 
 export interface AuthMiddlewareOptions {
   requiredRole?: AdminRole;
   requiredPermissions?: string[];
+  requiredResource?: string;
+  requiredAction?: string;
 }
 
 export const authenticateToken = async (
@@ -45,6 +48,9 @@ export const authenticateToken = async (
       return;
     }
 
+    // Get user permissions
+    const permissions = await PermissionService.getAdminPermissions(admin.id);
+
     // Update last login
     await supabase
       .from('admin_users')
@@ -52,7 +58,10 @@ export const authenticateToken = async (
       .eq('id', admin.id);
 
     console.log('✅ Auth successful for admin:', admin.email);
-    req.admin = admin;
+    req.admin = {
+      ...admin,
+      permissions
+    };
     next();
   } catch (error) {
     logger.error('Authentication error:', error);
@@ -70,8 +79,12 @@ export const requireRole = (requiredRole: AdminRole) => {
     const roleHierarchy = {
       [AdminRole.SUPPORT]: 1,
       [AdminRole.MODERATOR]: 2,
-      [AdminRole.ADMIN]: 3,
-      [AdminRole.SUPER_ADMIN]: 4,
+      [AdminRole.CONTENT_MANAGER]: 3,
+      [AdminRole.ANALYTICS_MANAGER]: 4,
+      [AdminRole.CATEGORY_MANAGER]: 5,
+      [AdminRole.USER_MANAGER]: 6,
+      [AdminRole.ADMIN]: 7,
+      [AdminRole.SUPER_ADMIN]: 8,
     };
 
     const userRoleLevel = roleHierarchy[req.admin.role];
@@ -87,7 +100,7 @@ export const requireRole = (requiredRole: AdminRole) => {
 };
 
 export const requirePermission = (resource: string, action: string) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     if (!req.admin) {
       ApiResponseUtil.unauthorized(res, 'Authentication required');
       return;
@@ -99,10 +112,9 @@ export const requirePermission = (resource: string, action: string) => {
       return;
     }
 
-    const permissions = req.admin.permissions as any[] || [];
-    const hasPermission = permissions.some(
-      (permission) =>
-        permission.resource === resource && permission.action === action
+    const permissionName = `${resource}:${action}`;
+    const hasPermission = req.admin.permissions?.some(
+      (permission: Permission) => permission.name === permissionName
     );
 
     if (!hasPermission) {
@@ -114,14 +126,80 @@ export const requirePermission = (resource: string, action: string) => {
   };
 };
 
+export const requireAnyPermission = (permissions: string[]) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.admin) {
+      ApiResponseUtil.unauthorized(res, 'Authentication required');
+      return;
+    }
+
+    // Super admin has all permissions
+    if (req.admin.role === AdminRole.SUPER_ADMIN) {
+      next();
+      return;
+    }
+
+    const userPermissions = req.admin.permissions?.map((p: Permission) => p.name) || [];
+    const hasAnyPermission = permissions.some(permission => userPermissions.includes(permission));
+
+    if (!hasAnyPermission) {
+      ApiResponseUtil.forbidden(res, 'Insufficient permissions');
+      return;
+    }
+
+    next();
+  };
+};
+
+export const requireAllPermissions = (permissions: string[]) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.admin) {
+      ApiResponseUtil.unauthorized(res, 'Authentication required');
+      return;
+    }
+
+    // Super admin has all permissions
+    if (req.admin.role === AdminRole.SUPER_ADMIN) {
+      next();
+      return;
+    }
+
+    const userPermissions = req.admin.permissions?.map((p: Permission) => p.name) || [];
+    const hasAllPermissions = permissions.every(permission => userPermissions.includes(permission));
+
+    if (!hasAllPermissions) {
+      ApiResponseUtil.forbidden(res, 'Insufficient permissions');
+      return;
+    }
+
+    next();
+  };
+};
+
 export const authMiddleware = (options: AuthMiddlewareOptions = {}) => {
-  return [
-    authenticateToken,
-    ...(options.requiredRole ? [requireRole(options.requiredRole)] : []),
-    ...(options.requiredPermissions ? [
-      requirePermission(options.requiredPermissions[0], options.requiredPermissions[1])
-    ] : []),
-  ];
+  const middleware: any[] = [authenticateToken];
+
+  // Add role requirement
+  if (options.requiredRole) {
+    middleware.push(requireRole(options.requiredRole));
+  }
+
+  // Add permission requirements
+  if (options.requiredPermissions && options.requiredPermissions.length > 0) {
+    if (options.requiredPermissions.length === 1) {
+      const [resource, action] = options.requiredPermissions[0].split(':');
+      middleware.push(requirePermission(resource, action));
+    } else {
+      middleware.push(requireAnyPermission(options.requiredPermissions));
+    }
+  }
+
+  // Add resource/action requirements
+  if (options.requiredResource && options.requiredAction) {
+    middleware.push(requirePermission(options.requiredResource, options.requiredAction));
+  }
+
+  return middleware;
 };
 
 // Optional authentication - doesn't fail if no token provided
@@ -144,7 +222,12 @@ export const optionalAuth = async (
         .single();
 
       if (admin && admin.is_active) {
-        req.admin = admin;
+        // Get user permissions
+        const permissions = await PermissionService.getAdminPermissions(admin.id);
+        req.admin = {
+          ...admin,
+          permissions
+        };
       }
     }
   } catch (error) {
