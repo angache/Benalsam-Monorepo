@@ -93,7 +93,9 @@ const AdminManagementPage: React.FC = () => {
       }
 
       // Load roles
+      console.log('🔍 Roller yükleniyor...');
       const rolesResponse = await apiService.getRoles();
+      console.log('✅ Roller yüklendi:', rolesResponse);
       setRoles(rolesResponse.data);
 
       // Load permissions
@@ -208,7 +210,7 @@ const AdminManagementPage: React.FC = () => {
                   <MenuItem value="">Tüm Roller</MenuItem>
                   {roles.map((role) => (
                     <MenuItem key={role.id} value={role.name}>
-                      {role.displayName}
+                      {role.display_name || role.displayName}
                     </MenuItem>
                   ))}
                 </Select>
@@ -705,7 +707,7 @@ const CreateAdminModal: React.FC<CreateAdminModalProps> = ({
                   {roles.map((role) => (
                     <MenuItem key={role.id} value={role.name}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <Typography>{role.displayName}</Typography>
+                        <Typography>{role.display_name || role.displayName}</Typography>
                         <Chip 
                           label={`Seviye ${role.level}`} 
                           size="small" 

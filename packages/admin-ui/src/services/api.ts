@@ -141,12 +141,16 @@ export interface AdminUser {
 export interface Role {
   id: string;
   name: string;
-  displayName: string;
+  display_name: string;
+  displayName?: string; // For backward compatibility
   description?: string;
   level: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  is_active: boolean;
+  isActive?: boolean; // For backward compatibility
+  created_at: string;
+  createdAt?: string; // For backward compatibility
+  updated_at: string;
+  updatedAt?: string; // For backward compatibility
 }
 
 export interface Permission {

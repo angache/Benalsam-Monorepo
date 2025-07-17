@@ -203,6 +203,23 @@ export const usePermissions = () => {
     };
   }, [user]);
 
+  const getRoleDisplayName = useMemo(() => {
+    return (roleName: string): string => {
+      const roleDisplayNames: Record<string, string> = {
+        'SUPER_ADMIN': 'Süper Admin',
+        'ADMIN': 'Admin',
+        'MODERATOR': 'Moderatör',
+        'SUPPORT': 'Destek',
+        'CATEGORY_MANAGER': 'Kategori Yöneticisi',
+        'USER_MANAGER': 'Kullanıcı Yöneticisi',
+        'ANALYTICS_MANAGER': 'Analitik Yöneticisi',
+        'CONTENT_MANAGER': 'İçerik Yöneticisi',
+      };
+      
+      return roleDisplayNames[roleName] || roleName;
+    };
+  }, []);
+
   const getMenuItems = useMemo(() => {
     return () => {
       if (!user) return [];
@@ -215,22 +232,7 @@ export const usePermissions = () => {
     };
   }, [user, hasPermission]);
 
-  const getRoleDisplayName = useMemo(() => {
-    return (role: string): string => {
-      const roleNames: Record<string, string> = {
-        SUPER_ADMIN: 'Süper Admin',
-        ADMIN: 'Admin',
-        MODERATOR: 'Moderatör',
-        SUPPORT: 'Destek',
-        CATEGORY_MANAGER: 'Kategori Yöneticisi',
-        ANALYTICS_MANAGER: 'Analitik Yöneticisi',
-        USER_MANAGER: 'Kullanıcı Yöneticisi',
-        CONTENT_MANAGER: 'İçerik Yöneticisi',
-      };
-      
-      return roleNames[role] || role;
-    };
-  }, []);
+
 
   const getRoleLevel = useMemo(() => {
     return (role: string): number => {
