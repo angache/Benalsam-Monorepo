@@ -11,6 +11,7 @@ import { CategoryDetailPage } from './pages/CategoryDetailPage';
 import { CategoryAttributesPage } from './pages/CategoryAttributesPage';
 import { CategoryEditPage } from './pages/CategoryEditPage';
 import { UsersPage } from './pages/UsersPage';
+import AdminManagementPage from './pages/AdminManagementPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -116,6 +117,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <UsersPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-management"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AdminManagementPage />
                   </Layout>
                 </ProtectedRoute>
               }

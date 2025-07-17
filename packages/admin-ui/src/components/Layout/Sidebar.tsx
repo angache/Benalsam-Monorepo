@@ -20,9 +20,11 @@ import {
   LogOut,
   Package,
   Folder,
+  Shield,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import { usePermissions, PERMISSIONS } from '../../hooks/usePermissions';
 import type { SidebarProps } from '../../types';
 
 const navigationItems = [
@@ -31,36 +33,49 @@ const navigationItems = [
     title: 'Dashboard',
     path: '/',
     icon: Home,
+    permission: PERMISSIONS.DASHBOARD_VIEW,
   },
   {
     id: 'listings',
     title: 'İlan Yönetimi',
     path: '/listings',
     icon: Package,
+    permission: PERMISSIONS.LISTINGS_VIEW,
   },
   {
     id: 'categories',
     title: 'Kategori Yönetimi',
     path: '/categories',
     icon: Folder,
+    permission: PERMISSIONS.CATEGORIES_VIEW,
   },
   {
     id: 'users',
     title: 'Kullanıcı Yönetimi',
     path: '/users',
     icon: Users,
+    permission: PERMISSIONS.USERS_VIEW,
+  },
+  {
+    id: 'admin-management',
+    title: 'Admin Yönetimi',
+    path: '/admin-management',
+    icon: Shield,
+    permission: PERMISSIONS.ADMINS_VIEW,
   },
   {
     id: 'analytics',
     title: 'Analitik',
     path: '/analytics',
     icon: BarChart3,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   {
     id: 'settings',
     title: 'Ayarlar',
     path: '/settings',
     icon: Settings,
+    permission: PERMISSIONS.SETTINGS_VIEW,
   },
 ];
 
@@ -70,6 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
   const theme = useTheme();
   const { mode } = useCustomTheme();
   const logout = useAuthStore((state) => state.logout);
+  const { hasPermission } = usePermissions();
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -132,7 +148,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
       
       <List sx={{ flexGrow: 1, pt: 2 }}>
-        {navigationItems.map((item) => {
+        {navigationItems
+          .filter(item => !item.permission || hasPermission(item.permission))
+          .map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           

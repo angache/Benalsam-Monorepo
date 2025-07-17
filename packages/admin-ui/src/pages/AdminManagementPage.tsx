@@ -1,29 +1,49 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Tabs,
+  Tab,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Avatar,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  CircularProgress,
+  Alert,
+  Pagination,
+  Stack,
+  Divider,
+  Card,
+  CardContent,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Person as PersonIcon,
+  Search as SearchIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import { usePermissions, PERMISSIONS } from '../hooks/usePermissions';
 import { apiService } from '../services/api';
-import { User } from '../services/api';
-
-interface AdminUser extends User {
-  roleDetails?: any;
-  userPermissions?: any[];
-}
-
-interface Role {
-  id: string;
-  name: string;
-  displayName: string;
-  description?: string;
-  level: number;
-  isActive: boolean;
-}
-
-interface Permission {
-  id: string;
-  name: string;
-  resource: string;
-  action: string;
-  description?: string;
-}
+import type { User, AdminUser, Role, Permission } from '../services/api';
 
 const AdminManagementPage: React.FC = () => {
   const { hasPermission, getRoleDisplayName, canManageUser } = usePermissions();
@@ -142,226 +162,188 @@ const AdminManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
           Admin Yönetimi
-        </h1>
-        <p className="text-gray-600">
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
           Admin kullanıcıları, rolleri ve yetkileri yönetin
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Tabs */}
-      <div className="mb-6">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setSelectedTab('users')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'users'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Admin Kullanıcıları
-          </button>
-          <button
-            onClick={() => setSelectedTab('roles')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'roles'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Roller
-          </button>
-          <button
-            onClick={() => setSelectedTab('permissions')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              selectedTab === 'permissions'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Yetkiler
-          </button>
-        </nav>
-      </div>
+      <Box sx={{ mb: 3 }}>
+        <Tabs
+          value={selectedTab}
+          onChange={(_, newValue) => setSelectedTab(newValue)}
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Tab label="Admin Kullanıcıları" value="users" />
+          <Tab label="Roller" value="roles" />
+          <Tab label="Yetkiler" value="permissions" />
+        </Tabs>
+      </Box>
 
       {/* Content */}
       {selectedTab === 'users' && (
-        <div>
+        <Box>
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4">
-              <input
-                type="text"
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Stack direction="row" spacing={2}>
+              <TextField
                 placeholder="Admin ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                size="small"
+                sx={{ minWidth: 200 }}
               />
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Tüm Roller</option>
-                {roles.map((role) => (
-                  <option key={role.id} value={role.name}>
-                    {role.displayName}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Tüm Durumlar</option>
-                <option value="true">Aktif</option>
-                <option value="false">Pasif</option>
-              </select>
-            </div>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Rol</InputLabel>
+                <Select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  label="Rol"
+                >
+                  <MenuItem value="">Tüm Roller</MenuItem>
+                  {roles.map((role) => (
+                    <MenuItem key={role.id} value={role.name}>
+                      {role.displayName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Durum</InputLabel>
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="Durum"
+                >
+                  <MenuItem value="">Tüm Durumlar</MenuItem>
+                  <MenuItem value="true">Aktif</MenuItem>
+                  <MenuItem value="false">Pasif</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
             {hasPermission(PERMISSIONS.ADMINS_CREATE) && (
-              <button
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
                 onClick={() => setShowCreateModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Yeni Admin Ekle
-              </button>
+              </Button>
             )}
-          </div>
+          </Box>
 
           {/* Admin Users Table */}
           {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
           ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-red-600">{error}</p>
-            </div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Alert severity="error">{error}</Alert>
+            </Box>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Admin
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rol
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Durum
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Son Giriş
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      İşlemler
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+            <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Rol</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Durum</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Son Giriş</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>İşlemler</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {admins.map((admin) => (
-                    <tr key={admin.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-700">
-                                {admin.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {admin.name}
-                            </div>
-                            <div className="text-sm text-gray-500">
+                    <TableRow key={admin.id} hover>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                            {admin.name ? admin.name.charAt(0).toUpperCase() : 'A'}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {admin.name || 'İsimsiz Admin'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
                               {admin.email}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {getRoleDisplayName(admin.role)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            admin.status === 'ACTIVE'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {admin.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {admin.lastLoginAt
-                          ? new Date(admin.lastLoginAt).toLocaleDateString('tr-TR')
-                          : 'Hiç giriş yapmamış'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getRoleDisplayName(admin.role)}
+                          color="primary"
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={admin.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
+                          color={admin.status === 'ACTIVE' ? 'success' : 'error'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {admin.lastLoginAt
+                            ? new Date(admin.lastLoginAt).toLocaleDateString('tr-TR')
+                            : 'Hiç giriş yapmamış'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1}>
                           {hasPermission(PERMISSIONS.ADMINS_EDIT) && canManageUser(admin.role) && (
-                            <button
+                            <IconButton
+                              size="small"
+                              color="primary"
                               onClick={() => handleEditAdmin(admin)}
-                              className="text-blue-600 hover:text-blue-900"
                             >
-                              Düzenle
-                            </button>
+                              <EditIcon />
+                            </IconButton>
                           )}
                           {hasPermission(PERMISSIONS.ADMINS_DELETE) && canManageUser(admin.role) && (
-                            <button
+                            <IconButton
+                              size="small"
+                              color="error"
                               onClick={() => handleDeleteAdmin(admin.id)}
-                              className="text-red-600 hover:text-red-900"
                             >
-                              Sil
-                            </button>
+                              <DeleteIcon />
+                            </IconButton>
                           )}
-                        </div>
-                      </td>
-                    </tr>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-700">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+              <Typography variant="body2" color="text.secondary">
                 Toplam {totalItems} admin kullanıcısı
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Önceki
-                </button>
-                <span className="px-3 py-2 text-sm text-gray-700">
-                  Sayfa {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Sonraki
-                </button>
-              </div>
-            </div>
+              </Typography>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(_, page) => setCurrentPage(page)}
+                color="primary"
+                showFirstButton
+                showLastButton
+              />
+            </Box>
           )}
-        </div>
+        </Box>
       )}
 
       {selectedTab === 'roles' && (
@@ -506,7 +488,7 @@ const AdminManagementPage: React.FC = () => {
           permissions={permissions}
         />
       )}
-    </div>
+    </Box>
   );
 };
 
@@ -527,114 +509,255 @@ const CreateAdminModal: React.FC<CreateAdminModalProps> = ({
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: '',
     role: '',
     permissions: [] as string[],
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.email) {
+      newErrors.email = 'E-posta adresi gereklidir';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Geçerli bir e-posta adresi giriniz';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Şifre gereklidir';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Şifre en az 8 karakter olmalıdır';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Şifre tekrarı gereklidir';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Şifreler eşleşmiyor';
+    }
+
+    if (!formData.firstName) {
+      newErrors.firstName = 'Ad gereklidir';
+    }
+
+    if (!formData.lastName) {
+      newErrors.lastName = 'Soyad gereklidir';
+    }
+
+    if (!formData.role) {
+      newErrors.role = 'Rol seçimi gereklidir';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSubmit({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        role: formData.role,
+        permissions: formData.permissions,
+      });
+    } catch (error) {
+      console.error('Admin oluşturma hatası:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+    <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6" component="div">
             Yeni Admin Ekle
-          </h3>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  E-posta
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Şifre
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ad
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Soyad
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Rol
-                </label>
-                <select
-                  required
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <Grid container spacing={3}>
+            {/* Kişisel Bilgiler */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+                Kişisel Bilgiler
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Ad"
+                required
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                error={!!errors.firstName}
+                helperText={errors.firstName}
+                disabled={loading}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Soyad"
+                required
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                error={!!errors.lastName}
+                helperText={errors.lastName}
+                disabled={loading}
+              />
+            </Grid>
+
+            {/* Hesap Bilgileri */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', mt: 2 }}>
+                Hesap Bilgileri
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="E-posta Adresi"
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                error={!!errors.email}
+                helperText={errors.email}
+                disabled={loading}
+                placeholder="admin@benalsam.com"
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Şifre"
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                error={!!errors.password}
+                helperText={errors.password || 'En az 8 karakter'}
+                disabled={loading}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Şifre Tekrarı"
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword}
+                disabled={loading}
+              />
+            </Grid>
+
+            {/* Rol ve Yetkiler */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', mt: 2 }}>
+                Rol ve Yetkiler
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12}>
+              <FormControl fullWidth required error={!!errors.role}>
+                <InputLabel>Rol</InputLabel>
+                <Select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  label="Rol"
+                  disabled={loading}
                 >
-                  <option value="">Rol seçin</option>
                   {roles.map((role) => (
-                    <option key={role.id} value={role.name}>
-                      {role.displayName}
-                    </option>
+                    <MenuItem key={role.id} value={role.name}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <Typography>{role.displayName}</Typography>
+                        <Chip 
+                          label={`Seviye ${role.level}`} 
+                          size="small" 
+                          color="primary" 
+                          variant="outlined"
+                        />
+                      </Box>
+                    </MenuItem>
                   ))}
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                İptal
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-              >
-                Oluştur
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+                </Select>
+                {errors.role && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                    {errors.role}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+
+            {/* Seçilen Rol Bilgisi */}
+            {formData.role && (
+              <Grid item xs={12}>
+                <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Seçilen Rol:</strong> {roles.find(r => r.name === formData.role)?.displayName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Açıklama:</strong> {roles.find(r => r.name === formData.role)?.description || 'Açıklama yok'}
+                  </Typography>
+                </Card>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button 
+            onClick={onClose} 
+            color="inherit"
+            disabled={loading}
+            sx={{ minWidth: 100 }}
+          >
+            İptal
+          </Button>
+          <Button 
+            type="submit" 
+            variant="contained" 
+            startIcon={loading ? <CircularProgress size={16} /> : <AddIcon />}
+            disabled={loading}
+            sx={{ minWidth: 120 }}
+          >
+            {loading ? 'Oluşturuluyor...' : 'Admin Oluştur'}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };
 
@@ -661,95 +784,203 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({
     isActive: admin.status === 'ACTIVE',
     permissions: admin.permissions?.map((p: any) => p.id) || [],
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.firstName) {
+      newErrors.firstName = 'Ad gereklidir';
+    }
+
+    if (!formData.lastName) {
+      newErrors.lastName = 'Soyad gereklidir';
+    }
+
+    if (!formData.role) {
+      newErrors.role = 'Rol seçimi gereklidir';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(admin.id, formData);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSubmit(admin.id, formData);
+    } catch (error) {
+      console.error('Admin güncelleme hatası:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData({ ...formData, [field]: value });
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+    <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6" component="div">
             Admin Düzenle
-          </h3>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ad
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Soyad
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Rol
-                </label>
-                <select
-                  required
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <Grid container spacing={3}>
+            {/* Admin Bilgileri */}
+            <Grid item xs={12}>
+              <Card variant="outlined" sx={{ p: 2, mb: 2, bgcolor: 'info.50' }}>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Mevcut Admin:</strong> {admin.email}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Son Giriş:</strong> {admin.lastLoginAt 
+                    ? new Date(admin.lastLoginAt).toLocaleDateString('tr-TR') 
+                    : 'Hiç giriş yapmamış'}
+                </Typography>
+              </Card>
+            </Grid>
+
+            {/* Kişisel Bilgiler */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+                Kişisel Bilgiler
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Ad"
+                required
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                error={!!errors.firstName}
+                helperText={errors.firstName}
+                disabled={loading}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Soyad"
+                required
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                error={!!errors.lastName}
+                helperText={errors.lastName}
+                disabled={loading}
+              />
+            </Grid>
+
+            {/* Rol ve Durum */}
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', mt: 2 }}>
+                Rol ve Durum
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12} sm={8}>
+              <FormControl fullWidth required error={!!errors.role}>
+                <InputLabel>Rol</InputLabel>
+                <Select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  label="Rol"
+                  disabled={loading}
                 >
                   {roles.map((role) => (
-                    <option key={role.id} value={role.name}>
-                      {role.displayName}
-                    </option>
+                    <MenuItem key={role.id} value={role.name}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <Typography>{role.displayName}</Typography>
+                        <Chip 
+                          label={`Seviye ${role.level}`} 
+                          size="small" 
+                          color="primary" 
+                          variant="outlined"
+                        />
+                      </Box>
+                    </MenuItem>
                   ))}
-                </select>
-              </div>
-              <div>
-                <label className="flex items-center">
+                </Select>
+                {errors.role && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                    {errors.role}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 1, width: '100%' }}>
                   <input
                     type="checkbox"
                     checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                    onChange={(e) => handleInputChange('isActive', e.target.checked)}
+                    disabled={loading}
+                    style={{ marginRight: '8px' }}
                   />
-                  <span className="ml-2 text-sm text-gray-700">Aktif</span>
-                </label>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                İptal
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-              >
-                Güncelle
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+                  <Typography variant="body2">Aktif</Typography>
+                </Box>
+              </Box>
+            </Grid>
+
+            {/* Seçilen Rol Bilgisi */}
+            {formData.role && (
+              <Grid item xs={12}>
+                <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Seçilen Rol:</strong> {roles.find(r => r.name === formData.role)?.displayName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Açıklama:</strong> {roles.find(r => r.name === formData.role)?.description || 'Açıklama yok'}
+                  </Typography>
+                </Card>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button 
+            onClick={onClose} 
+            color="inherit"
+            disabled={loading}
+            sx={{ minWidth: 100 }}
+          >
+            İptal
+          </Button>
+          <Button 
+            type="submit" 
+            variant="contained" 
+            startIcon={loading ? <CircularProgress size={16} /> : <EditIcon />}
+            disabled={loading}
+            sx={{ minWidth: 120 }}
+          >
+            {loading ? 'Güncelleniyor...' : 'Güncelle'}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };
 
