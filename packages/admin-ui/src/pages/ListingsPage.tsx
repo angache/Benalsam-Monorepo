@@ -43,6 +43,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import type { Listing } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -89,6 +90,7 @@ export const ListingsPage: React.FC = () => {
   const [moderationAction, setModerationAction] = useState<'approve' | 'reject'>('approve');
   const [moderationReason, setModerationReason] = useState('');
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch listings
   const { data: listingsResponse, isLoading } = useQuery({
@@ -226,7 +228,7 @@ export const ListingsPage: React.FC = () => {
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Görüntüle">
-            <IconButton size="small" color="primary">
+            <IconButton size="small" color="primary" onClick={() => navigate(`/listings/${params.row.id}`)}>
               <Eye size={16} />
             </IconButton>
           </Tooltip>

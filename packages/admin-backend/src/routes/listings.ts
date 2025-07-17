@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { listingsController } from '../controllers/listingsController';
-import { authMiddleware } from '../middleware/auth';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
 // Apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(authenticateToken);
 
 // Get all listings with filters
 router.get('/', listingsController.getListings);

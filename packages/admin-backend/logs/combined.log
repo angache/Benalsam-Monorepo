@@ -134,3 +134,337 @@
 {"level":"info","message":"::1 - - [16/Jul/2025:22:39:41 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T22:39:41.784Z"}
 {"level":"info","message":"::1 - - [16/Jul/2025:22:45:31 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T22:45:31.621Z"}
 {"level":"info","message":"::1 - - [16/Jul/2025:22:45:42 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T22:45:42.557Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:08:02 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:08:02.514Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:12:44 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:12:44.493Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-16T23:31:00.532Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:40:27.343Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:40:27.346Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:40:27.347Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:40:27.347Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:40:48 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:40:48.927Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:40:59 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:40:59.929Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:41:36 +0000] \"GET /health HTTP/1.1\" 200 139 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:41:36.676Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:42:59 +0000] \"GET /api/v1/listings HTTP/1.1\" - - \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:42:59.381Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:43:01 +0000] \"GET /api/v1/listings HTTP/1.1\" - - \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:43:01.827Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:43:49.148Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:43:49.152Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:43:49.152Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:43:49.153Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-16T23:43:57.445Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:44:10.527Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:44:10.531Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:44:10.532Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:44:10.532Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:44:14 +0000] \"GET /health HTTP/1.1\" 200 139 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:44:14.506Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:44:32.330Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:44:32.334Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:44:32.335Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:44:32.335Z"}
+{"level":"info","message":"Login attempt for email: admin@benalsam.com","service":"admin-backend","timestamp":"2025-07-16T23:45:34.815Z"}
+{"admin":true,"error":null,"level":"info","message":"Supabase query result:","service":"admin-backend","timestamp":"2025-07-16T23:45:35.124Z"}
+{"level":"info","message":"Admin found: admin@benalsam.com, is_active: true","service":"admin-backend","timestamp":"2025-07-16T23:45:35.124Z"}
+{"level":"info","message":"Password validation result: true","service":"admin-backend","timestamp":"2025-07-16T23:45:35.459Z"}
+{"level":"info","message":"Login successful for: admin@benalsam.com","service":"admin-backend","timestamp":"2025-07-16T23:45:35.853Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:45:35 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 966 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:45:35.859Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:45:52 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:45:52.220Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:47:09.742Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:47:09.746Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:47:09.747Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:47:09.747Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:47:17.984Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:47:17.989Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:47:17.990Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:47:17.991Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:47:23.154Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:47:23.159Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:47:23.160Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:47:23.160Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-16T23:47:27.412Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:47:53.457Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:47:53.462Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:47:53.462Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:47:53.463Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:48:44 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:48:44.484Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:48:54 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:48:54.742Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:49:05 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:49:05.749Z"}
+{"level":"info","message":"Login attempt for email: admin@benalsam.com","service":"admin-backend","timestamp":"2025-07-16T23:49:09.517Z"}
+{"admin":true,"error":null,"level":"info","message":"Supabase query result:","service":"admin-backend","timestamp":"2025-07-16T23:49:10.036Z"}
+{"level":"info","message":"Admin found: admin@benalsam.com, is_active: true","service":"admin-backend","timestamp":"2025-07-16T23:49:10.036Z"}
+{"level":"info","message":"Password validation result: true","service":"admin-backend","timestamp":"2025-07-16T23:49:10.383Z"}
+{"level":"info","message":"Login successful for: admin@benalsam.com","service":"admin-backend","timestamp":"2025-07-16T23:49:10.708Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:49:10 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 966 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:49:10.717Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:49:22 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:49:22.754Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:49:33 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:49:33.760Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:50:21.750Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:50:21.754Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:50:21.755Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:50:21.755Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-16T23:50:33.779Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:50:46.395Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:50:46.399Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:50:46.400Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:50:46.400Z"}
+{"level":"info","limit":10,"message":"Fetching listings with filters:","page":1,"service":"admin-backend","timestamp":"2025-07-16T23:50:54.941Z"}
+{"level":"info","message":"Fetched 10 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-16T23:50:55.678Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:50:55 +0000] \"GET /api/v1/listings HTTP/1.1\" 200 10313 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:50:55.684Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-16T23:51:04.313Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-16T23:51:04.786Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:51:04 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:51:04.796Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:51:09.842Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:51:09.847Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:51:09.847Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:51:09.848Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-16T23:51:20.103Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:51:45.778Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:51:45.808Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:51:45.812Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:51:45.814Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:51:57 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:51:57.602Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:52:08 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:52:08.596Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:52:35 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:52:35.434Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:52:46 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:52:46.441Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:53:46 +0000] \"GET /api/v1/listings HTTP/1.1\" - - \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-16T23:53:46.326Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:53:57.482Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:53:57.486Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:53:57.487Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:53:57.487Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:54:10 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:54:10.439Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:54:21 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:54:21.436Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:54:37.954Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:54:37.959Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:54:37.959Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:54:37.960Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-16T23:54:45.226Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:54:55.730Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:54:55.735Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:54:55.735Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:54:55.735Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-16T23:55:00.332Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-16T23:55:01.166Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:55:01 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:55:01.173Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-16T23:56:42.232Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-16T23:56:42.237Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-16T23:56:42.237Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-16T23:56:42.238Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:57:14 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:57:14.635Z"}
+{"level":"info","message":"::1 - - [16/Jul/2025:23:57:25 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-16T23:57:25.638Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-17T00:04:30.589Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:04:51.003Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:04:51.007Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:04:51.007Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:04:51.007Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:05:01 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:05:01.979Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:05:12 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:05:12.972Z"}
+{"level":"info","message":"Login attempt for email: admin@benalsam.com","service":"admin-backend","timestamp":"2025-07-17T00:05:41.328Z"}
+{"admin":true,"error":null,"level":"info","message":"Supabase query result:","service":"admin-backend","timestamp":"2025-07-17T00:05:41.949Z"}
+{"level":"info","message":"Admin found: admin@benalsam.com, is_active: true","service":"admin-backend","timestamp":"2025-07-17T00:05:41.950Z"}
+{"level":"info","message":"Password validation result: true","service":"admin-backend","timestamp":"2025-07-17T00:05:42.282Z"}
+{"level":"info","message":"Login successful for: admin@benalsam.com","service":"admin-backend","timestamp":"2025-07-17T00:05:42.621Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:05:42 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 966 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:05:42.627Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:05:55 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:05:55.393Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:06:06 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:06:06.394Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:08:41.598Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:08:41.602Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:08:41.602Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:08:41.603Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:08:48.485Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:08:48.489Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:08:48.490Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:08:48.490Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:08:54.420Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:08:54.424Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:08:54.424Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:08:54.425Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-17T00:09:41.599Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:09:49.265Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:09:49.272Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:09:49.272Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:09:49.272Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-17T00:09:54.689Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:10:01.838Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:10:01.842Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:10:01.843Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:10:01.843Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:10:15 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:10:15.495Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:10:26 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" - - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:10:26.492Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:11:26.164Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:11:26.168Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:11:26.169Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:11:26.170Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:11:36.107Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:11:36.111Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:11:36.112Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:11:36.112Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T00:11:39.177Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T00:11:39.542Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:11:39 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:11:39.548Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T00:19:30.679Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T00:19:31.063Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:19:31 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:19:31.069Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T00:19:55.821Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T00:19:56.145Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:19:56 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:19:56.149Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T00:21:12.857Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T00:21:13.344Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:21:13 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:21:13.346Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T00:21:23.484Z"}
+{"code":"PGRST200","details":"Searched for a foreign key relationship between 'listings' and 'listing_images' in the schema 'public', but no matches were found.","hint":"Perhaps you meant 'listing_views' instead of 'listing_images'.","level":"error","message":"Listing not found: a61de73e-36f0-404d-9596-5ded8fc80e3a Could not find a relationship between 'listings' and 'listing_images' in the schema cache","service":"admin-backend","timestamp":"2025-07-17T00:21:23.716Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:21:23 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:21:23.721Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T00:21:24.934Z"}
+{"code":"PGRST200","details":"Searched for a foreign key relationship between 'listings' and 'listing_images' in the schema 'public', but no matches were found.","hint":"Perhaps you meant 'listing_views' instead of 'listing_images'.","level":"error","message":"Listing not found: a61de73e-36f0-404d-9596-5ded8fc80e3a Could not find a relationship between 'listings' and 'listing_images' in the schema cache","service":"admin-backend","timestamp":"2025-07-17T00:21:25.033Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:21:25 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:21:25.035Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:25:41.467Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:25:41.471Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:25:41.472Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:25:41.472Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T00:25:49.534Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:25:49 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:25:49.761Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T00:25:53.271Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T00:25:53.275Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T00:25:53.276Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T00:25:53.276Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T00:26:18.992Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:00:26:19 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T00:26:19.220Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T05:30:37.405Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:05:30:37 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T05:30:37.731Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T06:59:51.311Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T06:59:52.185Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:06:59:52 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T06:59:52.190Z"}
+{"level":"info","message":"Fetching listing with ID: 2f980664-60c7-4694-b521-9426c170b1c0","service":"admin-backend","timestamp":"2025-07-17T07:00:03.328Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:00:03 +0000] \"GET /api/v1/listings/2f980664-60c7-4694-b521-9426c170b1c0 HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:00:03.579Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:01:19.139Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:01:19.151Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:01:19.152Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:01:19.152Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:01:59.632Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:01:59.636Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:01:59.636Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:01:59.637Z"}
+{"level":"info","message":"Fetching listing with ID: 2f980664-60c7-4694-b521-9426c170b1c0","service":"admin-backend","timestamp":"2025-07-17T07:02:05.811Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: 2f980664-60c7-4694-b521-9426c170b1c0 column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:02:06.116Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:02:06 +0000] \"GET /api/v1/listings/2f980664-60c7-4694-b521-9426c170b1c0 HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:02:06.126Z"}
+{"level":"info","message":"Fetching listing with ID: 2f980664-60c7-4694-b521-9426c170b1c0","service":"admin-backend","timestamp":"2025-07-17T07:02:07.429Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: 2f980664-60c7-4694-b521-9426c170b1c0 column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:02:07.543Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:02:07 +0000] \"GET /api/v1/listings/2f980664-60c7-4694-b521-9426c170b1c0 HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:02:07.547Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:02:09.945Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T07:02:10.229Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:02:10 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:02:10.232Z"}
+{"level":"info","message":"Fetching listing with ID: 6714508a-1473-4001-ba39-51d179387d4e","service":"admin-backend","timestamp":"2025-07-17T07:02:20.908Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: 6714508a-1473-4001-ba39-51d179387d4e column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:02:21.132Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:02:21 +0000] \"GET /api/v1/listings/6714508a-1473-4001-ba39-51d179387d4e HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:02:21.135Z"}
+{"level":"info","message":"Fetching listing with ID: 6714508a-1473-4001-ba39-51d179387d4e","service":"admin-backend","timestamp":"2025-07-17T07:02:22.349Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: 6714508a-1473-4001-ba39-51d179387d4e column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:02:22.451Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:02:22 +0000] \"GET /api/v1/listings/6714508a-1473-4001-ba39-51d179387d4e HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:02:22.453Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:03:47.563Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:03:47.567Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:03:47.567Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:03:47.568Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:04:35.714Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:04:35.718Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:04:35.718Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:04:35.719Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T07:04:57.310Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: a61de73e-36f0-404d-9596-5ded8fc80e3a column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:04:57.556Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:04:57 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:04:57.565Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T07:04:58.826Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: a61de73e-36f0-404d-9596-5ded8fc80e3a column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:04:58.947Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:04:58 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:04:58.951Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:07:26.480Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:07:26.485Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:07:26.486Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:07:26.486Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:07:42.969Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:07:42.973Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:07:42.974Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:07:42.974Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:07:49.097Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:07:49.100Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:07:49.101Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:07:49.102Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:07:55.080Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:07:55.084Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:07:55.084Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:07:55.084Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:08:04.168Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:08:04.171Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:08:04.172Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:08:04.172Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:08:11.363Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:08:11.367Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:08:11.368Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:08:11.368Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T07:08:24.026Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: a61de73e-36f0-404d-9596-5ded8fc80e3a column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:08:24.315Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:08:24 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:08:24.323Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T07:08:25.578Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Listing not found: a61de73e-36f0-404d-9596-5ded8fc80e3a column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:08:25.704Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:08:25 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 404 47 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:08:25.708Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:08:27.898Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Error fetching listings: column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:08:28.178Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:08:28 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 500 68 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:08:28.182Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:08:29.434Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Error fetching listings: column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:08:29.759Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:08:29 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 500 68 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:08:29.762Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:08:31.654Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Error fetching listings: column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:08:31.992Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:08:31 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 500 68 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:08:31.995Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:08:33.231Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Error fetching listings: column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:08:33.574Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:08:33 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 500 68 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:08:33.577Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:08:57.702Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:08:57.706Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:08:57.706Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:08:57.706Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:09:01.019Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Error fetching listings: column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:09:01.373Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:09:01 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 500 68 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:09:01.381Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:09:02.628Z"}
+{"code":"42703","details":null,"hint":null,"level":"error","message":"Error fetching listings: column profiles_1.email does not exist","service":"admin-backend","timestamp":"2025-07-17T07:09:02.980Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:09:02 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 500 68 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:09:02.984Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:09:41.763Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:09:41.767Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:09:41.768Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:09:41.768Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:09:52.572Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:09:52.576Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:09:52.577Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:09:52.577Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:09:58.710Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:09:58.715Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:09:58.715Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:09:58.716Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:10:05.979Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:10:05.983Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:10:05.984Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:10:05.984Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:10:12.821Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:10:12.825Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:10:12.826Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:10:12.826Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:10:20.629Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:10:20.633Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:10:20.634Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:10:20.635Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:10:30.369Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:10:30.373Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:10:30.373Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:10:30.373Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T07:10:32.602Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T07:10:33.012Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:10:33 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:10:33.024Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T07:10:36.036Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:10:36 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:10:36.355Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:11:18.623Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:11:18.628Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:11:18.629Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:11:18.629Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:11:37.923Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:11:37.928Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:11:37.928Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:11:37.929Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T07:11:53.934Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T07:11:53.938Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T07:11:53.939Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T07:11:53.939Z"}
+{"level":"info","message":"Fetching listing with ID: a61de73e-36f0-404d-9596-5ded8fc80e3a","service":"admin-backend","timestamp":"2025-07-17T07:12:16.174Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:07:12:16 +0000] \"GET /api/v1/listings/a61de73e-36f0-404d-9596-5ded8fc80e3a HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T07:12:16.640Z"}

@@ -13,6 +13,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
+    console.log('🔑 Adding auth token to request:', token ? 'Token exists' : 'No token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,11 +41,18 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  user: {
+  refreshToken: string;
+  admin: {
     id: string;
     email: string;
+    first_name: string;
+    last_name: string;
     role: string;
-    name: string;
+    permissions: any[];
+    is_active: boolean;
+    last_login: string;
+    created_at: string;
+    updated_at: string;
   };
 }
 
@@ -125,8 +133,17 @@ export interface AnalyticsData {
 export const apiService = {
   // Auth
   async login(credentials: LoginRequest): Promise<LoginResponse> {
+    console.log('🔐 Attempting login with:', credentials.email);
     const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
-    return response.data.data;
+    console.log('🔐 Login response:', response.data);
+    
+    // Admin backend returns { success: true, data: { admin, token, refreshToken }, message }
+    const loginData = response.data.data;
+    return {
+      token: loginData.token,
+      refreshToken: loginData.refreshToken,
+      admin: loginData.admin,
+    };
   },
 
   async logout(): Promise<void> {
@@ -140,7 +157,9 @@ export const apiService = {
 
   // Listings
   async getListings(params: GetListingsParams = {}): Promise<ApiResponse<Listing[]>> {
+    console.log('🔍 Fetching listings with params:', params);
     const response = await apiClient.get<ApiResponse<Listing[]>>('/listings', { params });
+    console.log('✅ Listings response:', response.data);
     return response.data;
   },
 

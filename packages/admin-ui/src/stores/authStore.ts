@@ -39,7 +39,15 @@ export const useAuthStore = create<AuthState>()(
           const response = await apiService.login({ email, password });
           
           set({
-            user: response.user,
+            user: {
+              id: response.admin.id,
+              email: response.admin.email,
+              name: `${response.admin.first_name} ${response.admin.last_name}`,
+              role: response.admin.role,
+              status: 'ACTIVE' as const,
+              createdAt: response.admin.created_at,
+              lastLoginAt: response.admin.last_login,
+            },
             token: response.token,
             isAuthenticated: true,
             isLoading: false,

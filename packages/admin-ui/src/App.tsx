@@ -7,6 +7,7 @@ import { Layout } from './components/Layout/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ListingsPage } from './pages/ListingsPage';
+import { ListingDetailPage } from './pages/ListingDetailPage';
 import { useAuthStore } from './stores/authStore';
 
 const theme = createTheme({
@@ -64,6 +65,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ListingsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/listings/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ListingDetailPage />
                   </Layout>
                 </ProtectedRoute>
               }

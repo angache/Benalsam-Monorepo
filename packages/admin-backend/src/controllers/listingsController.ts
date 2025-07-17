@@ -23,21 +23,21 @@ export const listingsController = {
       const offset = (pageNum - 1) * limitNum;
 
       logger.info(`Fetching listings with filters:`, { page: pageNum, limit: limitNum, search, status, category });
+      console.log('🔍 Fetching listings from Supabase...');
 
       // Build Supabase query
       let query = supabase
         .from('listings')
-        .select('*');
+        .select(`*`);
 
       // Apply filters
       if (search) {
-        const searchLower = search.toString().toLowerCase();
-        query = query.or(`title.ilike.%${searchLower}%,description.ilike.%${searchLower}%`);
+        query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
       }
       
-      if (status) {
-        query = query.eq('status', status);
-      }
+              if (status && typeof status === 'string') {
+          query = query.eq('status', status.toLowerCase());
+        }
       
       if (category) {
         query = query.eq('category', category);
@@ -62,12 +62,39 @@ export const listingsController = {
 
       if (error) {
         logger.error('Error fetching listings:', error);
+        console.error('❌ Supabase error:', error);
         res.status(500).json({
           success: false,
           message: 'İlanlar getirilirken bir hata oluştu',
         });
         return;
       }
+
+      // Get unique user IDs
+      const userIds = [...new Set(listings?.map(l => l.user_id).filter(Boolean) || [])];
+
+      // Get user emails from auth.users
+      const userEmails = new Map();
+      for (const userId of userIds) {
+        try {
+          const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+          if (!authError && authUser?.user) {
+            userEmails.set(userId, authUser.user.email || 'Bilinmiyor');
+          } else {
+            userEmails.set(userId, 'Bilinmiyor');
+          }
+        } catch (error) {
+          userEmails.set(userId, 'Bilinmiyor');
+        }
+      }
+
+      // Get profile info for all users
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', userIds);
+
+      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
       // Transform data for frontend
       const transformedListings = (listings || []).map(listing => ({
@@ -82,16 +109,11 @@ export const listingsController = {
         createdAt: listing.created_at,
         updatedAt: listing.updated_at,
         userId: listing.user_id,
-        images: listing.main_image_url ? [listing.main_image_url] : [],
-        location: listing.location ? {
-          city: listing.location.split(' / ')[0] || '',
-          district: listing.location.split(' / ')[1] || '',
-          neighborhood: listing.location.split(' / ')[2] || '',
-        } : null,
+        images: listing.main_image_url ? [listing.main_image_url, ...(listing.additional_image_urls || [])] : [],
         user: {
           id: listing.user_id,
-          email: 'user@example.com',
-          name: 'Test User'
+          email: userEmails.get(listing.user_id) || 'Bilinmiyor',
+          name: profilesMap.get(listing.user_id)?.name || 'Bilinmiyor'
         },
       }));
 
@@ -99,6 +121,7 @@ export const listingsController = {
       const totalPages = Math.ceil(totalCount / limitNum);
 
       logger.info(`Fetched ${transformedListings.length} listings out of ${totalCount} total`);
+      console.log(`✅ Fetched ${transformedListings.length} listings out of ${totalCount} total`);
 
       res.json({
         success: true,
@@ -128,12 +151,7 @@ export const listingsController = {
 
       const { data: listing, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          users:user_id(id, email, name, avatar),
-          listing_images(id, url, order),
-          listing_locations(id, city, district, neighborhood)
-        `)
+        .select(`*`)
         .eq('id', id)
         .single();
 
@@ -146,25 +164,40 @@ export const listingsController = {
         return;
       }
 
+      // Get user email from auth.users
+      let userEmail = 'Bilinmiyor';
+      if (listing.user_id) {
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(listing.user_id);
+        if (!authError && authUser?.user) {
+          userEmail = authUser.user.email || 'Bilinmiyor';
+        }
+      }
+
+      // Get profile info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, avatar_url')
+        .eq('id', listing.user_id)
+        .single();
+
       const transformedListing = {
         id: listing.id,
         title: listing.title,
         description: listing.description,
-        price: listing.price,
+        price: listing.budget || 0,
         category: listing.category,
-        status: listing.status,
-        views: listing.views || 0,
-        favorites: listing.favorites || 0,
+        status: listing.status?.toUpperCase() || 'PENDING',
+        views: listing.views_count || 0,
+        favorites: listing.favorites_count || 0,
         createdAt: listing.created_at,
         updatedAt: listing.updated_at,
         userId: listing.user_id,
-        images: listing.listing_images?.map((img: any) => img.url).sort((a: any, b: any) => a.order - b.order) || [],
-        location: listing.listing_locations ? {
-          city: listing.listing_locations.city,
-          district: listing.listing_locations.district,
-          neighborhood: listing.listing_locations.neighborhood,
-        } : null,
-        user: listing.users,
+        images: listing.main_image_url ? [listing.main_image_url, ...(listing.additional_image_urls || [])] : [],
+        user: {
+          id: listing.user_id,
+          email: userEmail,
+          name: profile?.name || 'Bilinmiyor'
+        },
       };
 
       res.json({
@@ -195,12 +228,7 @@ export const listingsController = {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .select(`
-          *,
-          users:user_id(id, email, name, avatar),
-          listing_images(id, url, order),
-          listing_locations(id, city, district, neighborhood)
-        `)
+        .select(`*`)
         .single();
 
       if (error || !listing) {
@@ -212,25 +240,40 @@ export const listingsController = {
         return;
       }
 
+      // Get user email from auth.users
+      let userEmail = 'Bilinmiyor';
+      if (listing.user_id) {
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(listing.user_id);
+        if (!authError && authUser?.user) {
+          userEmail = authUser.user.email || 'Bilinmiyor';
+        }
+      }
+
+      // Get profile info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, avatar_url')
+        .eq('id', listing.user_id)
+        .single();
+
       const transformedListing = {
         id: listing.id,
         title: listing.title,
         description: listing.description,
-        price: listing.price,
+        price: listing.budget || 0,
         category: listing.category,
-        status: listing.status,
-        views: listing.views || 0,
-        favorites: listing.favorites || 0,
+        status: listing.status?.toUpperCase() || 'PENDING',
+        views: listing.views_count || 0,
+        favorites: listing.favorites_count || 0,
         createdAt: listing.created_at,
         updatedAt: listing.updated_at,
         userId: listing.user_id,
-        images: listing.listing_images?.map((img: any) => img.url).sort((a: any, b: any) => a.order - b.order) || [],
-        location: listing.listing_locations ? {
-          city: listing.listing_locations.city,
-          district: listing.listing_locations.district,
-          neighborhood: listing.listing_locations.neighborhood,
-        } : null,
-        user: listing.users,
+        images: listing.main_image_url ? [listing.main_image_url, ...(listing.additional_image_urls || [])] : [],
+        user: {
+          id: listing.user_id,
+          email: userEmail,
+          name: profile?.name || 'Bilinmiyor'
+        },
       };
 
       res.json({

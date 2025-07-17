@@ -19,12 +19,18 @@ export const authenticateToken = async (
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    console.log('🔐 Auth middleware - Token:', token ? 'Token exists' : 'No token');
+    console.log('🔐 Auth middleware - Auth header:', authHeader);
+
     if (!token) {
+      console.log('❌ No token provided');
       ApiResponseUtil.unauthorized(res, 'Access token required');
       return;
     }
 
+    console.log('🔐 Verifying token...');
     const decoded = jwtUtils.verify(token);
+    console.log('🔐 Token decoded:', decoded);
     
     // Get admin user from Supabase
     const { data: admin, error } = await supabase
@@ -34,6 +40,7 @@ export const authenticateToken = async (
       .single();
 
     if (error || !admin || !admin.is_active) {
+      console.log('❌ Admin not found or inactive:', { error, admin: !!admin, isActive: admin?.is_active });
       ApiResponseUtil.unauthorized(res, 'Invalid or inactive admin account');
       return;
     }
@@ -44,6 +51,7 @@ export const authenticateToken = async (
       .update({ last_login: new Date().toISOString() })
       .eq('id', admin.id);
 
+    console.log('✅ Auth successful for admin:', admin.email);
     req.admin = admin;
     next();
   } catch (error) {
