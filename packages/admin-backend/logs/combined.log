@@ -1826,3 +1826,28 @@
 {"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-17T19:51:19.740Z"}
 {"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-17T19:51:20.504Z"}
 {"level":"info","message":"::1 - - [17/Jul/2025:19:51:20 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T19:51:20.508Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T20:51:55.962Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T20:51:55.976Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T20:51:55.976Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T20:51:55.977Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T20:52:18.344Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T20:52:18.348Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T20:52:18.349Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T20:52:18.349Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T20:52:31.348Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T20:52:31.352Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T20:52:31.353Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T20:52:31.353Z"}
+{"level":"info","message":"Elasticsearch client initialized","service":"admin-backend","timestamp":"2025-07-17T20:58:27.148Z"}
+{"level":"info","message":"Redis client initialized","service":"admin-backend","timestamp":"2025-07-17T20:58:27.152Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-17T20:58:27.158Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-17T20:58:27.159Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-17T20:58:27.159Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-17T20:58:27.159Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:21:01:02 +0000] \"GET /health HTTP/1.1\" 200 139 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-17T21:01:02.982Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:21:01:09 +0000] \"GET /api/v1/search/health HTTP/1.1\" 200 116 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-17T21:01:09.175Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:21:01:26 +0000] \"GET /api/v1/search/health HTTP/1.1\" 200 116 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T21:01:26.122Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:21:01:26 +0000] \"GET /favicon.ico HTTP/1.1\" 404 65 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-17T21:01:26.354Z"}
+{"level":"info","message":"Search request:","page":1,"pageSize":5,"query":"telefon","service":"admin-backend","sortBy":"created_at","sortOrder":"desc","timestamp":"2025-07-17T21:01:33.774Z"}
+{"level":"info","max_price":null,"message":"Searching with Supabase RPC:","min_price":null,"p_attributes":null,"p_categories":null,"p_location":null,"p_page":1,"p_page_size":5,"p_urgency":"Tümü","search_query":"telefon","service":"admin-backend","sort_direction":"desc","sort_key":"created_at","timestamp":"2025-07-17T21:01:33.776Z"}
+{"level":"info","message":"::1 - - [17/Jul/2025:21:01:34 +0000] \"POST /api/v1/search/listings HTTP/1.1\" 200 954 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-17T21:01:34.477Z"}
