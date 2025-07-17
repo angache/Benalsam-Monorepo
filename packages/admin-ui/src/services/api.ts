@@ -81,10 +81,15 @@ export interface Listing {
   updatedAt: string;
   userId: string;
   images: string[];
-  location: {
+  location?: {
     city: string;
     district: string;
     neighborhood: string;
+  };
+  user?: {
+    id: string;
+    email: string;
+    name: string;
   };
 }
 
