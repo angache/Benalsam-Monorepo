@@ -19,6 +19,7 @@ import {
   BarChart3,
   LogOut,
   Package,
+  Folder,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -36,6 +37,12 @@ const navigationItems = [
     title: 'İlan Yönetimi',
     path: '/listings',
     icon: Package,
+  },
+  {
+    id: 'categories',
+    title: 'Kategori Yönetimi',
+    path: '/categories',
+    icon: Folder,
   },
   {
     id: 'users',

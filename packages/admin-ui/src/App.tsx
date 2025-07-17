@@ -6,6 +6,10 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ListingsPage } from './pages/ListingsPage';
 import { ListingDetailPage } from './pages/ListingDetailPage';
+import { CategoriesPage } from './pages/CategoriesPage';
+import { CategoryDetailPage } from './pages/CategoryDetailPage';
+import { CategoryAttributesPage } from './pages/CategoryAttributesPage';
+import { CategoryEditPage } from './pages/CategoryEditPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -61,6 +65,46 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ListingDetailPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CategoriesPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories/:path"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CategoryDetailPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories/:path/attributes"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CategoryAttributesPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories/:path/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CategoryEditPage />
                   </Layout>
                 </ProtectedRoute>
               }

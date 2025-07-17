@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth';
 import { listingsRouter } from './listings';
+import { categoriesRouter } from './categories';
 
 const router = Router();
 
@@ -22,6 +23,9 @@ router.use('/auth', authRoutes);
 
 // Listings routes
 router.use('/listings', listingsRouter);
+
+// Categories routes
+router.use('/categories', categoriesRouter);
 
 // Placeholder routes for future modules
 router.get('/users', (req, res) => {

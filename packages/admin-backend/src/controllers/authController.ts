@@ -144,6 +144,22 @@ export class AuthController {
         return;
       }
 
+      // Create corresponding profile for admin user
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: newAdmin.id, // Use same ID as admin user
+          email: newAdmin.email,
+          name: `${firstName} ${lastName}`,
+          avatar_url: null,
+          is_admin: true, // Mark as admin profile
+        });
+
+      if (profileError) {
+        logger.warn('Failed to create admin profile:', profileError);
+        // Don't fail the admin creation, just log the warning
+      }
+
       // Log activity
       await supabase
         .from('admin_activity_logs')
