@@ -22,4 +22,7 @@ router.delete('/:id', listingsController.deleteListing);
 // Moderate listing (approve/reject)
 router.post('/:id/moderate', listingsController.moderateListing);
 
+// Re-evaluate listing (move active listing back to pending)
+router.post('/:id/re-evaluate', listingsController.reEvaluateListing);
+
 export { router as listingsRouter }; 

@@ -174,7 +174,12 @@ export const apiService = {
   },
 
   async moderateListing(id: string, action: 'approve' | 'reject', reason?: string): Promise<void> {
-    await apiClient.post(`/listings/${id}/moderate`, { action, reason });
+    const status = action === 'approve' ? 'active' : 'rejected';
+    await apiClient.post(`/listings/${id}/moderate`, { status, reason });
+  },
+
+  async reEvaluateListing(id: string, reason?: string): Promise<void> {
+    await apiClient.post(`/listings/${id}/re-evaluate`, { reason });
   },
 
   async deleteListing(id: string): Promise<void> {

@@ -29,6 +29,10 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   ArrowLeft,
@@ -68,14 +72,29 @@ const statusLabels = {
   REJECTED: 'Reddedildi',
 } as const;
 
+// Reddetme sebepleri
+const rejectionReasons = [
+  'Uygunsuz içerik',
+  'Yanlış kategori',
+  'Eksik bilgi',
+  'Düşük kaliteli görseller',
+  'Yanıltıcı fiyat',
+  'Spam/tekrarlayan ilan',
+  'Telif hakkı ihlali',
+  'Yasadışı ürün/hizmet',
+  'Diğer',
+];
+
 export const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [moderationDialog, setModerationDialog] = useState(false);
-  const [moderationAction, setModerationAction] = useState<'approve' | 'reject'>('approve');
-  const [moderationReason, setModerationReason] = useState('');
-  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [moderationAction, setModerationAction] = useState<'approve' | 'reject' | 're-evaluate'>('approve');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [customRejectionReason, setCustomRejectionReason] = useState('');
+  const [reEvaluationReason, setReEvaluationReason] = useState('');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch listing details
@@ -87,38 +106,46 @@ export const ListingDetailPage: React.FC = () => {
 
   // Moderation mutation
   const moderationMutation = useMutation({
-    mutationFn: ({ id, action, reason }: { id: string; action: 'approve' | 'reject'; reason?: string }) =>
-      apiService.moderateListing(id, action, reason),
+    mutationFn: ({ id, action, reason }: { id: string; action: 'approve' | 'reject' | 're-evaluate'; reason?: string }) => {
+      if (action === 're-evaluate') {
+        return apiService.reEvaluateListing(id, reason);
+      }
+      return apiService.moderateListing(id, action as 'approve' | 'reject', reason);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listing', id] });
       queryClient.invalidateQueries({ queryKey: ['listings'] });
       setModerationDialog(false);
-      setModerationReason('');
-    },
-  });
-
-  // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiService.deleteListing(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['listings'] });
-      navigate('/listings');
+      setRejectionReason('');
+      setCustomRejectionReason('');
+      setReEvaluationReason('');
+      setSuccessMessage(
+        moderationAction === 'approve' 
+          ? 'İlan başarıyla onaylandı!' 
+          : moderationAction === 'reject'
+          ? 'İlan başarıyla reddedildi!'
+          : 'İlan tekrar değerlendirme sürecine alındı!'
+      );
+      // 3 saniye sonra mesajı kaldır
+      setTimeout(() => setSuccessMessage(null), 3000);
     },
   });
 
   const handleModeration = () => {
     if (listing) {
+      let reason: string | undefined;
+      
+      if (moderationAction === 'reject') {
+        reason = rejectionReason === 'Diğer' ? customRejectionReason : rejectionReason;
+      } else if (moderationAction === 're-evaluate') {
+        reason = reEvaluationReason;
+      }
+      
       moderationMutation.mutate({
         id: listing.id,
         action: moderationAction,
-        reason: moderationReason || undefined,
+        reason,
       });
-    }
-  };
-
-  const handleDelete = () => {
-    if (listing) {
-      deleteMutation.mutate(listing.id);
     }
   };
 
@@ -176,43 +203,61 @@ export const ListingDetailPage: React.FC = () => {
         />
       </Box>
 
-      {/* Action Buttons */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        {listing.status === 'PENDING' && (
-          <>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<CheckCircle />}
-              onClick={() => {
-                setModerationAction('approve');
-                setModerationDialog(true);
-              }}
-            >
-              Onayla
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<XCircle />}
-              onClick={() => {
-                setModerationAction('reject');
-                setModerationDialog(true);
-              }}
-            >
-              Reddet
-            </Button>
-          </>
-        )}
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<Delete />}
-          onClick={() => setDeleteDialog(true)}
+      {/* Success Message */}
+      {successMessage && (
+        <Alert 
+          severity="success" 
+          sx={{ mb: 3 }}
+          onClose={() => setSuccessMessage(null)}
         >
-          Sil
-        </Button>
-      </Box>
+          {successMessage}
+        </Alert>
+      )}
+
+      {/* Action Buttons */}
+      {listing.status === 'PENDING' && (
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<CheckCircle />}
+            onClick={() => {
+              setModerationAction('approve');
+              setModerationDialog(true);
+            }}
+          >
+            Onayla
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<XCircle />}
+            onClick={() => {
+              setModerationAction('reject');
+              setModerationDialog(true);
+            }}
+          >
+            Reddet
+          </Button>
+        </Box>
+      )}
+
+      {/* Re-evaluate Button for Active/Inactive Listings */}
+      {(listing.status === 'ACTIVE' || listing.status === 'INACTIVE') && (
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Button
+            variant="contained"
+            color="warning"
+            startIcon={<AlertTriangle />}
+            onClick={() => {
+              setModerationAction('re-evaluate');
+              setModerationDialog(true);
+            }}
+          >
+            Tekrar Değerlendir
+          </Button>
+        </Box>
+      )}
 
       {/* Title and Price */}
       <Box sx={{ mb: 3 }}>
@@ -508,49 +553,85 @@ export const ListingDetailPage: React.FC = () => {
       {/* Moderation Dialog */}
       <Dialog open={moderationDialog} onClose={() => setModerationDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {moderationAction === 'approve' ? 'İlanı Onayla' : 'İlanı Reddet'}
+          {moderationAction === 'approve' ? 'İlanı Onayla' : 
+           moderationAction === 'reject' ? 'İlanı Reddet' : 
+           'İlanı Tekrar Değerlendir'}
         </DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            label="Sebep (Opsiyonel)"
-            value={moderationReason}
-            onChange={(e) => setModerationReason(e.target.value)}
-            sx={{ mt: 2 }}
-          />
+          {moderationAction === 'approve' ? (
+            <Typography sx={{ mt: 2 }}>
+              Bu ilanı onaylamak istediğinizden emin misiniz? İlan onaylandıktan sonra kullanıcılar tarafından görülebilir hale gelecektir.
+            </Typography>
+          ) : moderationAction === 'reject' ? (
+            <Box sx={{ mt: 2 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Reddetme Sebebi</InputLabel>
+                <Select
+                  value={rejectionReason}
+                  label="Reddetme Sebebi"
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                >
+                  {rejectionReasons.map((reason) => (
+                    <MenuItem key={reason} value={reason}>
+                      {reason}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              
+              {rejectionReason === 'Diğer' && (
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label="Özel Sebep"
+                  value={customRejectionReason}
+                  onChange={(e) => setCustomRejectionReason(e.target.value)}
+                  placeholder="Reddetme sebebini detaylı olarak açıklayın..."
+                />
+              )}
+            </Box>
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                Bu ilanı tekrar değerlendirme sürecine almak istediğinizden emin misiniz? İlan pasife alınacak ve tekrar onay sürecine girecektir.
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Tekrar Değerlendirme Nedeni"
+                value={reEvaluationReason}
+                onChange={(e) => setReEvaluationReason(e.target.value)}
+                placeholder="İlanı neden tekrar değerlendirmeye aldığınızı detaylı olarak açıklayın... (Zorunlu)"
+                required
+              />
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModerationDialog(false)}>İptal</Button>
+          <Button onClick={() => {
+            setModerationDialog(false);
+            setRejectionReason('');
+            setCustomRejectionReason('');
+            setReEvaluationReason('');
+          }}>
+            İptal
+          </Button>
           <Button
             onClick={handleModeration}
             variant="contained"
-            color={moderationAction === 'approve' ? 'success' : 'error'}
-            disabled={moderationMutation.isPending}
+            color={moderationAction === 'approve' ? 'success' : moderationAction === 'reject' ? 'error' : 'warning'}
+            disabled={
+              moderationMutation.isPending || 
+              (moderationAction === 'reject' && !rejectionReason) ||
+              (moderationAction === 'reject' && rejectionReason === 'Diğer' && !customRejectionReason.trim()) ||
+              (moderationAction === 're-evaluate' && !reEvaluationReason.trim())
+            }
           >
-            {moderationMutation.isPending ? 'İşleniyor...' : (moderationAction === 'approve' ? 'Onayla' : 'Reddet')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Dialog */}
-      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>İlanı Sil</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bu ilanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>İptal</Button>
-          <Button
-            onClick={handleDelete}
-            variant="contained"
-            color="error"
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? 'Siliniyor...' : 'Sil'}
+            {moderationMutation.isPending ? 'İşleniyor...' : 
+             moderationAction === 'approve' ? 'Onayla' : 
+             moderationAction === 'reject' ? 'Reddet' : 'Tekrar Değerlendir'}
           </Button>
         </DialogActions>
       </Dialog>

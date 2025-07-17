@@ -117,6 +117,8 @@ export const listingsController = {
         },
       }));
 
+
+
       const totalCount = count || 0;
       const totalPages = Math.ceil(totalCount / limitNum);
 
@@ -333,22 +335,25 @@ export const listingsController = {
 
       logger.info(`Moderating listing ${id} to status: ${status}`, { admin: admin?.email, reason });
 
+      // Get admin profile ID
+      const { data: adminProfile } = await supabase
+        .from('admin_profiles')
+        .select('id')
+        .eq('admin_id', admin?.id)
+        .eq('is_active', true)
+        .single();
+
       const { data: listing, error } = await supabase
         .from('listings')
         .update({
-          status,
-          moderated_at: new Date().toISOString(),
-          moderated_by: admin?.id,
-          moderation_reason: reason,
+          status: status.toLowerCase(),
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: adminProfile?.id || admin?.id, // Use admin profile ID if available
+          rejection_reason: reason,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .select(`
-          *,
-          users:user_id(id, email, name, avatar),
-          listing_images(id, url, order),
-          listing_locations(id, city, district, neighborhood)
-        `)
+        .select('*')
         .single();
 
       if (error || !listing) {
@@ -365,6 +370,7 @@ export const listingsController = {
         .from('admin_activity_logs')
         .insert({
           admin_id: admin?.id,
+          admin_profile_id: adminProfile?.id,
           action: 'MODERATE_LISTING',
           resource: 'listings',
           resource_id: id,
@@ -373,25 +379,45 @@ export const listingsController = {
           user_agent: req.get('User-Agent'),
         });
 
+      // Get user email from auth.users
+      let userEmail = 'Bilinmiyor';
+      if (listing.user_id) {
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(listing.user_id);
+        if (!authError && authUser?.user) {
+          userEmail = authUser.user.email || 'Bilinmiyor';
+        }
+      }
+
+      // Get profile info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, avatar_url')
+        .eq('id', listing.user_id)
+        .single();
+
       const transformedListing = {
         id: listing.id,
         title: listing.title,
         description: listing.description,
-        price: listing.price,
+        price: listing.budget || 0,
         category: listing.category,
-        status: listing.status,
-        views: listing.views || 0,
-        favorites: listing.favorites || 0,
+        status: listing.status?.toUpperCase() || 'PENDING',
+        views: listing.views_count || 0,
+        favorites: listing.favorites_count || 0,
         createdAt: listing.created_at,
         updatedAt: listing.updated_at,
         userId: listing.user_id,
-        images: listing.listing_images?.map((img: any) => img.url).sort((a: any, b: any) => a.order - b.order) || [],
-        location: listing.listing_locations ? {
-          city: listing.listing_locations.city,
-          district: listing.listing_locations.district,
-          neighborhood: listing.listing_locations.neighborhood,
+        images: listing.main_image_url ? [listing.main_image_url, ...(listing.additional_image_urls || [])] : [],
+        location: listing.city && listing.district ? {
+          city: listing.city,
+          district: listing.district,
+          neighborhood: listing.neighborhood,
         } : null,
-        user: listing.users,
+        user: {
+          id: listing.user_id,
+          email: userEmail,
+          name: profile?.name || 'Bilinmiyor'
+        },
       };
 
       res.json({
@@ -404,6 +430,114 @@ export const listingsController = {
       res.status(500).json({
         success: false,
         message: 'Moderasyon işlemi sırasında bir hata oluştu',
+      });
+    }
+  },
+
+  // Re-evaluate listing (move active listing back to pending)
+  async reEvaluateListing(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      const admin = req.admin;
+
+      logger.info(`Re-evaluating listing ${id}`, { admin: admin?.email, reason });
+
+      // Get admin profile ID
+      const { data: adminProfile } = await supabase
+        .from('admin_profiles')
+        .select('id')
+        .eq('admin_id', admin?.id)
+        .eq('is_active', true)
+        .single();
+
+      const { data: listing, error } = await supabase
+        .from('listings')
+        .update({
+          status: 'pending',
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: adminProfile?.id || admin?.id,
+          rejection_reason: reason,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (error || !listing) {
+        logger.error(`Error re-evaluating listing: ${id}`, error);
+        res.status(404).json({
+          success: false,
+          message: 'İlan bulunamadı veya tekrar değerlendirme işlemi başarısız',
+        });
+        return;
+      }
+
+      // Log re-evaluation activity
+      await supabase
+        .from('admin_activity_logs')
+        .insert({
+          admin_id: admin?.id,
+          admin_profile_id: adminProfile?.id,
+          action: 'RE_EVALUATE_LISTING',
+          resource: 'listings',
+          resource_id: id,
+          details: { reason },
+          ip_address: req.ip,
+          user_agent: req.get('User-Agent'),
+        });
+
+      // Get user email from auth.users
+      let userEmail = 'Bilinmiyor';
+      if (listing.user_id) {
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(listing.user_id);
+        if (!authError && authUser?.user) {
+          userEmail = authUser.user.email || 'Bilinmiyor';
+        }
+      }
+
+      // Get profile info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, avatar_url')
+        .eq('id', listing.user_id)
+        .single();
+
+      const transformedListing = {
+        id: listing.id,
+        title: listing.title,
+        description: listing.description,
+        price: listing.budget || 0,
+        category: listing.category,
+        status: listing.status?.toUpperCase() || 'PENDING',
+        views: listing.views_count || 0,
+        favorites: listing.favorites_count || 0,
+        createdAt: listing.created_at,
+        updatedAt: listing.updated_at,
+        userId: listing.user_id,
+        images: listing.main_image_url ? [listing.main_image_url, ...(listing.additional_image_urls || [])] : [],
+        location: listing.city && listing.district ? {
+          city: listing.city,
+          district: listing.district,
+          neighborhood: listing.neighborhood,
+        } : null,
+        user: {
+          id: listing.user_id,
+          email: userEmail,
+          name: profile?.name || 'Bilinmiyor'
+        },
+      };
+
+      res.json({
+        success: true,
+        data: transformedListing,
+        message: 'İlan başarıyla tekrar değerlendirme sürecine alındı',
+      });
+    } catch (error) {
+      logger.error('Error re-evaluating listing:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Tekrar değerlendirme işlemi sırasında bir hata oluştu',
       });
     }
   },
