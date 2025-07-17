@@ -264,11 +264,13 @@ const AdminManagementPage: React.FC = () => {
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                            {admin.name ? admin.name.charAt(0).toUpperCase() : 'A'}
+                            {(admin.first_name || admin.name) ? (admin.first_name || admin.name)?.charAt(0).toUpperCase() : 'A'}
                           </Avatar>
                           <Box>
                             <Typography variant="body2" fontWeight="medium">
-                              {admin.name || 'İsimsiz Admin'}
+                              {admin.first_name && admin.last_name 
+                                ? `${admin.first_name} ${admin.last_name}` 
+                                : admin.name || 'İsimsiz Admin'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               {admin.email}
@@ -286,15 +288,15 @@ const AdminManagementPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={admin.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
-                          color={admin.status === 'ACTIVE' ? 'success' : 'error'}
+                          label={admin.is_active ? 'Aktif' : 'Pasif'}
+                          color={admin.is_active ? 'success' : 'error'}
                           size="small"
                         />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {admin.lastLoginAt
-                            ? new Date(admin.lastLoginAt).toLocaleDateString('tr-TR')
+                          {(admin.last_login || admin.lastLoginAt)
+                            ? new Date(admin.last_login || admin.lastLoginAt || '').toLocaleDateString('tr-TR')
                             : 'Hiç giriş yapmamış'}
                         </Typography>
                       </TableCell>
@@ -778,10 +780,10 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({
   permissions,
 }) => {
   const [formData, setFormData] = useState({
-    firstName: admin.name.split(' ')[0] || '',
-    lastName: admin.name.split(' ').slice(1).join(' ') || '',
+    firstName: admin.first_name || admin.name?.split(' ')[0] || '',
+    lastName: admin.last_name || admin.name?.split(' ').slice(1).join(' ') || '',
     role: admin.role,
-    isActive: admin.status === 'ACTIVE',
+    isActive: admin.is_active !== undefined ? admin.is_active : (admin.status === 'ACTIVE'),
     permissions: admin.permissions?.map((p: any) => p.id) || [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -852,8 +854,8 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({
                   <strong>Mevcut Admin:</strong> {admin.email}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  <strong>Son Giriş:</strong> {admin.lastLoginAt 
-                    ? new Date(admin.lastLoginAt).toLocaleDateString('tr-TR') 
+                  <strong>Son Giriş:</strong> {(admin.last_login || admin.lastLoginAt)
+                    ? new Date(admin.last_login || admin.lastLoginAt || '').toLocaleDateString('tr-TR') 
                     : 'Hiç giriş yapmamış'}
                 </Typography>
               </Card>

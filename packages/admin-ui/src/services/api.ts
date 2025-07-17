@@ -120,9 +120,22 @@ export interface User {
   permissions?: any[];
 }
 
-export interface AdminUser extends User {
+export interface AdminUser {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  name?: string;
+  role: string;
+  is_active: boolean;
+  status?: 'ACTIVE' | 'INACTIVE' | 'BANNED';
+  created_at: string;
+  updated_at: string;
+  last_login?: string;
+  lastLoginAt?: string;
   roleDetails?: any;
   userPermissions?: any[];
+  permissions?: any[];
 }
 
 export interface Role {
