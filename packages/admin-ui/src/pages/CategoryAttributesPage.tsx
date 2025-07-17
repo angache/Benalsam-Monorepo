@@ -42,6 +42,8 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { categoryService, type Category, type CategoryAttribute } from '../services/categoryService';
+import { getIconComponent } from '../utils/iconUtils';
+import { getColorStyle, getColorName } from '../utils/colorUtils';
 
 interface AttributeFormData {
   key: string;
@@ -222,9 +224,14 @@ export const CategoryAttributesPage: React.FC = () => {
           <IconButton onClick={() => navigate(`/categories/${encodeURIComponent(path!)}`)}>
             <ArrowLeft size={20} />
           </IconButton>
-          <Typography variant="h4" component="h1">
-            {category.name} - Özellikler
-          </Typography>
+          <Box>
+            <Typography variant="h4" component="h1">
+              {category.name} - Özellikler
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Kategori özelliklerini yönetin ve düzenleyin
+            </Typography>
+          </Box>
         </Box>
         
         <Button
@@ -236,12 +243,52 @@ export const CategoryAttributesPage: React.FC = () => {
         </Button>
       </Box>
 
+      {/* Category Info Card */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                width: 50,
+                height: 50,
+                borderRadius: 2,
+                background: getColorStyle(category.color),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+              }}
+            >
+              {(() => {
+                const IconComponent = getIconComponent(category.icon);
+                return <IconComponent size={25} />;
+              })()}
+            </Box>
+            <Box>
+              <Typography variant="h6" fontWeight="bold">
+                {category.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                İkon: {category.icon} • Renk: {getColorName(category.color)} • Özellik Sayısı: {category.attributes?.length || 0}
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
       {/* Attributes List */}
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Kategori Özellikleri ({category.attributes?.length || 0})
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              📋 Kategori Özellikleri ({category.attributes?.length || 0})
+            </Typography>
+            <Chip
+              label={category.attributes?.length === 0 ? 'Özellik Yok' : `${category.attributes?.length} Özellik`}
+              color={category.attributes?.length === 0 ? 'warning' : 'success'}
+              variant="outlined"
+            />
+          </Box>
           
           {!category.attributes || category.attributes.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -264,10 +311,13 @@ export const CategoryAttributesPage: React.FC = () => {
                     sx={{
                       border: '1px solid',
                       borderColor: 'divider',
-                      borderRadius: 1,
-                      mb: 1,
+                      borderRadius: 2,
+                      mb: 1.5,
+                      transition: 'all 0.2s ease',
                       '&:hover': {
                         backgroundColor: 'action.hover',
+                        transform: 'translateY(-1px)',
+                        boxShadow: 1,
                       },
                     }}
                   >
@@ -344,29 +394,44 @@ export const CategoryAttributesPage: React.FC = () => {
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
       >
         <DialogTitle>
-          {editingAttribute ? 'Özellik Düzenle' : 'Yeni Özellik Ekle'}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h6">
+              {editingAttribute ? '✏️ Özellik Düzenle' : '➕ Yeni Özellik Ekle'}
+            </Typography>
+            {editingAttribute && (
+              <Chip
+                label="Düzenleme Modu"
+                color="info"
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Box>
         </DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Özellik Anahtarı"
+                label="🔑 Özellik Anahtarı"
                 value={formData.key}
                 onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value }))}
                 placeholder="ornek_anahtar"
-                helperText="Benzersiz bir anahtar (snake_case)"
-                disabled={!!editingAttribute} // Key cannot be changed when editing
+                helperText="Benzersiz bir anahtar (snake_case formatında)"
+                disabled={!!editingAttribute}
+                InputProps={{
+                  startAdornment: <Typography variant="caption" sx={{ mr: 1, color: 'text.secondary' }}>key:</Typography>,
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Özellik Adı"
+                label="📝 Özellik Adı"
                 value={formData.label}
                 onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
                 placeholder="Özellik Adı"
@@ -375,16 +440,36 @@ export const CategoryAttributesPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>Veri Tipi</InputLabel>
+                <InputLabel>📊 Veri Tipi</InputLabel>
                 <Select
                   value={formData.type}
                   onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
-                  label="Veri Tipi"
+                  label="📊 Veri Tipi"
                 >
-                  <MenuItem value="string">Metin (String)</MenuItem>
-                  <MenuItem value="number">Sayı (Number)</MenuItem>
-                  <MenuItem value="boolean">Evet/Hayır (Boolean)</MenuItem>
-                  <MenuItem value="array">Seçenek Listesi (Array)</MenuItem>
+                  <MenuItem value="string">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>📝 Metin (String)</Typography>
+                      <Typography variant="caption" color="text.secondary">- Kısa metin girişi</Typography>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="number">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>🔢 Sayı (Number)</Typography>
+                      <Typography variant="caption" color="text.secondary">- Sayısal değer</Typography>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="boolean">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>✅ Evet/Hayır (Boolean)</Typography>
+                      <Typography variant="caption" color="text.secondary">- Checkbox seçimi</Typography>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="array">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>📋 Seçenek Listesi (Array)</Typography>
+                      <Typography variant="caption" color="text.secondary">- Dropdown seçimi</Typography>
+                    </Box>
+                  </MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -396,61 +481,193 @@ export const CategoryAttributesPage: React.FC = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, required: e.target.checked }))}
                   />
                 }
-                label="Zorunlu Alan"
+                label="⚠️ Zorunlu Alan"
               />
             </Grid>
             
             {formData.type === 'array' && (
               <Grid item xs={12}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Seçenekler
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {formData.options.map((option, index) => (
-                    <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={option}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                        placeholder={`Seçenek ${index + 1}`}
-                      />
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleRemoveOption(index)}
-                      >
-                        <Trash2 size={16} />
-                      </IconButton>
-                    </Box>
-                  ))}
-                  <Button
-                    variant="outlined"
-                    startIcon={<Plus />}
-                    onClick={handleAddOption}
-                    size="small"
-                  >
-                    Seçenek Ekle
-                  </Button>
+                <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+                    📋 Seçenekler ({formData.options.length})
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Kullanıcıların seçebileceği seçenekleri ekleyin
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    {formData.options.map((option, index) => (
+                      <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Chip
+                          label={`${index + 1}`}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          sx={{ minWidth: 30 }}
+                        />
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          placeholder={`Seçenek ${index + 1}`}
+                          InputProps={{
+                            startAdornment: <Typography variant="caption" sx={{ mr: 1, color: 'text.secondary' }}>•</Typography>,
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleRemoveOption(index)}
+                          sx={{ 
+                            '&:hover': { 
+                              backgroundColor: 'error.light',
+                              color: 'white'
+                            } 
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </Box>
+                    ))}
+                    
+                    {formData.options.length === 0 && (
+                      <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Henüz seçenek eklenmemiş
+                        </Typography>
+                      </Box>
+                    )}
+                    
+                    <Button
+                      variant="outlined"
+                      startIcon={<Plus />}
+                      onClick={handleAddOption}
+                      size="small"
+                      sx={{ alignSelf: 'flex-start' }}
+                    >
+                      ➕ Seçenek Ekle
+                    </Button>
+                  </Box>
                 </Box>
               </Grid>
             )}
+
+            {/* Preview Section */}
+            <Grid item xs={12}>
+              <Box sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+                <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+                  🎨 Özellik Önizleme
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Attribute Info */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        {formData.label || 'Özellik Adı'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Anahtar: {formData.key || 'ornek_anahtar'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+                      <Chip
+                        label={formData.type || 'string'}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                      {formData.required && (
+                        <Chip
+                          label="Zorunlu"
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </Box>
+
+                  {/* Form Preview */}
+                  <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1, bgcolor: 'white' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                      Form Görünümü:
+                    </Typography>
+                    
+                    {formData.type === 'string' && (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={formData.label || 'Özellik Adı'}
+                        placeholder="Değer girin"
+                        disabled
+                        variant="outlined"
+                      />
+                    )}
+                    
+                    {formData.type === 'number' && (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={formData.label || 'Özellik Adı'}
+                        type="number"
+                        placeholder="0"
+                        disabled
+                        variant="outlined"
+                      />
+                    )}
+                    
+                    {formData.type === 'boolean' && (
+                      <FormControlLabel
+                        control={<Checkbox disabled />}
+                        label={formData.label || 'Özellik Adı'}
+                      />
+                    )}
+                    
+                    {formData.type === 'array' && (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>{formData.label || 'Özellik Adı'}</InputLabel>
+                        <Select
+                          value=""
+                          label={formData.label || 'Özellik Adı'}
+                          disabled
+                        >
+                          {formData.options.map((option, index) => (
+                            <MenuItem key={index} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 3, gap: 1 }}>
           <Button
             onClick={() => setIsDialogOpen(false)}
             startIcon={<X />}
+            variant="outlined"
           >
-            İptal
+            ❌ İptal
           </Button>
           <Button
             onClick={handleSaveAttribute}
             variant="contained"
             startIcon={<Save />}
             disabled={!formData.key || !formData.label || updateMutation.isPending}
+            sx={{ 
+              minWidth: 120,
+              '&:disabled': {
+                opacity: 0.6
+              }
+            }}
           >
-            {editingAttribute ? 'Güncelle' : 'Ekle'}
+            {editingAttribute ? '💾 Güncelle' : '➕ Ekle'}
           </Button>
         </DialogActions>
       </Dialog>

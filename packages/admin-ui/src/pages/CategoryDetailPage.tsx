@@ -110,32 +110,41 @@ export const CategoryDetailPage: React.FC = () => {
           />
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Button
             variant="outlined"
             startIcon={<Edit />}
             onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/edit`)}
           >
-            Düzenle
+            ✏️ Kategori Düzenle
           </Button>
+          
           {isLeaf && (
             <Button
               variant="contained"
               startIcon={<ListIcon />}
               onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/attributes`)}
+              sx={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                }
+              }}
             >
-              Özellikleri Düzenle
+              📋 Özellikleri Düzenle
             </Button>
           )}
+          
           {!isLeaf && (
             <Button
               variant="contained"
               startIcon={<Plus />}
               onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/add-subcategory`)}
             >
-              Alt Kategori Ekle
+              ➕ Alt Kategori Ekle
             </Button>
           )}
+          
           <Button
             variant="outlined"
             color="error"
@@ -143,7 +152,7 @@ export const CategoryDetailPage: React.FC = () => {
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
           >
-            Sil
+            🗑️ Sil
           </Button>
         </Box>
       </Box>
@@ -215,9 +224,17 @@ export const CategoryDetailPage: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Alt Kategoriler
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">
+                    📁 Alt Kategoriler ({category.subcategories!.length})
+                  </Typography>
+                  <Chip
+                    label={`${category.subcategories!.length} Alt Kategori`}
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                  />
+                </Box>
                 
                 <List dense>
                   {category.subcategories!.map((subcategory) => (
@@ -226,10 +243,13 @@ export const CategoryDetailPage: React.FC = () => {
                       sx={{
                         border: '1px solid',
                         borderColor: 'divider',
-                        borderRadius: 1,
-                        mb: 1,
+                        borderRadius: 2,
+                        mb: 1.5,
+                        transition: 'all 0.2s ease',
                         '&:hover': {
                           backgroundColor: 'action.hover',
+                          transform: 'translateY(-1px)',
+                          boxShadow: 1,
                         },
                       }}
                       secondaryAction={
@@ -259,14 +279,17 @@ export const CategoryDetailPage: React.FC = () => {
                             width: 32,
                             height: 32,
                             borderRadius: 1,
-                            background: subcategory.color,
+                            background: getColorStyle(subcategory.color),
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: 'white',
                           }}
                         >
-                          <Folder size={16} />
+                          {(() => {
+                            const IconComponent = getIconComponent(subcategory.icon);
+                            return <IconComponent size={16} />;
+                          })()}
                         </Box>
                       </ListItemIcon>
                       <ListItemText
@@ -282,64 +305,122 @@ export const CategoryDetailPage: React.FC = () => {
         )}
 
         {/* Attributes - Only show for leaf categories */}
-        {hasAttributes && isLeaf && (
+        {isLeaf && (
           <Grid item xs={12}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Kategori Özellikleri
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">
+                    📋 Kategori Özellikleri ({category.attributes?.length || 0})
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    {hasAttributes && (
+                      <Chip
+                        label={`${category.attributes!.length} Özellik`}
+                        color="success"
+                        variant="outlined"
+                        size="small"
+                      />
+                    )}
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<ListIcon />}
+                      onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/attributes`)}
+                    >
+                      {hasAttributes ? 'Düzenle' : 'Ekle'}
+                    </Button>
+                  </Box>
+                </Box>
                 
-                <Grid container spacing={2}>
-                  {category.attributes!.map((attribute) => (
-                    <Grid item xs={12} sm={6} md={4} key={attribute.key}>
-                      <Card variant="outlined">
-                        <CardContent>
-                          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                            {attribute.label}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Anahtar: {attribute.key}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            Tip: {attribute.type}
-                          </Typography>
-                          <Chip
-                            label={attribute.required ? 'Zorunlu' : 'İsteğe Bağlı'}
-                            size="small"
-                            color={attribute.required ? 'error' : 'default'}
-                            variant="outlined"
-                          />
-                          
-                          {attribute.options && attribute.options.length > 0 && (
-                            <Box sx={{ mt: 1 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                Seçenekler:
+                {!hasAttributes ? (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Henüz özellik tanımlanmamış
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Bu kategori için özellikler ekleyerek kullanıcıların daha detaylı bilgi girmesini sağlayabilirsiniz.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      startIcon={<Plus />}
+                      onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/attributes`)}
+                    >
+                      📋 İlk Özelliği Ekle
+                    </Button>
+                  </Box>
+                ) : (
+                  <Grid container spacing={2}>
+                    {category.attributes!.map((attribute) => (
+                      <Grid item xs={12} sm={6} md={4} key={attribute.key}>
+                        <Card 
+                          variant="outlined"
+                          sx={{
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: 2,
+                            },
+                          }}
+                        >
+                          <CardContent>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                              <Typography variant="subtitle1" fontWeight="bold">
+                                {attribute.label}
                               </Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                {attribute.options.slice(0, 3).map((option) => (
-                                  <Chip
-                                    key={option}
-                                    label={option}
-                                    size="small"
-                                    variant="outlined"
-                                  />
-                                ))}
-                                {attribute.options.length > 3 && (
-                                  <Chip
-                                    label={`+${attribute.options.length - 3} daha`}
-                                    size="small"
-                                    variant="outlined"
-                                  />
-                                )}
-                              </Box>
+                              <Chip
+                                label={attribute.required ? 'Zorunlu' : 'İsteğe Bağlı'}
+                                size="small"
+                                color={attribute.required ? 'error' : 'default'}
+                                variant="outlined"
+                              />
                             </Box>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
+                            
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                              🔑 Anahtar: <code>{attribute.key}</code>
+                            </Typography>
+                            
+                            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                              <Chip
+                                label={attribute.type}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
+                            </Box>
+                            
+                            {attribute.options && attribute.options.length > 0 && (
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                                  📋 Seçenekler ({attribute.options.length}):
+                                </Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                  {attribute.options.slice(0, 3).map((option) => (
+                                    <Chip
+                                      key={option}
+                                      label={option}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ fontSize: '0.7rem' }}
+                                    />
+                                  ))}
+                                  {attribute.options.length > 3 && (
+                                    <Chip
+                                      label={`+${attribute.options.length - 3} daha`}
+                                      size="small"
+                                      variant="outlined"
+                                      color="info"
+                                    />
+                                  )}
+                                </Box>
+                              </Box>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
               </CardContent>
             </Card>
           </Grid>
