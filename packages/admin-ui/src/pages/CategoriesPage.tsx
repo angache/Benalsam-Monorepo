@@ -153,18 +153,44 @@ export const CategoriesPage: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ 
+      width: '100%', 
+      maxWidth: '100%', 
+      overflowX: 'auto',
+      minHeight: '100vh'
+    }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', md: 'center' }, 
+        gap: { xs: 2, md: 0 },
+        mb: { xs: 2, sm: 3 },
+        p: { xs: 1, sm: 0 }
+      }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          textAlign: { xs: 'center', md: 'left' },
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+          mb: { xs: 1, md: 0 }
+        }}>
           Kategori Yönetimi
         </Typography>
         
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: { xs: 1, sm: 2 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          width: { xs: '100%', md: 'auto' }
+        }}>
           <Button
             variant="contained"
             startIcon={<Plus />}
             onClick={() => navigate('/categories/create')}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Yeni Kategori
           </Button>
@@ -172,6 +198,10 @@ export const CategoriesPage: React.FC = () => {
             variant="outlined"
             startIcon={<RefreshCw />}
             onClick={() => queryClient.invalidateQueries({ queryKey: ['categories'] })}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Yenile
           </Button>
@@ -190,40 +220,52 @@ export const CategoriesPage: React.FC = () => {
       )}
 
       {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
+      <Grid container spacing={2} sx={{ mb: { xs: 2, sm: 3 } }}>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography color="text.secondary" gutterBottom sx={{ 
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+              }}>
                 Toplam Kategori
               </Typography>
-              <Typography variant="h4" component="div">
+              <Typography variant="h4" component="div" sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+              }}>
                 {isLoading ? <Skeleton width={60} /> : allFlattenedCategories.length}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography color="text.secondary" gutterBottom sx={{ 
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+              }}>
                 Ana Kategoriler
               </Typography>
-              <Typography variant="h4" component="div" color="primary.main">
+              <Typography variant="h4" component="div" color="primary.main" sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+              }}>
                 {isLoading ? <Skeleton width={60} /> : categories?.length || 0}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography color="text.secondary" gutterBottom sx={{ 
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+              }}>
                 Son Kategoriler
               </Typography>
-              <Typography variant="h4" component="div" color="secondary.main">
+              <Typography variant="h4" component="div" color="secondary.main" sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+              }}>
                 {isLoading ? <Skeleton width={60} /> : 
                  allFlattenedCategories.filter(cat => !cat.subcategories || cat.subcategories.length === 0).length}
               </Typography>
@@ -231,13 +273,17 @@ export const CategoriesPage: React.FC = () => {
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
+        <Grid item xs={6} sm={6} md={3}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography color="text.secondary" gutterBottom sx={{ 
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+              }}>
                 Toplam Özellik
               </Typography>
-              <Typography variant="h4" component="div" color="success.main">
+              <Typography variant="h4" component="div" color="success.main" sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+              }}>
                 {isLoading ? <Skeleton width={60} /> : 
                  allFlattenedCategories.reduce((sum, cat) => sum + (cat.attributes?.length || 0), 0)}
               </Typography>
@@ -253,53 +299,92 @@ export const CategoriesPage: React.FC = () => {
       />
 
       {/* Search and View Mode */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
+      <Card sx={{ mb: { xs: 2, sm: 3 } }}>
+        <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Kategori Ara"
+                label="🔍 Kategori Ara"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Kategori adı yazın..."
+                size="small"
                 InputProps={{
                   startAdornment: <Search size={20} style={{ marginRight: 8 }} />,
+                }}
+                sx={{
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }
                 }}
               />
             </Grid>
             
-            <Grid item xs={12} md={3}>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Grid item xs={6} md={3}>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 0.5, 
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'center', md: 'flex-start' }
+              }}>
                 <Chip
-                  label={`Mevcut: ${currentCategories.length}`}
+                  label={`📁 ${currentCategories.length}`}
                   color="primary"
                   variant="outlined"
+                  size="small"
+                  sx={{ 
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    height: { xs: '24px', sm: '32px' }
+                  }}
                 />
                 <Chip
-                  label={`Filtrelenmiş: ${filteredCategories.length}`}
+                  label={`🔍 ${filteredCategories.length}`}
                   color="secondary"
                   variant="outlined"
+                  size="small"
+                  sx={{ 
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    height: { xs: '24px', sm: '32px' }
+                  }}
                 />
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={3}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+            <Grid item xs={6} md={3}>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 0.5,
+                justifyContent: { xs: 'center', md: 'flex-end' },
+                flexWrap: 'wrap'
+              }}>
                 <Button
                   variant={viewMode === 'menu' ? 'contained' : 'outlined'}
                   startIcon={<ListTree size={16} />}
                   onClick={() => setViewMode('menu')}
                   size="small"
+                  sx={{ 
+                    minWidth: { xs: '70px', sm: 'auto' },
+                    fontSize: { xs: '0.65rem', sm: '0.875rem' },
+                    height: { xs: '32px', sm: 'auto' },
+                    px: { xs: 1, sm: 2 }
+                  }}
                 >
-                  Menü Görünümü
+                  Menü
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'contained' : 'outlined'}
                   startIcon={<Grid3X3 size={16} />}
                   onClick={() => setViewMode('list')}
                   size="small"
+                  sx={{ 
+                    minWidth: { xs: '70px', sm: 'auto' },
+                    fontSize: { xs: '0.65rem', sm: '0.875rem' },
+                    height: { xs: '32px', sm: 'auto' },
+                    px: { xs: 1, sm: 2 }
+                  }}
                 >
-                  Liste Görünümü
+                  Liste
                 </Button>
               </Box>
             </Grid>
@@ -323,15 +408,50 @@ export const CategoriesPage: React.FC = () => {
               isLoading={isLoading}
             />
           ) : (
-            <TableContainer>
+            <TableContainer sx={{ 
+              overflowX: 'auto',
+              '& .MuiTable-root': {
+                minWidth: { xs: 500, sm: 'auto' }
+              }
+            }}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Kategori</TableCell>
-                    <TableCell>Seviye</TableCell>
-                    <TableCell>Özellikler</TableCell>
-                    <TableCell>Alt Kategoriler</TableCell>
-                    <TableCell align="right">İşlemler</TableCell>
+                    <TableCell sx={{ 
+                      minWidth: { xs: 120, sm: 'auto' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      p: { xs: 1, sm: 1.5, md: 2 }
+                    }}>
+                      Kategori
+                    </TableCell>
+                    <TableCell sx={{ 
+                      minWidth: { xs: 60, sm: 'auto' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      p: { xs: 1, sm: 1.5, md: 2 }
+                    }}>
+                      Seviye
+                    </TableCell>
+                    <TableCell sx={{ 
+                      minWidth: { xs: 80, sm: 'auto' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      p: { xs: 1, sm: 1.5, md: 2 }
+                    }}>
+                      Özellikler
+                    </TableCell>
+                    <TableCell sx={{ 
+                      minWidth: { xs: 100, sm: 'auto' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      p: { xs: 1, sm: 1.5, md: 2 }
+                    }}>
+                      Alt Kategoriler
+                    </TableCell>
+                    <TableCell align="right" sx={{ 
+                      minWidth: { xs: 100, sm: 'auto' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      p: { xs: 1, sm: 1.5, md: 2 }
+                    }}>
+                      İşlemler
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -343,12 +463,18 @@ export const CategoriesPage: React.FC = () => {
 
                     return (
                       <TableRow key={category.name}>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <TableCell sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: { xs: 1, sm: 2 },
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                          }}>
                             <Box
                               sx={{
-                                width: 32,
-                                height: 32,
+                                width: { xs: 24, sm: 32 },
+                                height: { xs: 24, sm: 32 },
                                 borderRadius: 1,
                                 background: category.color,
                                 display: 'flex',
@@ -361,10 +487,14 @@ export const CategoriesPage: React.FC = () => {
                               <Folder size={16} />
                             </Box>
                             <Box>
-                              <Typography variant="body2" fontWeight="medium">
+                              <Typography variant="body2" fontWeight="medium" sx={{ 
+                                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }
+                              }}>
                                 {category.name}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography variant="caption" color="text.secondary" sx={{ 
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' }
+                              }}>
                                 {category.icon} • {category.color}
                               </Typography>
                             </Box>
@@ -406,13 +536,23 @@ export const CategoriesPage: React.FC = () => {
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell align="right">
-                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                        <TableCell align="right" sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            gap: 0.5, 
+                            justifyContent: 'flex-end',
+                            flexWrap: 'wrap'
+                          }}>
                             <Tooltip title="Görüntüle">
                               <IconButton
                                 size="small"
                                 color="primary"
                                 onClick={() => handleView(path)}
+                                sx={{ 
+                                  minWidth: { xs: '36px', sm: 'auto' },
+                                  minHeight: { xs: '36px', sm: 'auto' },
+                                  p: { xs: 0.5, sm: 1 }
+                                }}
                               >
                                 <Eye size={16} />
                               </IconButton>
@@ -423,6 +563,11 @@ export const CategoriesPage: React.FC = () => {
                                 size="small"
                                 color="info"
                                 onClick={() => handleEdit(path)}
+                                sx={{ 
+                                  minWidth: { xs: '36px', sm: 'auto' },
+                                  minHeight: { xs: '36px', sm: 'auto' },
+                                  p: { xs: 0.5, sm: 1 }
+                                }}
                               >
                                 <Edit size={16} />
                               </IconButton>
@@ -434,6 +579,11 @@ export const CategoriesPage: React.FC = () => {
                                   size="small"
                                   color="secondary"
                                   onClick={() => handleEditAttributes(path)}
+                                  sx={{ 
+                                    minWidth: { xs: '36px', sm: 'auto' },
+                                    minHeight: { xs: '36px', sm: 'auto' },
+                                    p: { xs: 0.5, sm: 1 }
+                                  }}
                                 >
                                   <ListTree size={16} />
                                 </IconButton>
@@ -446,6 +596,11 @@ export const CategoriesPage: React.FC = () => {
                                   size="small"
                                   color="success"
                                   onClick={() => handleAddSubcategory(path)}
+                                  sx={{ 
+                                    minWidth: { xs: '36px', sm: 'auto' },
+                                    minHeight: { xs: '36px', sm: 'auto' },
+                                    p: { xs: 0.5, sm: 1 }
+                                  }}
                                 >
                                   <Plus size={16} />
                                 </IconButton>
@@ -458,6 +613,11 @@ export const CategoriesPage: React.FC = () => {
                                 color="error"
                                 onClick={() => handleDelete(path, category.name)}
                                 disabled={deleteMutation.isPending}
+                                sx={{ 
+                                  minWidth: { xs: '36px', sm: 'auto' },
+                                  minHeight: { xs: '36px', sm: 'auto' },
+                                  p: { xs: 0.5, sm: 1 }
+                                }}
                               >
                                 <Delete size={16} />
                               </IconButton>

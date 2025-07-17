@@ -47,6 +47,7 @@ export const useAuthStore = create<AuthState>()(
               status: 'ACTIVE' as const,
               createdAt: response.admin.created_at,
               lastLoginAt: response.admin.last_login,
+              permissions: response.admin.permissions,
             },
             token: response.token,
             isAuthenticated: true,

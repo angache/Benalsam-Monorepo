@@ -97,7 +97,11 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
   }
 
   return (
-    <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+    <List sx={{ 
+      width: '100%', 
+      bgcolor: 'background.paper',
+      p: { xs: 1, sm: 2 }
+    }}>
       {categories.map((category) => {
         const path = getCategoryPath(category);
         const hasSubcategories = category.subcategories && category.subcategories.length > 0;
@@ -109,7 +113,7 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
             key={category.name}
             disablePadding
             sx={{
-              mb: 1,
+              mb: { xs: 0.5, sm: 1 },
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: 1,
@@ -122,7 +126,8 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
               onClick={() => handleCategoryClick(category)}
               disabled={isLeaf}
               sx={{ 
-                py: 2,
+                py: { xs: 1.5, sm: 2 },
+                px: { xs: 1, sm: 2 },
                 opacity: isLeaf ? 0.7 : 1,
                 cursor: isLeaf ? 'default' : 'pointer',
               }}
@@ -130,8 +135,8 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
               <ListItemIcon>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: { xs: 32, sm: 40 },
+                    height: { xs: 32, sm: 40 },
                     borderRadius: 1,
                     background: getColorStyle(category.color),
                     display: 'flex',
@@ -149,39 +154,51 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
               
               <ListItemText
                 primary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="subtitle1" fontWeight="medium">
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: { xs: 0.5, sm: 1 },
+                    flexWrap: 'wrap'
+                  }}>
+                    <Typography variant="subtitle1" fontWeight="medium" sx={{ 
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }}>
                       {category.name}
                     </Typography>
                     {hasSubcategories && (
                       <Chip
-                        label={`${category.subcategories!.length} alt kategori`}
+                        label={`${category.subcategories!.length} alt`}
                         size="small"
                         color="primary"
                         variant="outlined"
+                        sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }}
                       />
                     )}
                     {hasAttributes && isLeaf && (
                       <Chip
-                        label={`${category.attributes!.length} özellik`}
+                        label={`${category.attributes!.length} öz`}
                         size="small"
                         color="secondary"
                         variant="outlined"
+                        sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }}
                       />
                     )}
                     {isLeaf && (
                       <Chip
-                        label="Son Kategori"
+                        label="Son"
                         size="small"
                         color="success"
                         variant="outlined"
+                        sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }}
                       />
                     )}
                   </Box>
                 }
                 secondary={
-                  <Typography variant="body2" color="text.secondary">
-                    İkon: {category.icon} • Renk: {getColorName(category.color)}
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    fontSize: { xs: '0.7rem', sm: '0.875rem' }
+                  }}>
+                    {category.icon} • {getColorName(category.color)}
                   </Typography>
                 }
               />
@@ -190,7 +207,13 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
             </ListItemButton>
             
             <ListItemSecondaryAction>
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 0.5,
+                flexDirection: { xs: 'row', sm: 'row' },
+                alignItems: { xs: 'center', sm: 'flex-end' },
+                flexWrap: 'wrap'
+              }}>
                 {onView && (
                   <Tooltip title="Görüntüle">
                     <IconButton
@@ -199,6 +222,11 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onView(path);
+                      }}
+                      sx={{ 
+                        minWidth: { xs: '36px', sm: 'auto' },
+                        minHeight: { xs: '36px', sm: 'auto' },
+                        p: { xs: 0.5, sm: 1 }
                       }}
                     >
                       <Eye size={16} />
@@ -215,6 +243,11 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
                         e.stopPropagation();
                         onEdit(path);
                       }}
+                      sx={{ 
+                        minWidth: { xs: '36px', sm: 'auto' },
+                        minHeight: { xs: '36px', sm: 'auto' },
+                        p: { xs: 0.5, sm: 1 }
+                      }}
                     >
                       <Edit size={16} />
                     </IconButton>
@@ -229,6 +262,11 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditAttributes(path);
+                      }}
+                      sx={{ 
+                        minWidth: { xs: '36px', sm: 'auto' },
+                        minHeight: { xs: '36px', sm: 'auto' },
+                        p: { xs: 0.5, sm: 1 }
                       }}
                     >
                       <ListIcon size={16} />
@@ -245,6 +283,11 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
                         e.stopPropagation();
                         onAddSubcategory(path);
                       }}
+                      sx={{ 
+                        minWidth: { xs: '36px', sm: 'auto' },
+                        minHeight: { xs: '36px', sm: 'auto' },
+                        p: { xs: 0.5, sm: 1 }
+                      }}
                     >
                       <Plus size={16} />
                     </IconButton>
@@ -259,6 +302,11 @@ export const CategoryMenu: React.FC<CategoryMenuProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete(path, category.name);
+                      }}
+                      sx={{ 
+                        minWidth: { xs: '36px', sm: 'auto' },
+                        minHeight: { xs: '36px', sm: 'auto' },
+                        p: { xs: 0.5, sm: 1 }
                       }}
                     >
                       <Delete size={16} />

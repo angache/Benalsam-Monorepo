@@ -197,6 +197,13 @@ export const IconSelector: React.FC<IconSelectorProps> = ({
       onClose={onClose}
       maxWidth="lg"
       fullWidth
+      sx={{
+        '& .MuiDialog-paper': {
+          margin: { xs: 2, sm: 'auto' },
+          width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+          maxWidth: { xs: '100%', sm: '900px' }
+        }
+      }}
     >
       <DialogTitle>
         🎨 İkon Seçici - Kategori için ikon seçin
@@ -220,19 +227,20 @@ export const IconSelector: React.FC<IconSelectorProps> = ({
             const isSelected = selectedIcon === iconOption.name;
             
             return (
-              <Grid item xs={4} sm={3} md={2} lg={1} key={iconOption.name}>
+              <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={iconOption.name}>
                 <Box
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    p: 1.5,
+                    p: { xs: 1, sm: 1.5 },
                     border: '2px solid',
                     borderColor: isSelected ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     cursor: 'pointer',
                     backgroundColor: isSelected ? 'primary.light' : 'transparent',
                     transition: 'all 0.2s ease',
+                    minHeight: { xs: '80px', sm: '100px' },
                     '&:hover': {
                       backgroundColor: isSelected ? 'primary.light' : 'action.hover',
                       transform: 'translateY(-2px)',
@@ -248,7 +256,9 @@ export const IconSelector: React.FC<IconSelectorProps> = ({
                       mt: 1, 
                       textAlign: 'center',
                       fontWeight: isSelected ? 'bold' : 'normal',
-                      color: isSelected ? 'primary.main' : 'text.secondary'
+                      color: isSelected ? 'primary.main' : 'text.secondary',
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      lineHeight: 1.2
                     }}
                   >
                     {iconOption.name}

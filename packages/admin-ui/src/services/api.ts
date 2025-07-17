@@ -117,6 +117,33 @@ export interface User {
   createdAt: string;
   lastLoginAt?: string;
   profileImage?: string;
+  permissions?: any[];
+}
+
+export interface AdminUser extends User {
+  roleDetails?: any;
+  userPermissions?: any[];
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+  level: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AnalyticsData {
@@ -220,10 +247,86 @@ export const apiService = {
     await apiClient.post(`/users/${id}/unban`);
   },
 
+  async deleteUser(id: string): Promise<void> {
+    await apiClient.delete(`/users/${id}`);
+  },
+
   // Analytics
   async getAnalytics(): Promise<AnalyticsData> {
     const response = await apiClient.get<ApiResponse<AnalyticsData>>('/analytics');
     return response.data.data;
+  },
+
+  // Admin Management
+  async getAdminUsers(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    filters?: { role?: string; status?: string };
+  } = {}): Promise<ApiResponse<AdminUser[]>> {
+    const response = await apiClient.get<ApiResponse<AdminUser[]>>('/admin-management/users', { params });
+    return response.data;
+  },
+
+  async getAdminUser(id: string): Promise<AdminUser> {
+    const response = await apiClient.get<ApiResponse<AdminUser>>(`/admin-management/users/${id}`);
+    return response.data.data;
+  },
+
+  async createAdminUser(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    permissions?: string[];
+  }): Promise<AdminUser> {
+    const response = await apiClient.post<ApiResponse<AdminUser>>('/admin-management/users', data);
+    return response.data.data;
+  },
+
+  async updateAdminUser(id: string, data: {
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    isActive?: boolean;
+    permissions?: string[];
+  }): Promise<AdminUser> {
+    const response = await apiClient.put<ApiResponse<AdminUser>>(`/admin-management/users/${id}`, data);
+    return response.data.data;
+  },
+
+  async deleteAdminUser(id: string): Promise<void> {
+    await apiClient.delete(`/admin-management/users/${id}`);
+  },
+
+  async getRoles(): Promise<ApiResponse<Role[]>> {
+    const response = await apiClient.get<ApiResponse<Role[]>>('/admin-management/roles');
+    return response.data;
+  },
+
+  async getRoleDetails(role: string): Promise<ApiResponse<any>> {
+    const response = await apiClient.get<ApiResponse<any>>(`/admin-management/roles/${role}`);
+    return response.data;
+  },
+
+  async updateRolePermissions(role: string, permissionIds: string[]): Promise<void> {
+    await apiClient.put(`/admin-management/roles/${role}/permissions`, { permissionIds });
+  },
+
+  async getPermissions(params?: { resource?: string }): Promise<ApiResponse<Permission[]>> {
+    const response = await apiClient.get<ApiResponse<Permission[]>>('/admin-management/permissions', { params });
+    return response.data;
+  },
+
+  async getPermissionMatrix(): Promise<ApiResponse<any>> {
+    const response = await apiClient.get<ApiResponse<any>>('/admin-management/permissions/matrix');
+    return response.data;
+  },
+
+  async getCurrentUserPermissions(): Promise<ApiResponse<Permission[]>> {
+    const response = await apiClient.get<ApiResponse<Permission[]>>('/admin-management/permissions/current');
+    return response.data;
   },
 
   // Health check

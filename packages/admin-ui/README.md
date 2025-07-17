@@ -117,6 +117,23 @@ Build dosyaları `dist/` klasöründe oluşturulur.
 3. Değişikliklerinizi commit edin
 4. Pull request gönderin
 
+## 📱 Responsive Tasarım
+
+Admin UI responsive tasarım için kapsamlı bir TODO listesi bulunmaktadır:
+
+📋 **[Responsive TODO Listesi](./RESPONSIVE_TODO.md)**
+
+### Responsive Durum
+- ✅ **Desktop**: Tam responsive
+- 🔄 **Tablet**: Kısmi responsive (devam ediyor)
+- ❌ **Mobil**: Responsive sorunları mevcut
+
+### Responsive Test
+Farklı cihaz boyutlarında test etmek için:
+1. Chrome DevTools'da Responsive Design Mode kullanın
+2. Farklı breakpoint'leri test edin (xs, sm, md, lg, xl)
+3. Touch interactions'ları kontrol edin
+
 ## 📄 Lisans
 
 MIT License

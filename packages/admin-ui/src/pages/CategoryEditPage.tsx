@@ -122,36 +122,68 @@ export const CategoryEditPage: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => navigate(`/categories/${encodeURIComponent(path!)}`)}>
-            <ArrowLeft size={20} />
-          </IconButton>
-          <Typography variant="h4" component="h1">
-            Kategori Düzenle
-          </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', lg: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', lg: 'center' }, 
+        gap: { xs: 2, lg: 0 },
+        mb: 3 
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton onClick={() => navigate(`/categories/${encodeURIComponent(path!)}`)}>
+              <ArrowLeft size={20} />
+            </IconButton>
+            <Typography variant="h4" component="h1" sx={{ 
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              wordBreak: 'break-word'
+            }}>
+              Kategori Düzenle
+            </Typography>
+          </Box>
           <Chip
             label={isLeaf ? 'Son Kategori' : 'Ana Kategori'}
             color={isLeaf ? 'primary' : 'secondary'}
             variant="outlined"
+            sx={{ alignSelf: { xs: 'center', sm: 'flex-start' } }}
           />
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          width: { xs: '100%', lg: 'auto' }
+        }}>
           <Button
             variant="outlined"
             startIcon={<X />}
             onClick={() => navigate(`/categories/${encodeURIComponent(path!)}`)}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
-            İptal
+            ❌ İptal
           </Button>
           <Button
             variant="contained"
             startIcon={<Save />}
             onClick={handleSave}
             disabled={updateMutation.isPending}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
-            Kaydet
+            💾 Kaydet
           </Button>
         </Box>
       </Box>

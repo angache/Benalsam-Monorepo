@@ -6,7 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3003,
-    host: true,
+    host: '0.0.0.0', // Tüm network interface'lerini dinle
+    strictPort: true, // Port kullanımdaysa hata ver
+    cors: true, // CORS'u etkinleştir
+    hmr: {
+      host: '192.168.1.7', // HMR için network IP'sini belirt
+    },
   },
   build: {
     outDir: 'dist',

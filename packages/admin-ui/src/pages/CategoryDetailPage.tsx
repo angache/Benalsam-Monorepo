@@ -93,28 +93,57 @@ export const CategoryDetailPage: React.FC = () => {
   const isLeaf = !hasSubcategories;
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => navigate('/categories')}>
-            <ArrowLeft size={20} />
-          </IconButton>
-          <Typography variant="h4" component="h1">
-            {category.name}
-          </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', lg: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', lg: 'center' }, 
+        gap: { xs: 2, lg: 0 },
+        mb: { xs: 2, sm: 3 },
+        p: { xs: 1, sm: 0 }
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton onClick={() => navigate('/categories')}>
+              <ArrowLeft size={20} />
+            </IconButton>
+            <Typography variant="h4" component="h1" sx={{ 
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              wordBreak: 'break-word'
+            }}>
+              {category.name}
+            </Typography>
+          </Box>
           <Chip
             label={isLeaf ? 'Son Kategori' : 'Ana Kategori'}
             color={isLeaf ? 'primary' : 'secondary'}
             variant="outlined"
+            sx={{ alignSelf: { xs: 'center', sm: 'flex-start' } }}
           />
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          width: { xs: '100%', lg: 'auto' }
+        }}>
           <Button
             variant="outlined"
             startIcon={<Edit />}
             onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/edit`)}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             ✏️ Kategori Düzenle
           </Button>
@@ -128,7 +157,9 @@ export const CategoryDetailPage: React.FC = () => {
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 '&:hover': {
                   background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                }
+                },
+                minWidth: { xs: '100%', sm: 'auto' },
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               }}
             >
               📋 Özellikleri Düzenle
@@ -140,6 +171,10 @@ export const CategoryDetailPage: React.FC = () => {
               variant="contained"
               startIcon={<Plus />}
               onClick={() => navigate(`/categories/${encodeURIComponent(path!)}/add-subcategory`)}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 'auto' },
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
             >
               ➕ Alt Kategori Ekle
             </Button>
@@ -151,6 +186,10 @@ export const CategoryDetailPage: React.FC = () => {
             startIcon={<Delete />}
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             🗑️ Sil
           </Button>

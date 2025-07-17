@@ -10,6 +10,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { CategoryDetailPage } from './pages/CategoryDetailPage';
 import { CategoryAttributesPage } from './pages/CategoryAttributesPage';
 import { CategoryEditPage } from './pages/CategoryEditPage';
+import { UsersPage } from './pages/UsersPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -105,6 +106,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <CategoryEditPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UsersPage />
                   </Layout>
                 </ProtectedRoute>
               }

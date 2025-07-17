@@ -39,13 +39,16 @@ export const CategoryBreadcrumb: React.FC<CategoryBreadcrumbProps> = ({
     <Box sx={{ 
       display: 'flex', 
       alignItems: 'center', 
-      gap: 1, 
-      p: 2, 
+      gap: { xs: 0.5, sm: 1 }, 
+      p: { xs: 1, sm: 2 }, 
       backgroundColor: 'background.paper',
       border: '1px solid',
       borderColor: 'divider',
       borderRadius: 1,
-      mb: 2,
+      mb: { xs: 1, sm: 2 },
+      flexWrap: 'wrap',
+      minHeight: { xs: '40px', sm: '48px' },
+      overflowX: 'auto'
     }}>
       <Tooltip title="Ana Kategoriler">
         <IconButton
@@ -53,7 +56,9 @@ export const CategoryBreadcrumb: React.FC<CategoryBreadcrumbProps> = ({
           onClick={handleHomeClick}
           sx={{ 
             color: 'primary.main',
-            '&:hover': { backgroundColor: 'primary.light', color: 'white' }
+            '&:hover': { backgroundColor: 'primary.light', color: 'white' },
+            minWidth: { xs: '32px', sm: 'auto' },
+            minHeight: { xs: '32px', sm: 'auto' }
           }}
         >
           <Home size={16} />
@@ -61,7 +66,10 @@ export const CategoryBreadcrumb: React.FC<CategoryBreadcrumbProps> = ({
       </Tooltip>
 
       {pathParts.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ 
+          fontSize: { xs: '0.875rem', sm: '1rem' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
           Ana Kategoriler
         </Typography>
       ) : (
@@ -76,6 +84,8 @@ export const CategoryBreadcrumb: React.FC<CategoryBreadcrumbProps> = ({
               onClick={() => handlePathClick(index)}
               sx={{ 
                 cursor: 'pointer',
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                height: { xs: '24px', sm: '32px' },
                 '&:hover': {
                   backgroundColor: index === pathParts.length - 1 ? 'primary.main' : 'action.hover',
                 }

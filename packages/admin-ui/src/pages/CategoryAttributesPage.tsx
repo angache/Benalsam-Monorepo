@@ -219,18 +219,36 @@ export const CategoryAttributesPage: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => navigate(`/categories/${encodeURIComponent(path!)}`)}>
-            <ArrowLeft size={20} />
-          </IconButton>
-          <Box>
-            <Typography variant="h4" component="h1">
-              {category.name} - Özellikler
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Kategori özelliklerini yönetin ve düzenleyin
-            </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', lg: 'row' },
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', lg: 'center' }, 
+        gap: { xs: 2, lg: 0 },
+        mb: 3 
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton onClick={() => navigate(`/categories/${encodeURIComponent(path!)}`)}>
+              <ArrowLeft size={20} />
+            </IconButton>
+            <Box>
+              <Typography variant="h4" component="h1" sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                wordBreak: 'break-word'
+              }}>
+                {category.name} - Özellikler
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Kategori özelliklerini yönetin ve düzenleyin
+              </Typography>
+            </Box>
           </Box>
         </Box>
         
@@ -238,8 +256,12 @@ export const CategoryAttributesPage: React.FC = () => {
           variant="contained"
           startIcon={<Plus />}
           onClick={handleAddAttribute}
+          sx={{ 
+            minWidth: { xs: '100%', sm: 'auto' },
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
         >
-          Yeni Özellik Ekle
+          ➕ Yeni Özellik Ekle
         </Button>
       </Box>
 
@@ -396,6 +418,13 @@ export const CategoryAttributesPage: React.FC = () => {
         onClose={() => setIsDialogOpen(false)}
         maxWidth="lg"
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 'auto' },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+            maxWidth: { xs: '100%', sm: '900px' }
+          }
+        }}
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -647,11 +676,20 @@ export const CategoryAttributesPage: React.FC = () => {
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 1 }}>
+        <DialogActions sx={{ 
+          p: { xs: 2, sm: 3 }, 
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' }
+        }}>
           <Button
             onClick={() => setIsDialogOpen(false)}
             startIcon={<X />}
             variant="outlined"
+            sx={{ 
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             ❌ İptal
           </Button>
@@ -661,7 +699,8 @@ export const CategoryAttributesPage: React.FC = () => {
             startIcon={<Save />}
             disabled={!formData.key || !formData.label || updateMutation.isPending}
             sx={{ 
-              minWidth: 120,
+              minWidth: { xs: '100%', sm: 120 },
+              fontSize: { xs: '0.875rem', sm: '1rem' },
               '&:disabled': {
                 opacity: 0.6
               }
