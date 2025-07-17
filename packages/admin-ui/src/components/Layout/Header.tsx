@@ -10,11 +10,13 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Tooltip,
 } from '@mui/material';
-import { Menu as MenuIcon, Bell, User, Settings, LogOut } from 'lucide-react';
+import { Menu as MenuIcon, Bell, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { useTheme as useMuiTheme } from '@mui/material/styles';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -24,7 +26,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const theme = useTheme();
+  const theme = useMuiTheme();
+  const { mode, toggleTheme } = useTheme();
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -60,8 +63,12 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         },
         ml: { md: theme.spacing(35) },
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        background: mode === 'light' 
+          ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
+          : 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)',
+        boxShadow: mode === 'light' 
+          ? '0 4px 20px rgba(0, 0, 0, 0.1)'
+          : '0 4px 20px rgba(0, 0, 0, 0.3)',
         transition: theme.transitions.create(['width', 'margin'], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,
@@ -98,6 +105,21 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Theme Toggle */}
+          <Tooltip title={mode === 'light' ? 'Karanlık Moda Geç' : 'Aydınlık Moda Geç'}>
+            <IconButton 
+              color="inherit"
+              onClick={toggleTheme}
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                }
+              }}
+            >
+              {mode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </IconButton>
+          </Tooltip>
+
           {/* Notifications */}
           <IconButton 
             color="inherit"

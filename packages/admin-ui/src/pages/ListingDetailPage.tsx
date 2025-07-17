@@ -55,6 +55,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTheme } from '@mui/material/styles';
 import { apiService } from '../services/api';
 import type { Listing } from '../types';
 
@@ -88,6 +89,7 @@ const rejectionReasons = [
 export const ListingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [moderationDialog, setModerationDialog] = useState(false);
   const [moderationAction, setModerationAction] = useState<'approve' | 'reject' | 're-evaluate'>('approve');
   const [rejectionReason, setRejectionReason] = useState('');
@@ -280,7 +282,11 @@ export const ListingDetailPage: React.FC = () => {
             <Card>
               <CardContent sx={{ p: 0 }}>
                 {/* Main Image */}
-                <Box sx={{ position: 'relative', height: 300, backgroundColor: '#f5f5f5' }}>
+                <Box sx={{ 
+                  position: 'relative', 
+                  height: 300, 
+                  backgroundColor: theme.palette.mode === 'light' ? '#f5f5f5' : '#2d2d2d'
+                }}>
                   <img
                     src={currentImage}
                     alt={`İlan görseli ${selectedImageIndex + 1}`}
@@ -353,6 +359,7 @@ export const ListingDetailPage: React.FC = () => {
                             cursor: 'pointer',
                             border: selectedImageIndex === index ? 2 : 1,
                             borderColor: selectedImageIndex === index ? 'primary.main' : 'divider',
+                            backgroundColor: theme.palette.mode === 'light' ? '#f5f5f5' : '#2d2d2d',
                             '&:hover': {
                               borderColor: 'primary.main',
                             },

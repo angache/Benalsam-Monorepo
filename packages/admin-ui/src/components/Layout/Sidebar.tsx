@@ -11,6 +11,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 import {
   Home,
   Users,
@@ -60,6 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const { mode } = useCustomTheme();
   const logout = useAuthStore((state) => state.logout);
 
   const handleNavigation = (path: string) => {
@@ -84,7 +86,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
         '& .MuiDrawer-paper': {
           width: theme.spacing(35),
           boxSizing: 'border-box',
-          background: 'linear-gradient(180deg, #2c3e50 0%, #34495e 100%)',
+          background: mode === 'light' 
+            ? 'linear-gradient(180deg, #2c3e50 0%, #34495e 100%)'
+            : 'linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%)',
           color: 'white',
           borderRight: 'none',
           boxShadow: '4px 0 20px rgba(0, 0, 0, 0.1)',
@@ -93,8 +97,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
     >
       <Box 
         sx={{ 
-          p: 3,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          height: 64, // Normal header ile aynı yükseklik
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: 3,
+          background: mode === 'light' 
+            ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
+            : 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
@@ -105,6 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
             fontWeight: 700,
             fontSize: '1.25rem',
             textAlign: 'center',
+            color: 'white',
           }}
         >
           BenAlsam Admin
@@ -127,11 +138,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'temp
                   mx: 1,
                   borderRadius: 2,
                   '&.Mui-selected': {
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: mode === 'light' 
+                      ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
+                      : 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)',
                     color: 'white',
-                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                    boxShadow: mode === 'light' 
+                      ? '0 4px 15px rgba(25, 118, 210, 0.3)'
+                      : '0 4px 15px rgba(0, 0, 0, 0.3)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                      background: mode === 'light' 
+                        ? 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)'
+                        : 'linear-gradient(135deg, #2d2d2d 0%, #1e1e1e 100%)',
                     },
                   },
                   '&:hover': {
