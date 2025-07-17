@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Admin Backend with hot reload
+  admin-backend:
+    build:
+      context: ./packages/admin-backend
+      dockerfile: Dockerfile
+    container_name: benalsam-admin-backend-dev
+    ports:
+      - "3002:3002"
+    volumes:
+      # Hot reload için source code'u mount et
+      - ./packages/admin-backend/src:/app/src
+      - ./packages/admin-backend/package.json:/app/package.json
+      - ./packages/admin-backend/tsconfig.json:/app/tsconfig.json
+      - ./packages/admin-backend/nodemon.json:/app/nodemon.json
+      # Node modules'ı container içinde tut (performance için)
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+    env_file:
+      - ./packages/admin-backend/.env
+    depends_on:
+      - redis
+    networks:
+      - benalsam-network
+    restart: unless-stopped
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: benalsam-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - benalsam-network
+    restart: unless-stopped
+
+  # Elasticsearch (optional for development)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: benalsam-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - benalsam-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  benalsam-network:
+    driver: bridge 

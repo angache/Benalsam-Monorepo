@@ -1851,3 +1851,4 @@
 {"level":"info","message":"Search request:","page":1,"pageSize":5,"query":"telefon","service":"admin-backend","sortBy":"created_at","sortOrder":"desc","timestamp":"2025-07-17T21:01:33.774Z"}
 {"level":"info","max_price":null,"message":"Searching with Supabase RPC:","min_price":null,"p_attributes":null,"p_categories":null,"p_location":null,"p_page":1,"p_page_size":5,"p_urgency":"Tümü","search_query":"telefon","service":"admin-backend","sort_direction":"desc","sort_key":"created_at","timestamp":"2025-07-17T21:01:33.776Z"}
 {"level":"info","message":"::1 - - [17/Jul/2025:21:01:34 +0000] \"POST /api/v1/search/listings HTTP/1.1\" 200 954 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-17T21:01:34.477Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-17T21:14:07.292Z"}
