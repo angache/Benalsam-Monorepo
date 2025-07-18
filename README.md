@@ -1,278 +1,219 @@
-# 🏢 Benalsam Monorepo
+# Benalsam Monorepo
 
-Modern, enterprise-level monorepo for Benalsam ecosystem including web, mobile, and admin applications with comprehensive documentation and deployment guides.
+Modern ilan uygulaması için monorepo yapısı - React Native, Web ve Admin Panel
 
-## 🎯 Project Overview
-
-Benalsam is a comprehensive marketplace platform with:
-- **Web Application** - React + Vite frontend
-- **Mobile Application** - React Native + Expo
-- **Admin Panel** - Role-based access control system
-- **Shared Types** - TypeScript definitions across all platforms
-- **Backend Services** - Node.js + Supabase + PostgreSQL
-
-## 📁 Project Structure
+## 🏗️ Proje Yapısı
 
 ```
 benalsam-monorepo/
 ├── packages/
-│   ├── shared-types/     # Shared TypeScript types and utilities
-│   ├── web/             # React + Vite web application
-│   ├── mobile/          # React Native + Expo mobile application
-│   ├── admin-ui/        # React + Material-UI admin panel
-│   └── admin-backend/   # Node.js + Express admin API
-├── docs/                # Comprehensive documentation
-│   ├── vps-migration/   # VPS deployment and migration guides
-│   ├── MONOREPO_GUIDE.md
-│   ├── QUICK_START.md
-│   └── ...              # Additional documentation
-├── scripts/             # Build and deployment scripts
-├── docker-compose.*.yml # Docker configurations
-└── README.md           # This file
+│   ├── admin-backend/     # Admin API (Node.js/Express)
+│   ├── admin-ui/         # Admin Panel (React/TypeScript)
+│   ├── mobile/           # Mobile App (React Native/Expo)
+│   ├── web/              # Web App (React/TypeScript)
+│   └── shared-types/     # Shared TypeScript Types
+├── scripts/
+│   └── dev.sh           # Development startup script
+├── docker-compose.dev.yml
+└── lerna.json
 ```
 
-## 🚀 Quick Start
+## 🚀 Hızlı Başlangıç
 
-### Prerequisites
-- Node.js >= 18.0.0
-- npm >= 8.0.0
+### Gereksinimler
+- Node.js 18+
 - Docker & Docker Compose
-- Expo CLI (for mobile development)
-- PostgreSQL (for admin backend)
+- npm 9+
 
-### Installation
+### Kurulum
+
 ```bash
-# Clone repository
-git clone https://github.com/angache/Benalsam-Monorepo.git
-cd Benalsam-Monorepo
+# 1. Repo'yu klonla
+git clone <repo-url>
+cd benalsam-monorepo
 
-# Install all dependencies
+# 2. Dependencies'leri yükle
 npm install
 
-# Build shared types
-npm run build:shared
+# 3. Lerna bootstrap
+npm run bootstrap
 
-# Start development servers
-npm run dev:web      # Start web development server
-npm run dev:mobile   # Start mobile development server
-npm run dev:admin    # Start admin panel development
+# 4. Shared-types'ı build et
+npm run build:shared
 ```
 
-## 📦 Packages
+### Geliştirme
 
-### `packages/shared-types`
-Shared TypeScript types, utilities, and services used across all applications.
+```bash
+# Tüm servisleri başlat (Önerilen)
+./scripts/dev.sh
 
-**Features:**
-- Type definitions (User, Listing, Offer, Category, etc.)
-- Supabase client and database helpers
-- Common utilities (formatting, validation, etc.)
-- API response types and interfaces
+# Veya manuel olarak:
+npm run dev:admin    # Admin backend + UI
+npm run dev:mobile   # Mobile app
+npm run dev:web      # Web app
+```
 
-### `packages/web`
-React + Vite web application with modern UI/UX.
+## 📊 Servisler
 
-**Tech Stack:**
-- React 18 + TypeScript
-- Vite + Tailwind CSS
-- Supabase + React Query
-- Zustand state management
-- Responsive design
+| Servis | Port | URL | Açıklama |
+|--------|------|-----|----------|
+| Admin Backend | 3002 | http://localhost:3002 | Admin API |
+| Admin UI | 3003 | http://localhost:3003 | Admin Panel |
+| Redis | 6379 | localhost:6379 | Cache/Queue |
+| Elasticsearch | 9200 | localhost:9200 | Search Engine |
 
-### `packages/mobile`
-React Native + Expo mobile application with native performance.
-
-**Tech Stack:**
-- React Native + Expo
-- TypeScript + NativeWind
-- Supabase + React Query
-- Zustand state management
-- Native navigation
-
-### `packages/admin-ui`
-React + Material-UI admin panel with role-based access control.
-
-**Tech Stack:**
-- React 18 + TypeScript
-- Material-UI + Vite
-- React Query + Zustand
-- Role-based authentication
-- Responsive admin dashboard
-
-### `packages/admin-backend`
-Node.js + Express admin API with comprehensive features.
-
-**Tech Stack:**
-- Node.js + Express + TypeScript
-- PostgreSQL + Redis
-- JWT authentication
-- Role-based access control
-- File upload handling
-- Rate limiting & security
-
-## 🛠️ Development
-
-### Available Scripts
+## 🛠️ Script'ler
 
 ```bash
 # Development
-npm run dev:web          # Start web dev server (port 3000)
-npm run dev:mobile       # Start mobile dev server
-npm run dev:admin        # Start admin panel dev (port 3001)
+npm run dev              # Tüm servisleri paralel başlat
+npm run dev:admin        # Sadece admin servisleri
+npm run dev:mobile       # Sadece mobile
+npm run dev:web          # Sadece web
 
-# Building
-npm run build:shared     # Build shared types
-npm run build:web        # Build web app
-npm run build:mobile     # Build mobile app
-npm run build:admin      # Build admin panel
-npm run build:all        # Build all packages
+# Build
+npm run build            # Tüm paketleri build et
+npm run build:shared     # Sadece shared-types
 
-# Testing & Quality
-npm run test             # Run tests across all packages
-npm run type-check       # Type check all packages
-npm run clean            # Clean all build artifacts
+# Docker
+npm run docker:up        # Docker servislerini başlat
+npm run docker:down      # Docker servislerini durdur
+npm run docker:logs      # Docker loglarını göster
+
+# Maintenance
+npm run clean            # Tüm build dosyalarını temizle
+npm run bootstrap        # Dependencies'leri yeniden yükle
+npm run format           # Kod formatla
+npm run format:check     # Format kontrolü
+npm run type-check       # TypeScript kontrolü
 ```
 
-### Docker Development
+## 📦 Paket Detayları
+
+### admin-backend
+- **Teknoloji**: Node.js, Express, TypeScript
+- **Veritabanı**: PostgreSQL (Supabase)
+- **Cache**: Redis
+- **Search**: Elasticsearch
+- **Auth**: JWT
+
+### admin-ui
+- **Teknoloji**: React, TypeScript, Vite
+- **UI Library**: Custom components
+- **State**: Zustand
+- **API**: Axios
+
+### mobile
+- **Teknoloji**: React Native, Expo
+- **Navigation**: React Navigation
+- **State**: React Query + Zustand
+- **API**: Supabase client
+
+### web
+- **Teknoloji**: React, TypeScript, Vite
+- **UI Library**: Custom components
+- **State**: Zustand
+- **API**: Supabase client
+
+### shared-types
+- **Amaç**: Tüm paketler arası tip paylaşımı
+- **Export**: TypeScript interfaces
+- **Build**: TypeScript compiler
+
+## 🔄 Workflow
+
+### Yeni Özellik Ekleme
+
+1. **Shared Types Güncelle**
+   ```bash
+   cd packages/shared-types
+   # Yeni interface'ler ekle
+   npm run build
+   ```
+
+2. **Backend API Ekle**
+   ```bash
+   cd packages/admin-backend
+   # Yeni endpoint'ler ekle
+   npm run build
+   ```
+
+3. **Frontend Güncelle**
+   ```bash
+   cd packages/admin-ui
+   # Yeni UI component'leri ekle
+   ```
+
+### Hot Reload
+
+- **Backend**: `npm run dev` (nodemon)
+- **Admin UI**: `npm run dev` (Vite HMR)
+- **Mobile**: Expo dev server
+- **Web**: Vite HMR
+
+## 🐛 Sorun Giderme
+
+### Yaygın Sorunlar
+
+1. **Shared Types Build Hatası**
+   ```bash
+   npm run build:shared
+   npm run bootstrap
+   ```
+
+2. **Docker Bağlantı Sorunu**
+   ```bash
+   docker-compose -f docker-compose.dev.yml down
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+
+3. **Port Çakışması**
+   ```bash
+   lsof -ti:3002 | xargs kill -9
+   lsof -ti:3003 | xargs kill -9
+   ```
+
+4. **Node Modules Sorunu**
+   ```bash
+   npm run clean
+   npm install
+   npm run bootstrap
+   ```
+
+## 📝 Commit Kuralları
 
 ```bash
-# Start all services with Docker
-docker-compose -f docker-compose.dev.yml up -d
+# Feature
+git commit -m "feat: add user management system"
 
-# Start production environment
+# Fix
+git commit -m "fix: resolve authentication token issue"
+
+# Refactor
+git commit -m "refactor: improve API response structure"
+
+# Docs
+git commit -m "docs: update README with new setup instructions"
+```
+
+## 🚀 Production
+
+```bash
+# Build all packages
+npm run build
+
+# Docker production
 docker-compose -f docker-compose.prod.yml up -d
-
-# View logs
-docker-compose logs -f
 ```
 
-## 📚 Documentation
+## 📞 Destek
 
-### Core Guides
-- **[Quick Start](./docs/QUICK_START.md)** - Get started in minutes
-- **[Monorepo Guide](./docs/MONOREPO_GUIDE.md)** - Understanding the monorepo structure
-- **[Shared Types Guide](./docs/SHARED_TYPES_GUIDE.md)** - Working with shared types
-
-### Admin Panel
-- **[Admin Panel Deployment](./docs/ADMIN_PANEL_DEPLOYMENT_GUIDE.md)** - Complete deployment guide
-- **[Role-Based Access Control](./docs/ADMIN_ROLE_BASED_ACCESS_CONTROL.md)** - RBAC implementation
-- **[Admin RBAC Quick Start](./docs/ADMIN_RBAC_QUICK_START.md)** - Quick RBAC setup
-
-### Deployment & Migration
-- **[VPS Migration](./docs/vps-migration/)** - Complete VPS migration guide
-- **[Docker Setup](./docs/DOCKER_SETUP_HOWTO.md)** - Docker configuration guide
-- **[Elasticsearch Integration](./docs/ELASTICSEARCH_INTEGRATION_STRATEGY.md)** - Search system setup
-
-### API & Architecture
-- **[Elasticsearch Implementation](./docs/ELASTICSEARCH_IMPLEMENTATION_GUIDE.md)** - Search implementation
-- **[Elasticsearch Usage Examples](./docs/ELASTICSEARCH_USAGE_EXAMPLES.md)** - Search usage patterns
-- **[API Architecture](./docs/ELASTICSEARCH_API_ARCHITECTURE.md)** - API design patterns
-
-## 🚀 Deployment
-
-### Web Application
-```bash
-npm run build:web
-# Deploy dist/ folder to your hosting provider
-```
-
-### Mobile Application
-```bash
-npm run build:mobile
-# Use Expo EAS Build or build locally
-```
-
-### Admin Panel
-```bash
-# Production deployment
-docker-compose -f docker-compose.prod.yml up -d
-
-# Or manual deployment
-npm run build:admin
-# Deploy to your server
-```
-
-### VPS Migration
-For complete VPS migration guide, see [docs/vps-migration/](./docs/vps-migration/).
-
-## 🔧 Configuration
-
-### Environment Variables
-Each package has its own environment configuration:
-- `packages/web/.env` - Web application settings
-- `packages/mobile/.env` - Mobile application settings
-- `packages/admin-backend/.env.production` - Admin backend settings
-- `packages/admin-ui/.env.production` - Admin frontend settings
-
-### Database Setup
-- **Supabase** - Main application database
-- **PostgreSQL** - Admin panel database
-- **Redis** - Caching and sessions
-
-## 📊 Features
-
-### Web & Mobile Applications
-- ✅ User authentication and profiles
-- ✅ Listing creation and management
-- ✅ Category management with attributes
-- ✅ Image upload and management
-- ✅ Search and filtering
-- ✅ Messaging system
-- ✅ Offer management
-- ✅ Favorites and following
-- ✅ Premium features
-- ✅ Analytics dashboard
-
-### Admin Panel
-- ✅ Role-based access control (RBAC)
-- ✅ User management
-- ✅ Listing moderation
-- ✅ Category management
-- ✅ Analytics and reporting
-- ✅ System monitoring
-- ✅ File management
-- ✅ Audit logging
-
-### Shared Infrastructure
-- ✅ TypeScript type safety
-- ✅ React Query for data fetching
-- ✅ Zustand for state management
-- ✅ Supabase integration
-- ✅ Responsive design
-- ✅ Error handling
-- ✅ Loading states
-
-## 🤝 Contributing
-
-1. Create a feature branch from `main`
-2. Make changes in the appropriate package(s)
-3. Update shared types if needed
-4. Test changes across all platforms
-5. Update documentation
-6. Submit a pull request
-
-### Development Guidelines
-- Follow TypeScript best practices
-- Use shared types for consistency
-- Test on both web and mobile
-- Update documentation for new features
-- Follow the existing code style
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
-## 🆘 Support
-
-For issues and questions:
-1. Check the [documentation](./docs/)
-2. Review [CHANGELOG.md](./docs/CHANGELOG.md)
-3. Create an issue on GitHub
+Sorun yaşarsan:
+1. README'yi kontrol et
+2. Issue aç
+3. Logları kontrol et
 
 ---
 
-**Built with ❤️ by the Benalsam Team**
-
-**Last Updated**: January 2025  
-**Version**: 2.0.0  
-**Status**: Production Ready ✅ 
+**Benalsam Monorepo** - Modern ilan uygulaması geliştirme platformu 

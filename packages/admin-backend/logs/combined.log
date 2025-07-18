@@ -2232,3 +2232,21 @@
 {"level":"info","message":"✅ Sync service shut down successfully","service":"admin-backend","timestamp":"2025-07-18T16:32:23.671Z"}
 {"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T16:32:23.671Z"}
 {"level":"info","message":"🔌 Redis connection closed","service":"admin-backend","timestamp":"2025-07-18T16:32:27.289Z"}
+{"level":"info","message":"Elasticsearch client initialized","service":"admin-backend","timestamp":"2025-07-18T23:35:56.720Z"}
+{"level":"info","message":"Redis client initialized","service":"admin-backend","timestamp":"2025-07-18T23:35:56.723Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-18T23:35:57.490Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-18T23:35:57.491Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-18T23:35:57.491Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-18T23:35:57.491Z"}
+{"level":"info","message":"🚀 Initializing Elasticsearch services...","service":"admin-backend","timestamp":"2025-07-18T23:35:57.492Z"}
+{"level":"info","message":"✅ Elasticsearch service initialized","service":"admin-backend","timestamp":"2025-07-18T23:35:57.638Z"}
+{"level":"info","message":"✅ Redis connected for message queue","service":"admin-backend","timestamp":"2025-07-18T23:35:57.705Z"}
+{"level":"info","message":"✅ Redis connection test successful","service":"admin-backend","timestamp":"2025-07-18T23:35:57.828Z"}
+{"level":"info","message":"✅ Message queue service initialized","service":"admin-backend","timestamp":"2025-07-18T23:35:57.829Z"}
+{"level":"info","message":"✅ Indexer service initialized","service":"admin-backend","timestamp":"2025-07-18T23:35:57.830Z"}
+{"level":"info","message":"🚀 Initializing sync service...","service":"admin-backend","timestamp":"2025-07-18T23:35:57.831Z"}
+{"level":"info","message":"✅ Elasticsearch connection verified","service":"admin-backend","timestamp":"2025-07-18T23:35:57.953Z"}
+{"level":"info","message":"✅ Redis connection verified","service":"admin-backend","timestamp":"2025-07-18T23:35:57.953Z"}
+{"level":"info","message":"🚀 Starting Elasticsearch indexer...","service":"admin-backend","timestamp":"2025-07-18T23:35:57.954Z"}
+{"level":"info","message":"👂 Listening for jobs...","service":"admin-backend","timestamp":"2025-07-18T23:35:57.955Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:23:36:02 +0000] \"GET /health HTTP/1.1\" 200 139 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-18T23:36:02.103Z"}

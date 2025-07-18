@@ -6,14 +6,32 @@
     "packages/*"
   ],
   "scripts": {
-    "clean": "lerna clean",
-    "bootstrap": "lerna bootstrap",
-    "build": "lerna run build",
-    "dev": "lerna run dev --parallel",
-    "test": "lerna run test",
-    "lint": "lerna run lint"
+    "clean": "lerna clean && rm -rf node_modules",
+    "bootstrap": "lerna bootstrap --hoist",
+    "build": "lerna run build --stream",
+    "build:shared": "lerna run build --scope=@benalsam/shared-types",
+    "dev": "lerna run dev --parallel --stream",
+    "dev:admin": "lerna run dev --scope=@benalsam/admin-backend --scope=@benalsam/admin-ui --parallel",
+    "dev:mobile": "lerna run dev --scope=@benalsam/mobile",
+    "dev:web": "lerna run dev --scope=@benalsam/web",
+    "test": "lerna run test --stream",
+    "lint": "lerna run lint --stream",
+    "type-check": "lerna run type-check --stream",
+    "docker:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:logs": "docker-compose -f docker-compose.dev.yml logs -f",
+    "start:local": "npm run docker:up && npm run dev:admin",
+    "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,js,jsx,json}\""
   },
   "devDependencies": {
-    "lerna": "^8.2.3"
+    "lerna": "^8.2.3",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 } 
