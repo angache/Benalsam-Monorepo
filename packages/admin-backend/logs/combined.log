@@ -1852,3 +1852,10 @@
 {"level":"info","max_price":null,"message":"Searching with Supabase RPC:","min_price":null,"p_attributes":null,"p_categories":null,"p_location":null,"p_page":1,"p_page_size":5,"p_urgency":"Tümü","search_query":"telefon","service":"admin-backend","sort_direction":"desc","sort_key":"created_at","timestamp":"2025-07-17T21:01:33.776Z"}
 {"level":"info","message":"::1 - - [17/Jul/2025:21:01:34 +0000] \"POST /api/v1/search/listings HTTP/1.1\" 200 954 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-17T21:01:34.477Z"}
 {"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-17T21:14:07.292Z"}
+{"level":"info","message":"Elasticsearch client initialized","service":"admin-backend","timestamp":"2025-07-18T01:34:52.296Z"}
+{"level":"info","message":"Redis client initialized","service":"admin-backend","timestamp":"2025-07-18T01:34:52.300Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-18T01:34:52.307Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-18T01:34:52.308Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-18T01:34:52.308Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-18T01:34:52.308Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:01:37:10 +0000] \"GET /health HTTP/1.1\" 200 139 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-18T01:37:10.709Z"}

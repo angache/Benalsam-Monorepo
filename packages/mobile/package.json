@@ -20,6 +20,7 @@
     "deploy:firebase:android": "./scripts/deploy-firebase.sh android preview",
     "deploy:firebase:ios": "./scripts/deploy-firebase.sh ios preview",
     "deploy:firebase:android:prod": "./scripts/deploy-firebase.sh android production",
+    "migrate:categories": "node scripts/migrate-categories-to-supabase.js",
     "deploy:firebase:ios:prod": "./scripts/deploy-firebase.sh ios production"
   },
   "dependencies": {

@@ -19,5 +19,6 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
+    'import.meta.env.VITE_API_URL': JSON.stringify('http://209.227.228.96:3002/api/v1'),
   },
 })
