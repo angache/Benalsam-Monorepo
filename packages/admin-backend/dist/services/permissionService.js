@@ -19,21 +19,21 @@ class PermissionService {
             if (admin?.role === 'SUPER_ADMIN') {
                 const now = new Date().toISOString();
                 return [
-                    { id: '1', name: 'dashboard:view', resource: 'dashboard', action: 'view', createdAt: now, updatedAt: now },
-                    { id: '2', name: 'listings:view', resource: 'listings', action: 'view', createdAt: now, updatedAt: now },
-                    { id: '3', name: 'listings:moderate', resource: 'listings', action: 'moderate', createdAt: now, updatedAt: now },
-                    { id: '4', name: 'categories:view', resource: 'categories', action: 'view', createdAt: now, updatedAt: now },
-                    { id: '5', name: 'categories:edit', resource: 'categories', action: 'edit', createdAt: now, updatedAt: now },
-                    { id: '6', name: 'categories:delete', resource: 'categories', action: 'delete', createdAt: now, updatedAt: now },
-                    { id: '7', name: 'users:view', resource: 'users', action: 'view', createdAt: now, updatedAt: now },
-                    { id: '8', name: 'users:manage', resource: 'users', action: 'manage', createdAt: now, updatedAt: now },
-                    { id: '9', name: 'users:ban', resource: 'users', action: 'ban', createdAt: now, updatedAt: now },
-                    { id: '10', name: 'users:delete', resource: 'users', action: 'delete', createdAt: now, updatedAt: now },
-                    { id: '11', name: 'admins:view', resource: 'admins', action: 'view', createdAt: now, updatedAt: now },
-                    { id: '12', name: 'admins:create', resource: 'admins', action: 'create', createdAt: now, updatedAt: now },
-                    { id: '13', name: 'admins:edit', resource: 'admins', action: 'edit', createdAt: now, updatedAt: now },
-                    { id: '14', name: 'admins:delete', resource: 'admins', action: 'delete', createdAt: now, updatedAt: now },
-                    { id: '15', name: 'admins:roles', resource: 'admins', action: 'roles', createdAt: now, updatedAt: now }
+                    { id: '1', name: 'dashboard:view', resource: 'dashboard', action: 'view', created_at: now, updated_at: now },
+                    { id: '2', name: 'listings:view', resource: 'listings', action: 'view', created_at: now, updated_at: now },
+                    { id: '3', name: 'listings:moderate', resource: 'listings', action: 'moderate', created_at: now, updated_at: now },
+                    { id: '4', name: 'categories:view', resource: 'categories', action: 'view', created_at: now, updated_at: now },
+                    { id: '5', name: 'categories:edit', resource: 'categories', action: 'edit', created_at: now, updated_at: now },
+                    { id: '6', name: 'categories:delete', resource: 'categories', action: 'delete', created_at: now, updated_at: now },
+                    { id: '7', name: 'users:view', resource: 'users', action: 'view', created_at: now, updated_at: now },
+                    { id: '8', name: 'users:manage', resource: 'users', action: 'manage', created_at: now, updated_at: now },
+                    { id: '9', name: 'users:ban', resource: 'users', action: 'ban', created_at: now, updated_at: now },
+                    { id: '10', name: 'users:delete', resource: 'users', action: 'delete', created_at: now, updated_at: now },
+                    { id: '11', name: 'admins:view', resource: 'admins', action: 'view', created_at: now, updated_at: now },
+                    { id: '12', name: 'admins:create', resource: 'admins', action: 'create', created_at: now, updated_at: now },
+                    { id: '13', name: 'admins:edit', resource: 'admins', action: 'edit', created_at: now, updated_at: now },
+                    { id: '14', name: 'admins:delete', resource: 'admins', action: 'delete', created_at: now, updated_at: now },
+                    { id: '15', name: 'admins:roles', resource: 'admins', action: 'roles', created_at: now, updated_at: now }
                 ];
             }
             return [];

@@ -1,0 +1,22 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const elasticsearchController_1 = require("../controllers/elasticsearchController");
+const router = (0, express_1.Router)();
+const elasticsearchController = new elasticsearchController_1.ElasticsearchController();
+router.get('/health', (req, res) => elasticsearchController.getHealth(req, res));
+router.get('/health-check', (req, res) => elasticsearchController.getHealthCheck(req, res));
+router.get('/stats', (req, res) => elasticsearchController.getIndexStats(req, res));
+router.get('/test-connection', (req, res) => elasticsearchController.testConnection(req, res));
+router.get('/test-redis', (req, res) => elasticsearchController.testRedisConnection(req, res));
+router.post('/search', (req, res) => elasticsearchController.searchListings(req, res));
+router.get('/sync/status', (req, res) => elasticsearchController.getSyncStatus(req, res));
+router.get('/sync/config', (req, res) => elasticsearchController.getSyncConfig(req, res));
+router.post('/sync/config', (req, res) => elasticsearchController.updateSyncConfig(req, res));
+router.post('/sync/trigger', (req, res) => elasticsearchController.triggerManualSync(req, res));
+router.get('/queue/stats', (req, res) => elasticsearchController.getQueueStats(req, res));
+router.post('/queue/retry-failed', (req, res) => elasticsearchController.retryFailedJobs(req, res));
+router.post('/queue/clear', (req, res) => elasticsearchController.clearQueue(req, res));
+router.post('/reindex', (req, res) => elasticsearchController.reindexAll(req, res));
+exports.default = router;
+//# sourceMappingURL=elasticsearch.js.map

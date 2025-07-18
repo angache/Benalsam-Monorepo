@@ -2163,3 +2163,61 @@
 {"level":"info","message":"::1 - - [18/Jul/2025:14:38:01 +0000] \"GET /api/v1/admin-management/permissions HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:38:01.246Z"}
 {"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:38:01.352Z"}
 {"level":"info","message":"::1 - - [18/Jul/2025:14:38:01 +0000] \"GET /api/v1/admin-management/permissions HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:38:01.659Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:52:26.242Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:52:26 +0000] \"GET /api/v1/admin-management/users?page=1&limit=10&search=&filters[role]=&filters[status]= HTTP/1.1\" 200 770 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:52:26.845Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:52:26.962Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:52:27.003Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:52:27 +0000] \"GET /api/v1/admin-management/roles HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:52:27.349Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:52:27.476Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:52:27 +0000] \"GET /api/v1/admin-management/users?page=1&limit=10&search=&filters[role]=&filters[status]= HTTP/1.1\" 200 770 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:52:27.511Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:52:27.618Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:52:27 +0000] \"GET /api/v1/admin-management/permissions HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:52:27.790Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:52:27 +0000] \"GET /api/v1/admin-management/roles HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:52:27.946Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:52:28.056Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:52:28 +0000] \"GET /api/v1/admin-management/permissions HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:52:28.383Z"}
+{"level":"info","message":"Fetching categories from Supabase","service":"admin-backend","timestamp":"2025-07-18T14:53:37.298Z"}
+{"level":"info","message":"Fetching categories from Supabase","service":"admin-backend","timestamp":"2025-07-18T14:53:37.301Z"}
+{"level":"info","message":"Fetched 16 main categories","service":"admin-backend","timestamp":"2025-07-18T14:53:38.128Z"}
+{"level":"info","message":"Fetched 16 main categories","service":"admin-backend","timestamp":"2025-07-18T14:53:38.128Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:38 +0000] \"GET /api/v1/categories HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:38.164Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:39.119Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-18T14:53:39.386Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-18T14:53:40.346Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:40 +0000] \"GET /api/v1/listings?page=1&limit=100&search= HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:40.351Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:41.515Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:42 +0000] \"GET /api/v1/admin-management/users?page=1&limit=10&search=&filters[role]=&filters[status]= HTTP/1.1\" 200 770 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:42.136Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:42.254Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:42.293Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:42 +0000] \"GET /api/v1/admin-management/roles HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:42.705Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:42.839Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:42 +0000] \"GET /api/v1/admin-management/users?page=1&limit=10&search=&filters[role]=&filters[status]= HTTP/1.1\" 200 770 \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:42.878Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:43.021Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:43 +0000] \"GET /api/v1/admin-management/permissions HTTP/1.1\" 200 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:43.254Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:43 +0000] \"GET /api/v1/admin-management/roles HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:43.399Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-18T14:53:43.519Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:14:53:43 +0000] \"GET /api/v1/admin-management/permissions HTTP/1.1\" 304 - \"http://localhost:3003/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"","service":"admin-backend","timestamp":"2025-07-18T14:53:43.870Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-18T15:56:36.647Z"}
+{"level":"info","message":"🛑 Shutting down sync service...","service":"admin-backend","timestamp":"2025-07-18T15:56:36.656Z"}
+{"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T15:56:36.656Z"}
+{"level":"info","message":"✅ Sync service shut down successfully","service":"admin-backend","timestamp":"2025-07-18T15:56:36.657Z"}
+{"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T15:56:36.657Z"}
+{"level":"info","message":"🔌 Redis connection closed","service":"admin-backend","timestamp":"2025-07-18T15:56:37.325Z"}
+{"level":"info","message":"Elasticsearch client initialized","service":"admin-backend","timestamp":"2025-07-18T15:57:33.827Z"}
+{"level":"info","message":"Redis client initialized","service":"admin-backend","timestamp":"2025-07-18T15:57:33.830Z"}
+{"level":"info","message":"🚀 Admin Backend API server running on port 3002","service":"admin-backend","timestamp":"2025-07-18T15:57:33.931Z"}
+{"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-18T15:57:33.933Z"}
+{"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-18T15:57:33.933Z"}
+{"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-18T15:57:33.933Z"}
+{"level":"info","message":"🚀 Initializing Elasticsearch services...","service":"admin-backend","timestamp":"2025-07-18T15:57:33.934Z"}
+{"level":"info","message":"✅ Elasticsearch service initialized","service":"admin-backend","timestamp":"2025-07-18T15:57:34.145Z"}
+{"level":"info","message":"✅ Redis connected for message queue","service":"admin-backend","timestamp":"2025-07-18T15:57:34.212Z"}
+{"level":"info","message":"✅ Redis connection test successful","service":"admin-backend","timestamp":"2025-07-18T15:57:34.331Z"}
+{"level":"info","message":"✅ Message queue service initialized","service":"admin-backend","timestamp":"2025-07-18T15:57:34.332Z"}
+{"level":"info","message":"✅ Indexer service initialized","service":"admin-backend","timestamp":"2025-07-18T15:57:34.333Z"}
+{"level":"info","message":"🚀 Initializing sync service...","service":"admin-backend","timestamp":"2025-07-18T15:57:34.334Z"}
+{"level":"info","message":"✅ Elasticsearch connection verified","service":"admin-backend","timestamp":"2025-07-18T15:57:34.468Z"}
+{"level":"info","message":"✅ Redis connection verified","service":"admin-backend","timestamp":"2025-07-18T15:57:34.469Z"}
+{"level":"info","message":"🚀 Starting Elasticsearch indexer...","service":"admin-backend","timestamp":"2025-07-18T15:57:34.469Z"}
+{"level":"info","message":"👂 Listening for jobs...","service":"admin-backend","timestamp":"2025-07-18T15:57:34.470Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:15:57:43 +0000] \"GET /api/elasticsearch/health HTTP/1.1\" 404 65 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-18T15:57:43.258Z"}
+{"level":"info","message":"::1 - - [18/Jul/2025:15:57:59 +0000] \"GET /api/v1/elasticsearch/health HTTP/1.1\" 200 461 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-18T15:57:59.264Z"}

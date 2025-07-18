@@ -34,6 +34,7 @@ export declare class SearchService {
     private redisClient;
     private isElasticsearchAvailable;
     constructor();
+    private getSupabaseClient;
     private initializeElasticsearch;
     private initializeRedis;
     searchListings(params: SearchParams): Promise<SearchResult>;

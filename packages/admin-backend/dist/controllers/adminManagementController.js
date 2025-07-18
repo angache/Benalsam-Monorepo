@@ -179,7 +179,7 @@ class AdminManagementController {
             if (updateData.permissions) {
                 const existingPermissions = await permissionService_1.PermissionService.getUserPermissions(id);
                 for (const perm of existingPermissions) {
-                    await permissionService_1.PermissionService.revokeUserPermission(id, perm.permissionId);
+                    await permissionService_1.PermissionService.revokeUserPermission(id, perm.permission_id);
                 }
                 for (const permissionId of updateData.permissions) {
                     await permissionService_1.PermissionService.grantUserPermission(id, permissionId, currentUser.id);

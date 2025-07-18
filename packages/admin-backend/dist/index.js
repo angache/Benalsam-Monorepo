@@ -46,8 +46,38 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const app_1 = require("./config/app");
 const logger_1 = __importStar(require("./config/logger"));
+const services_1 = require("./services");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+let elasticsearchService;
+let messageQueueService;
+let indexerService;
+let syncService;
+async function initializeServices() {
+    try {
+        logger_1.default.info('🚀 Initializing Elasticsearch services...');
+        elasticsearchService = new services_1.AdminElasticsearchService();
+        await elasticsearchService.testConnection();
+        logger_1.default.info('✅ Elasticsearch service initialized');
+        messageQueueService = new services_1.MessageQueueService();
+        await messageQueueService.testConnection();
+        logger_1.default.info('✅ Message queue service initialized');
+        indexerService = new services_1.IndexerService(elasticsearchService, messageQueueService);
+        logger_1.default.info('✅ Indexer service initialized');
+        syncService = new services_1.SyncService(elasticsearchService, messageQueueService, indexerService);
+        await syncService.initialize();
+        logger_1.default.info('✅ Sync service initialized');
+        const shouldMigrate = process.env.ELASTICSEARCH_INITIAL_MIGRATION === 'true';
+        if (shouldMigrate) {
+            logger_1.default.info('🔄 Starting initial data migration...');
+            await syncService.initialDataMigration();
+            logger_1.default.info('✅ Initial data migration completed');
+        }
+    }
+    catch (error) {
+        logger_1.default.error('❌ Error initializing Elasticsearch services:', error);
+    }
+}
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
         directives: {
@@ -108,18 +138,39 @@ app.use('*', (req, res) => {
     });
 });
 const PORT = app_1.serverConfig.port;
-app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
     logger_1.default.info(`🚀 Admin Backend API server running on port ${PORT}`);
     logger_1.default.info(`📊 Environment: ${app_1.serverConfig.nodeEnv}`);
     logger_1.default.info(`🔗 Health check: http://localhost:${PORT}/health`);
     logger_1.default.info(`📚 API version: ${app_1.serverConfig.apiVersion}`);
+    await initializeServices();
 });
-process.on('SIGTERM', () => {
-    logger_1.default.info('SIGTERM received, shutting down gracefully');
-    process.exit(0);
-});
-process.on('SIGINT', () => {
-    logger_1.default.info('SIGINT received, shutting down gracefully');
-    process.exit(0);
-});
+async function gracefulShutdown(signal) {
+    logger_1.default.info(`${signal} received, shutting down gracefully`);
+    try {
+        if (syncService) {
+            await syncService.shutdown();
+        }
+        if (indexerService) {
+            await indexerService.stop();
+        }
+        if (messageQueueService) {
+            await messageQueueService.disconnect();
+        }
+        server.close(() => {
+            logger_1.default.info('✅ Server closed');
+            process.exit(0);
+        });
+        setTimeout(() => {
+            logger_1.default.error('❌ Forced shutdown after timeout');
+            process.exit(1);
+        }, 10000);
+    }
+    catch (error) {
+        logger_1.default.error('❌ Error during graceful shutdown:', error);
+        process.exit(1);
+    }
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 //# sourceMappingURL=index.js.map

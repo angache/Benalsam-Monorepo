@@ -10,6 +10,7 @@ const categories_1 = require("./categories");
 const users_1 = require("./users");
 const admin_management_1 = __importDefault(require("./admin-management"));
 const search_1 = __importDefault(require("./search"));
+const elasticsearch_1 = __importDefault(require("./elasticsearch"));
 const router = (0, express_1.Router)();
 const API_VERSION = process.env.API_VERSION || 'v1';
 router.get('/health', (req, res) => {
@@ -26,6 +27,7 @@ router.use('/categories', categories_1.categoriesRouter);
 router.use('/users', users_1.usersRouter);
 router.use('/admin-management', admin_management_1.default);
 router.use('/search', search_1.default);
+router.use('/elasticsearch', elasticsearch_1.default);
 router.get('/reports', (req, res) => {
     res.status(501).json({
         success: false,
