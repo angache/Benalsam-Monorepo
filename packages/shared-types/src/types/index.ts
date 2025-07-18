@@ -1,6 +1,142 @@
 // Icon type for both React Native and Web
 export type IconType = any; // Will be replaced with proper icon type based on platform
 
+// ===========================
+// ADMIN TYPES
+// ===========================
+
+// Admin Role enum
+export enum AdminRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
+  MODERATOR = 'MODERATOR',
+  SUPPORT = 'SUPPORT',
+  CATEGORY_MANAGER = 'CATEGORY_MANAGER',
+  ANALYTICS_MANAGER = 'ANALYTICS_MANAGER',
+  USER_MANAGER = 'USER_MANAGER',
+  CONTENT_MANAGER = 'CONTENT_MANAGER'
+}
+
+// Admin Permission types
+export interface AdminPermission {
+  id: string;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminRolePermission {
+  id: string;
+  role: AdminRole;
+  permission_id: string;
+  permission?: AdminPermission;
+  created_at: string;
+}
+
+export interface AdminUserPermission {
+  id: string;
+  admin_id: string;
+  permission_id: string;
+  granted_by?: string;
+  permission?: AdminPermission;
+  created_at: string;
+}
+
+export interface AdminRoleDefinition {
+  id: string;
+  name: string;
+  display_name: string;
+  description?: string;
+  level: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Admin User types
+export interface AdminUser {
+  id: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  role: AdminRole;
+  permissions: any[]; // JSONB array
+  is_active: boolean;
+  last_login?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminProfile {
+  id: string;
+  admin_id: string;
+  display_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  department?: string;
+  position?: string;
+  permissions: any; // JSONB object
+  is_active: boolean;
+  last_activity?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Admin Activity Log types
+export interface AdminActivityLog {
+  id: string;
+  admin_id: string;
+  action: string;
+  resource: string;
+  resource_id?: string;
+  details?: Record<string, any>;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+// Admin Workflow Assignment types
+export interface AdminWorkflowAssignment {
+  id: string;
+  admin_profile_id?: string;
+  workflow_type: string;
+  resource_id?: string;
+  resource_type?: string;
+  priority: number;
+  status: string;
+  assigned_at: string;
+  started_at?: string;
+  completed_at?: string;
+  notes?: string;
+  performance_rating?: number;
+}
+
+// Admin Performance Metrics types
+export interface AdminPerformanceMetric {
+  id: string;
+  admin_id: string;
+  metric_type: string;
+  target_value: number;
+  achieved_percentage: number;
+  created_at: string;
+}
+
+// Admin Department types
+export interface AdminDepartment {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
+// ===========================
+// USER TYPES
+// ===========================
+
 // User related types
 export interface User {
   id: string;
@@ -34,20 +170,9 @@ export interface UserProfile {
   updated_at: string;
 }
 
-// Review related types
-export interface Review {
-  id: string;
-  reviewer_id: string;
-  reviewed_id: string;
-  listing_id?: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-  updated_at: string;
-  reviewer?: UserProfile;
-  reviewed?: UserProfile;
-  listing?: Pick<Listing, 'id' | 'title'>;
-}
+// ===========================
+// LISTING TYPES
+// ===========================
 
 // Listing related types
 export interface Listing {
@@ -90,6 +215,21 @@ export interface ListingWithUser extends Listing {
   popularity_score?: number;
 }
 
+// Listing Status enum for admin compatibility
+export enum ListingStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  REJECTED = 'rejected',
+  SOLD = 'sold',
+  DELETED = 'deleted',
+  EXPIRED = 'expired'
+}
+
+// ===========================
+// MESSAGE AND CONVERSATION TYPES
+// ===========================
+
 // Message and Conversation types
 export interface Message {
   id: string;
@@ -116,6 +256,10 @@ export interface Conversation {
   listing?: Pick<Listing, 'id' | 'title'>;
   last_message?: Message;
 }
+
+// ===========================
+// OFFER TYPES
+// ===========================
 
 // Offer related types
 export interface InventoryItem {
@@ -158,6 +302,10 @@ export interface OfferAttachment {
   offer?: Offer;
 }
 
+// ===========================
+// API RESPONSE TYPES
+// ===========================
+
 // API Response types
 export interface ApiResponse<T> {
   data?: T;
@@ -167,6 +315,26 @@ export interface ApiResponse<T> {
     details?: any;
   };
 }
+
+// Admin API Response types
+export interface AdminApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+  };
+}
+
+// ===========================
+// COMMON TYPES
+// ===========================
 
 // Common types
 export type ID = string;
@@ -190,6 +358,10 @@ export interface QueryFilters {
   attributes?: Record<string, string[]>; // Attribute filters for category-specific filtering
 }
 
+// ===========================
+// AUTH TYPES
+// ===========================
+
 // Auth types
 export interface AuthCredentials {
   email: string;
@@ -199,6 +371,26 @@ export interface AuthCredentials {
 export interface RegisterData extends AuthCredentials {
   username: string;
 }
+
+// Admin Auth types
+export interface AdminLoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface AdminAuthResponse {
+  success: boolean;
+  data: {
+    admin: AdminUser;
+    token: string;
+    refreshToken: string;
+  };
+  message: string;
+}
+
+// ===========================
+// USER FEEDBACK TYPES
+// ===========================
 
 // User Feedback types
 export type FeedbackType = 'bug_report' | 'feature_request' | 'general_feedback' | 'complaint' | 'praise';
@@ -213,6 +405,10 @@ export interface UserFeedback {
   updated_at: string;
   user?: UserProfile;
 }
+
+// ===========================
+// USER STATISTICS TYPES
+// ===========================
 
 // User Statistics types
 export interface UserStatistics {
@@ -248,8 +444,11 @@ export interface MonthlyUsageStats {
   total_favorites_received: number;
   created_at: string;
   updated_at: string;
-  user?: UserProfile;
 }
+
+// ===========================
+// ERROR TYPES
+// ===========================
 
 // Error types
 export interface AppError {
@@ -258,6 +457,11 @@ export interface AppError {
   details?: any;
 }
 
+// ===========================
+// LOCATION TYPES
+// ===========================
+
+// Location types
 export interface District {
   code: string;
   name: string;
@@ -269,6 +473,11 @@ export interface Province {
   districts: District[];
 }
 
+// ===========================
+// INTERNATIONALIZATION TYPES
+// ===========================
+
+// Internationalization types
 export interface Currency {
   code: string;
   name: string;
@@ -281,12 +490,22 @@ export interface Language {
   nativeName: string;
 }
 
+// ===========================
+// CATEGORY TYPES
+// ===========================
+
+// Category types
 export interface Category {
   code: string;
   name: string;
   icon: IconType;
 }
 
+// ===========================
+// PREFERENCE TYPES
+// ===========================
+
+// Preference types
 export interface NotificationPreferences {
   new_offer_push: boolean;
   new_offer_email: boolean;
