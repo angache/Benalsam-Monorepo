@@ -18,6 +18,9 @@ export interface AdminPermission {
     created_at: string;
     updated_at: string;
 }
+export type Permission = AdminPermission;
+export type RolePermission = AdminRolePermission;
+export type UserPermission = AdminUserPermission;
 export interface AdminRolePermission {
     id: string;
     role: AdminRole;
@@ -286,6 +289,30 @@ export interface QueryFilters {
     sortOrder?: 'asc' | 'desc';
     attributes?: Record<string, string[]>;
 }
+export interface ServerConfig {
+    port: number;
+    nodeEnv: string;
+    apiVersion: string;
+}
+export interface JwtConfig {
+    secret: string;
+    expiresIn: string;
+    refreshExpiresIn: string;
+}
+export interface SecurityConfig {
+    bcryptRounds: number;
+    corsOrigin: string;
+    rateLimitWindowMs: number;
+    rateLimitMaxRequests: number;
+}
+export interface PaginationInfo {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
 export interface AuthCredentials {
     email: string;
     password: string;
@@ -294,6 +321,10 @@ export interface RegisterData extends AuthCredentials {
     username: string;
 }
 export interface AdminLoginCredentials {
+    email: string;
+    password: string;
+}
+export interface LoginDto {
     email: string;
     password: string;
 }
@@ -399,3 +430,4 @@ export interface PlatformPreferences {
     default_location_district?: string;
     default_category?: string;
 }
+//# sourceMappingURL=index.d.ts.map

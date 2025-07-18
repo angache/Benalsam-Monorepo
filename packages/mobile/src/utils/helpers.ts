@@ -11,7 +11,7 @@ export {
   getTrustLevel,
   getTrustLevelColor,
   formatPhoneNumber
-} from '@benalsam/shared-types';
+} from '../types';
 
 // Mobile-specific utility functions (not in shared-types)
 

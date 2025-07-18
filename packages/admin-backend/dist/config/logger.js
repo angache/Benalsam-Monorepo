@@ -6,42 +6,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.logStream = void 0;
 const winston_1 = __importDefault(require("winston"));
 const path_1 = __importDefault(require("path"));
-const logLevel = process.env.LOG_LEVEL || 'info';
-const logFilePath = process.env.LOG_FILE_PATH || './logs/app.log';
 const fs_1 = __importDefault(require("fs"));
-const logsDir = path_1.default.dirname(logFilePath);
+const logsDir = path_1.default.join(__dirname, '../../logs');
 if (!fs_1.default.existsSync(logsDir)) {
     fs_1.default.mkdirSync(logsDir, { recursive: true });
 }
-const consoleFormat = winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), winston_1.default.format.printf(({ timestamp, level, message, ...meta }) => {
-    let log = `${timestamp} [${level}]: ${message}`;
-    if (Object.keys(meta).length > 0) {
-        log += ` ${JSON.stringify(meta)}`;
-    }
-    return log;
-}));
-const fileFormat = winston_1.default.format.combine(winston_1.default.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json());
 const logger = winston_1.default.createLogger({
-    level: logLevel,
-    format: fileFormat,
+    level: process.env.LOG_LEVEL || 'info',
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json()),
     defaultMeta: { service: 'admin-backend' },
     transports: [
         new winston_1.default.transports.File({
             filename: path_1.default.join(logsDir, 'error.log'),
-            level: 'error',
-            maxsize: 5242880,
-            maxFiles: 5,
+            level: 'error'
         }),
         new winston_1.default.transports.File({
-            filename: path_1.default.join(logsDir, 'combined.log'),
-            maxsize: 5242880,
-            maxFiles: 5,
+            filename: path_1.default.join(logsDir, 'combined.log')
         }),
     ],
 });
 if (process.env.NODE_ENV !== 'production') {
     logger.add(new winston_1.default.transports.Console({
-        format: consoleFormat,
+        format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
     }));
 }
 exports.logStream = {

@@ -1,5 +1,13 @@
 import { Response } from 'express';
-import { ApiResponse, PaginationInfo } from '@/types';
+import { ApiResponse } from '../types';
+export interface PaginationInfo {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
 export declare class ApiResponseUtil {
     static success<T>(res: Response, data?: T, message?: string, statusCode?: number): Response<ApiResponse<T>>;
     static error(res: Response, message: string, statusCode?: number, error?: string): Response<ApiResponse>;

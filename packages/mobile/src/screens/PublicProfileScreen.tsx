@@ -16,7 +16,7 @@ import { useUserProfile } from '../hooks/queries/useAuth';
 import { usePublicTrustScore } from '../hooks/queries/useTrustScore';
 import { useUserListings } from '../hooks/queries/useListings';
 import { getTrustLevelColor, getTrustLevelDescription } from '../services/trustScoreService';
-import { formatDate } from '@benalsam/shared-types';
+import { formatDate } from '../types';
 import { 
   ArrowLeft, 
   MapPin, 

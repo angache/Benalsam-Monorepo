@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { firebaseService } from '../services/firebaseService';
-import { formatDate } from '@benalsam/shared-types';
+import { formatDate } from '../types';
 import { CheckCircle, XCircle, Clock, Tag, Settings } from 'lucide-react-native';
 
 interface PendingItem {

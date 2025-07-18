@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const adminManagementController_1 = require("../../controllers/adminManagementController");
+const auth_1 = require("../../middleware/auth");
+const router = (0, express_1.Router)();
+const adminAuth = (0, auth_1.authMiddleware)({ requiredPermissions: ['admins:view'] });
+router.get('/users', adminAuth, adminManagementController_1.AdminManagementController.getAdminUsers);
+router.get('/users/:id', adminAuth, adminManagementController_1.AdminManagementController.getAdminUser);
+router.post('/users', (0, auth_1.authMiddleware)({ requiredPermissions: ['admins:create'] }), adminManagementController_1.AdminManagementController.createAdminUser);
+router.put('/users/:id', (0, auth_1.authMiddleware)({ requiredPermissions: ['admins:edit'] }), adminManagementController_1.AdminManagementController.updateAdminUser);
+router.delete('/users/:id', (0, auth_1.authMiddleware)({ requiredPermissions: ['admins:delete'] }), adminManagementController_1.AdminManagementController.deleteAdminUser);
+router.get('/roles', adminAuth, adminManagementController_1.AdminManagementController.getRoles);
+router.get('/roles/:role', adminAuth, adminManagementController_1.AdminManagementController.getRoleDetails);
+router.put('/roles/:role/permissions', (0, auth_1.authMiddleware)({ requiredPermissions: ['admins:roles'] }), adminManagementController_1.AdminManagementController.updateRolePermissions);
+router.get('/permissions', adminAuth, adminManagementController_1.AdminManagementController.getPermissions);
+router.get('/permissions/matrix', adminAuth, adminManagementController_1.AdminManagementController.getPermissionMatrix);
+router.get('/permissions/current', (0, auth_1.authMiddleware)(), adminManagementController_1.AdminManagementController.getCurrentUserPermissions);
+exports.default = router;
+//# sourceMappingURL=index.js.map

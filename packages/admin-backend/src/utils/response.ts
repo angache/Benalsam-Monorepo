@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ApiResponse } from '../types';
+import { AdminApiResponse } from '../types';
 
 // PaginationInfo type definition
 export interface PaginationInfo {
@@ -17,8 +17,8 @@ export class ApiResponseUtil {
     data?: T,
     message?: string,
     statusCode: number = 200
-  ): Response<ApiResponse<T>> {
-    const response: ApiResponse<T> = {
+  ): Response<AdminApiResponse<T>> {
+    const response: AdminApiResponse<T> = {
       success: true,
       data,
       message,
@@ -32,8 +32,8 @@ export class ApiResponseUtil {
     message: string,
     statusCode: number = 500,
     error?: string
-  ): Response<ApiResponse> {
-    const response: ApiResponse = {
+  ): Response<AdminApiResponse> {
+    const response: AdminApiResponse = {
       success: false,
       message,
       error,
@@ -47,8 +47,8 @@ export class ApiResponseUtil {
     data: T[],
     pagination: PaginationInfo,
     message?: string
-  ): Response<ApiResponse<T[]>> {
-    const response: ApiResponse<T[]> = {
+  ): Response<AdminApiResponse<T[]>> {
+    const response: AdminApiResponse<T[]> = {
       success: true,
       data,
       message,
@@ -62,7 +62,7 @@ export class ApiResponseUtil {
     res: Response,
     data: T,
     message?: string
-  ): Response<ApiResponse<T>> {
+  ): Response<AdminApiResponse<T>> {
     return this.success(res, data, message, 201);
   }
 
@@ -74,7 +74,7 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Bad Request',
     error?: string
-  ): Response<ApiResponse> {
+  ): Response<AdminApiResponse> {
     return this.error(res, message, 400, error);
   }
 
@@ -82,7 +82,7 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Unauthorized',
     error?: string
-  ): Response<ApiResponse> {
+  ): Response<AdminApiResponse> {
     return this.error(res, message, 401, error);
   }
 
@@ -90,7 +90,7 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Forbidden',
     error?: string
-  ): Response<ApiResponse> {
+  ): Response<AdminApiResponse> {
     return this.error(res, message, 403, error);
   }
 
@@ -98,7 +98,7 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Not Found',
     error?: string
-  ): Response<ApiResponse> {
+  ): Response<AdminApiResponse> {
     return this.error(res, message, 404, error);
   }
 
@@ -106,7 +106,7 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Conflict',
     error?: string
-  ): Response<ApiResponse> {
+  ): Response<AdminApiResponse> {
     return this.error(res, message, 409, error);
   }
 
@@ -114,8 +114,8 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Validation Error',
     errors?: any
-  ): Response<ApiResponse> {
-    const response: ApiResponse = {
+  ): Response<AdminApiResponse> {
+    const response: AdminApiResponse = {
       success: false,
       message,
       error: 'VALIDATION_ERROR',
@@ -129,7 +129,7 @@ export class ApiResponseUtil {
     res: Response,
     message: string = 'Internal Server Error',
     error?: string
-  ): Response<ApiResponse> {
+  ): Response<AdminApiResponse> {
     return this.error(res, message, 500, error);
   }
 }

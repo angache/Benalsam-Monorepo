@@ -1,39 +1,53 @@
-import { ServerConfig, JwtConfig, SecurityConfig } from '@/types';
-export declare const serverConfig: ServerConfig;
-export declare const jwtConfig: JwtConfig;
-export declare const securityConfig: SecurityConfig;
-export declare const fileUploadConfig: {
-    maxSize: number;
-    allowedTypes: string[];
+export declare const serverConfig: {
+    port: number;
+    nodeEnv: string;
+    apiVersion: string;
+    host: string;
+};
+export declare const securityConfig: {
+    corsOrigin: string[];
+    rateLimitWindowMs: number;
+    rateLimitMaxRequests: number;
+    jwtSecret: string;
+    jwtExpiresIn: string;
+    bcryptRounds: number;
+};
+export declare const jwtConfig: {
+    secret: string;
+    expiresIn: string;
+    refreshExpiresIn: string;
+};
+export declare const databaseConfig: {
+    url: string;
+    maxConnections: number;
+    idleTimeout: number;
+    connectionTimeout: number;
+};
+export declare const uploadConfig: {
+    maxFileSize: number;
+    allowedMimeTypes: string[];
     uploadPath: string;
 };
 export declare const emailConfig: {
     host: string;
     port: number;
-    user: string;
-    pass: string;
+    secure: boolean;
+    auth: {
+        user: string;
+        pass: string;
+    };
     from: string;
 };
-export declare const awsConfig: {
-    accessKeyId: string;
-    secretAccessKey: string;
-    region: string;
-    s3Bucket: string;
-};
-export declare const stripeConfig: {
-    secretKey: string;
-    webhookSecret: string;
-};
-export declare const supabaseConfig: {
-    url: string;
-    anonKey: string;
-    serviceRoleKey: string;
-};
 export declare const redisConfig: {
-    url: string;
+    host: string;
+    port: number;
+    password: string | undefined;
+    db: number;
 };
-export declare const adminConfig: {
-    defaultEmail: string;
-    defaultPassword: string;
+export declare const loggingConfig: {
+    level: string;
+    filename: string;
+    maxSize: string;
+    maxFiles: string;
 };
 //# sourceMappingURL=app.d.ts.map

@@ -3,104 +3,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
+const supabase_1 = require("../config/supabase");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const app_1 = require("@/config/app");
-const logger_1 = __importDefault(require("@/config/logger"));
-const prisma = new client_1.PrismaClient();
-async function main() {
-    logger_1.default.info('🌱 Starting database seeding...');
+const types_1 = require("../types");
+async function seedAdminUser() {
     try {
-        const existingAdmin = await prisma.adminUser.findUnique({
-            where: { email: app_1.adminConfig.defaultEmail },
-        });
+        console.log('🌱 Seeding admin user...');
+        const { data: existingAdmin } = await supabase_1.supabase
+            .from('admin_users')
+            .select('id')
+            .eq('email', 'admin@benalsam.com')
+            .single();
         if (existingAdmin) {
-            logger_1.default.info('✅ Default admin user already exists');
+            console.log('✅ Admin user already exists');
             return;
         }
-        const hashedPassword = await bcryptjs_1.default.hash(app_1.adminConfig.defaultPassword, app_1.securityConfig.bcryptRounds);
-        const defaultAdmin = await prisma.adminUser.create({
-            data: {
-                email: app_1.adminConfig.defaultEmail,
-                password: hashedPassword,
-                firstName: 'Admin',
-                lastName: 'User',
-                role: client_1.AdminRole.SUPER_ADMIN,
-                permissions: [
-                    { resource: '*', action: '*' },
-                ],
-                isActive: true,
-            },
-        });
-        logger_1.default.info('✅ Default admin user created successfully');
-        logger_1.default.info(`📧 Email: ${defaultAdmin.email}`);
-        logger_1.default.info(`🔑 Password: ${app_1.adminConfig.defaultPassword}`);
-        logger_1.default.info('⚠️  Please change the default password after first login!');
-        const defaultSettings = [
-            {
-                key: 'site_name',
-                value: 'Benalsam Admin',
-                description: 'Site name for the admin panel',
-            },
-            {
-                key: 'maintenance_mode',
-                value: 'false',
-                description: 'Maintenance mode status',
-            },
-            {
-                key: 'max_listings_per_user',
-                value: '5',
-                description: 'Maximum listings per user',
-            },
-            {
-                key: 'auto_approve_listings',
-                value: 'false',
-                description: 'Auto approve new listings',
-            },
-        ];
-        for (const setting of defaultSettings) {
-            await prisma.systemSetting.create({
-                data: {
-                    ...setting,
-                    updatedBy: defaultAdmin.id,
-                },
-            });
+        const hashedPassword = await bcryptjs_1.default.hash('admin123456', 12);
+        const { data: admin, error } = await supabase_1.supabase
+            .from('admin_users')
+            .insert({
+            email: 'admin@benalsam.com',
+            password: hashedPassword,
+            first_name: 'Admin',
+            last_name: 'User',
+            role: types_1.AdminRole.SUPER_ADMIN,
+            permissions: [
+                { resource: 'listings', action: 'read' },
+                { resource: 'listings', action: 'write' },
+                { resource: 'listings', action: 'delete' },
+                { resource: 'listings', action: 'moderate' },
+                { resource: 'users', action: 'read' },
+                { resource: 'users', action: 'write' },
+                { resource: 'users', action: 'delete' },
+                { resource: 'admin_users', action: 'read' },
+                { resource: 'admin_users', action: 'write' },
+                { resource: 'admin_users', action: 'delete' },
+            ],
+            is_active: true,
+        })
+            .select()
+            .single();
+        if (error) {
+            console.error('❌ Error creating admin user:', error);
+            return;
         }
-        logger_1.default.info('✅ Default system settings created');
-        const today = new Date();
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            await prisma.dailyStat.create({
-                data: {
-                    date,
-                    totalUsers: Math.floor(Math.random() * 1000) + 100,
-                    newUsers: Math.floor(Math.random() * 50) + 5,
-                    activeUsers: Math.floor(Math.random() * 200) + 20,
-                    totalListings: Math.floor(Math.random() * 500) + 50,
-                    newListings: Math.floor(Math.random() * 30) + 3,
-                    activeListings: Math.floor(Math.random() * 100) + 10,
-                    totalRevenue: Math.floor(Math.random() * 1000) + 100,
-                    premiumSubscriptions: Math.floor(Math.random() * 20) + 2,
-                    reportsCount: Math.floor(Math.random() * 10) + 1,
-                    resolvedReports: Math.floor(Math.random() * 8) + 1,
-                },
-            });
-        }
-        logger_1.default.info('✅ Sample daily stats created');
-        logger_1.default.info('🎉 Database seeding completed successfully!');
+        console.log('✅ Admin user created successfully:', admin.email);
+        console.log('🔑 Login credentials:');
+        console.log('   Email: admin@benalsam.com');
+        console.log('   Password: admin123456');
     }
     catch (error) {
-        logger_1.default.error('❌ Database seeding failed:', error);
-        throw error;
+        console.error('❌ Seed error:', error);
     }
 }
-main()
-    .catch((error) => {
-    logger_1.default.error('❌ Seeding error:', error);
-    process.exit(1);
-})
-    .finally(async () => {
-    await prisma.$disconnect();
-});
+seedAdminUser();
 //# sourceMappingURL=seed.js.map

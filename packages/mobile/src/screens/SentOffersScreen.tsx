@@ -16,7 +16,7 @@ import { useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
 import { getOrCreateConversation } from '../services/conversationService';
 import { canUserReview } from '../services/reviewService';
-import { formatDate } from '@benalsam/shared-types';
+import { formatDate } from '../types';
 
 // 🚀 React Query Hooks - YENİ!
 import { useSentOffers, useDeleteOffer } from '../hooks/queries/useOffers';

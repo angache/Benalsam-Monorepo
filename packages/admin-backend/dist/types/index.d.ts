@@ -1,16 +1,31 @@
 import { Request } from 'express';
-import { AdminRole as PrismaAdminRole } from '@prisma/client';
-export interface AdminUser {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: AdminRole;
-    permissions?: Permission[];
-    isActive: boolean;
-    lastLogin?: Date;
-    createdAt: Date;
-    updatedAt: Date;
+import { AdminRole } from '@benalsam/shared-types';
+import type { AdminUser, AdminProfile, AdminPermission, AdminRolePermission, AdminUserPermission, AdminActivityLog, AdminWorkflowAssignment, AdminPerformanceMetric, AdminDepartment, AdminApiResponse, AdminAuthResponse, AdminLoginCredentials, LoginDto, ServerConfig, JwtConfig, SecurityConfig, PaginationInfo, User, UserProfile, Listing, ListingWithUser, ListingStatus, Message, Conversation, Offer, InventoryItem, OfferAttachment, ApiResponse, AuthCredentials, RegisterData, ID, Pagination, QueryFilters, UserFeedback, FeedbackType, UserStatistics, MonthlyUsageStats, District, Province, Currency, Language, Category, NotificationPreferences, ChatPreferences, PlatformPreferences } from '@benalsam/shared-types';
+export { AdminRole, AdminUser, AdminProfile, AdminPermission, AdminRolePermission, AdminUserPermission, AdminActivityLog, AdminWorkflowAssignment, AdminPerformanceMetric, AdminDepartment, AdminApiResponse, AdminAuthResponse, AdminLoginCredentials, LoginDto, ServerConfig, JwtConfig, SecurityConfig, PaginationInfo, User, UserProfile, Listing, ListingWithUser, ListingStatus, Message, Conversation, Offer, InventoryItem, OfferAttachment, ApiResponse, AuthCredentials, RegisterData, ID, Pagination, QueryFilters, UserFeedback, FeedbackType, UserStatistics, MonthlyUsageStats, District, Province, Currency, Language, Category, NotificationPreferences, ChatPreferences, PlatformPreferences };
+export interface AuthenticatedRequest extends Request {
+    user?: {
+        id: string;
+        email: string;
+        role: string;
+    };
+    admin?: {
+        id: string;
+        email: string;
+        role: AdminRole;
+        permissions?: AdminPermission[];
+    };
+}
+export interface DatabaseConfig {
+    url: string;
+    key: string;
+}
+export interface PaginationParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    filters?: Record<string, any>;
 }
 export interface CreateAdminUserDto {
     email: string;
@@ -18,115 +33,42 @@ export interface CreateAdminUserDto {
     firstName: string;
     lastName: string;
     role?: AdminRole;
-    permissions?: Permission[];
+    permissions?: string[];
 }
 export interface UpdateAdminUserDto {
     firstName?: string;
     lastName?: string;
     role?: AdminRole;
-    permissions?: Permission[];
+    permissions?: string[];
     isActive?: boolean;
-}
-export interface LoginDto {
-    email: string;
-    password: string;
-}
-export interface AuthResponse {
-    admin: AdminUser;
-    token: string;
-    refreshToken: string;
 }
 export interface JwtPayload {
     adminId: string;
     email: string;
     role: AdminRole;
-    permissions?: Permission[];
+    permissions?: AdminPermission[];
 }
-export interface Permission {
-    resource: string;
-    action: string;
-    conditions?: Record<string, any>;
+export interface AdminUserWithRole extends AdminUser {
+    roleDetails?: AdminRole;
+    userPermissions?: AdminUserPermission[];
 }
-export interface ActivityLog {
-    id: string;
-    adminId: string;
-    action: string;
-    resource: string;
-    resourceId?: string;
-    details?: Record<string, any>;
-    ipAddress?: string;
-    userAgent?: string;
-    createdAt: Date;
-}
-export interface ModerationDecision {
-    id: string;
-    adminId: string;
-    reportId?: string;
-    decision: ModerationDecisionType;
-    reason?: string;
-    duration?: number;
-    createdAt: Date;
-}
-export interface SystemSetting {
-    id: string;
-    key: string;
-    value: string;
+export interface CreateRoleDto {
+    name: string;
+    displayName: string;
     description?: string;
-    updatedBy: string;
-    updatedAt: Date;
+    level: number;
+    permissions: string[];
 }
-export interface DailyStat {
-    id: string;
-    date: Date;
-    totalUsers: number;
-    newUsers: number;
-    activeUsers: number;
-    totalListings: number;
-    newListings: number;
-    activeListings: number;
-    totalRevenue: number;
-    premiumSubscriptions: number;
-    reportsCount: number;
-    resolvedReports: number;
-    createdAt: Date;
-    updatedAt: Date;
+export interface UpdateRoleDto {
+    displayName?: string;
+    description?: string;
+    level?: number;
+    isActive?: boolean;
+    permissions?: string[];
 }
-export interface UserActivity {
-    id: string;
-    userId: string;
+export interface PermissionCheck {
+    resource: string;
     action: string;
-    details?: Record<string, any>;
-    ipAddress?: string;
-    userAgent?: string;
-    createdAt: Date;
-}
-export interface ApiResponse<T = any> {
-    success: boolean;
-    data?: T;
-    message?: string;
-    error?: string;
-    pagination?: PaginationInfo;
-}
-export interface PaginationInfo {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-}
-export interface AuthenticatedRequest extends Request {
-    admin?: AdminUser;
-    user?: any;
-}
-export type AdminRole = PrismaAdminRole;
-export declare enum ModerationDecisionType {
-    APPROVE = "APPROVE",
-    REJECT = "REJECT",
-    BAN_TEMPORARY = "BAN_TEMPORARY",
-    BAN_PERMANENT = "BAN_PERMANENT",
-    WARNING = "WARNING",
-    DELETE = "DELETE"
 }
 export interface UserFilter {
     search?: string;
@@ -149,28 +91,6 @@ export interface ReportFilter {
     priority?: string;
     dateFrom?: Date;
     dateTo?: Date;
-}
-export interface DashboardStats {
-    totalUsers: number;
-    newUsersToday: number;
-    activeUsersToday: number;
-    totalListings: number;
-    newListingsToday: number;
-    activeListings: number;
-    totalRevenue: number;
-    revenueToday: number;
-    premiumSubscriptions: number;
-    reportsCount: number;
-    resolvedReportsToday: number;
-}
-export interface ChartData {
-    labels: string[];
-    datasets: {
-        label: string;
-        data: number[];
-        backgroundColor?: string;
-        borderColor?: string;
-    }[];
 }
 export interface FileUploadConfig {
     maxSize: number;
@@ -210,29 +130,5 @@ export interface AppError extends Error {
     statusCode: number;
     isOperational: boolean;
     code?: string;
-}
-export interface DatabaseConfig {
-    url: string;
-    host?: string;
-    port?: number;
-    username?: string;
-    password?: string;
-    database?: string;
-}
-export interface JwtConfig {
-    secret: string;
-    expiresIn: string;
-    refreshExpiresIn: string;
-}
-export interface ServerConfig {
-    port: number;
-    nodeEnv: string;
-    apiVersion: string;
-}
-export interface SecurityConfig {
-    bcryptRounds: number;
-    rateLimitWindowMs: number;
-    rateLimitMaxRequests: number;
-    corsOrigin: string[];
 }
 //# sourceMappingURL=index.d.ts.map

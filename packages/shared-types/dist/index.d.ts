@@ -46,3 +46,4 @@ export declare const getTrustLevelColor: (level: "bronze" | "silver" | "gold" | 
  * Format phone number for display
  */
 export declare const formatPhoneNumber: (phone: string) => string;
+//# sourceMappingURL=index.d.ts.map

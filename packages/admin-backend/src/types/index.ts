@@ -4,8 +4,115 @@ import { Request } from 'express';
 // RE-EXPORT SHARED TYPES
 // ===========================
 
-// Re-export all types from shared-types package
-export * from '@benalsam/shared-types';
+// Import enums normally (for runtime use)
+import {
+  AdminRole
+} from '@benalsam/shared-types';
+
+// Import types for type-only usage
+import type {
+  AdminUser,
+  AdminProfile,
+  AdminPermission,
+  AdminRolePermission,
+  AdminUserPermission,
+  AdminActivityLog,
+  AdminWorkflowAssignment,
+  AdminPerformanceMetric,
+  AdminDepartment,
+  AdminApiResponse,
+  AdminAuthResponse,
+  AdminLoginCredentials,
+  LoginDto,
+  ServerConfig,
+  JwtConfig,
+  SecurityConfig,
+  PaginationInfo,
+  User,
+  UserProfile,
+  Listing,
+  ListingWithUser,
+  ListingStatus,
+  Message,
+  Conversation,
+  Offer,
+  InventoryItem,
+  OfferAttachment,
+  ApiResponse,
+  AuthCredentials,
+  RegisterData,
+  ID,
+  Pagination,
+  QueryFilters,
+  UserFeedback,
+  FeedbackType,
+  UserStatistics,
+  MonthlyUsageStats,
+  District,
+  Province,
+  Currency,
+  Language,
+  Category,
+  NotificationPreferences,
+  ChatPreferences,
+  PlatformPreferences
+} from '@benalsam/shared-types';
+
+// Create aliases for compatibility
+export type Permission = AdminPermission;
+export type RolePermission = AdminRolePermission;
+export type UserPermission = AdminUserPermission;
+export type AdminRoleDefinition = import('@benalsam/shared-types').AdminRoleDefinition;
+
+// Re-export all shared types
+export {
+  AdminRole,
+  AdminUser,
+  AdminProfile,
+  AdminPermission,
+  AdminRolePermission,
+  AdminUserPermission,
+  AdminActivityLog,
+  AdminWorkflowAssignment,
+  AdminPerformanceMetric,
+  AdminDepartment,
+  AdminApiResponse,
+  AdminAuthResponse,
+  AdminLoginCredentials,
+  LoginDto,
+  ServerConfig,
+  JwtConfig,
+  SecurityConfig,
+  PaginationInfo,
+  User,
+  UserProfile,
+  Listing,
+  ListingWithUser,
+  ListingStatus,
+  Message,
+  Conversation,
+  Offer,
+  InventoryItem,
+  OfferAttachment,
+  ApiResponse,
+  AuthCredentials,
+  RegisterData,
+  ID,
+  Pagination,
+  QueryFilters,
+  UserFeedback,
+  FeedbackType,
+  UserStatistics,
+  MonthlyUsageStats,
+  District,
+  Province,
+  Currency,
+  Language,
+  Category,
+  NotificationPreferences,
+  ChatPreferences,
+  PlatformPreferences
+};
 
 // ===========================
 // ADMIN-BACKEND SPECIFIC TYPES

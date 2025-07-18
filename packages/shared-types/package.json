@@ -3,13 +3,28 @@
   "version": "1.0.0",
   "description": "Shared TypeScript types and services for Benalsam mobile and web applications",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./esm": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "dev": "npm run build && npm run dev:watch",
+    "dev:watch": "tsc --watch -p tsconfig.json",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
     "test": "echo \"No tests specified\" && exit 0"

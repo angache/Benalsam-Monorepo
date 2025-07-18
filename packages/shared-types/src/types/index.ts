@@ -28,6 +28,11 @@ export interface AdminPermission {
   updated_at: string;
 }
 
+// Backward compatibility aliases for admin-backend
+export type Permission = AdminPermission;
+export type RolePermission = AdminRolePermission;
+export type UserPermission = AdminUserPermission;
+
 export interface AdminRolePermission {
   id: string;
   role: AdminRole;
@@ -359,6 +364,40 @@ export interface QueryFilters {
 }
 
 // ===========================
+// CONFIG TYPES
+// ===========================
+
+// Server configuration types
+export interface ServerConfig {
+  port: number;
+  nodeEnv: string;
+  apiVersion: string;
+}
+
+export interface JwtConfig {
+  secret: string;
+  expiresIn: string;
+  refreshExpiresIn: string;
+}
+
+export interface SecurityConfig {
+  bcryptRounds: number;
+  corsOrigin: string;
+  rateLimitWindowMs: number;
+  rateLimitMaxRequests: number;
+}
+
+// Pagination types
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// ===========================
 // AUTH TYPES
 // ===========================
 
@@ -374,6 +413,12 @@ export interface RegisterData extends AuthCredentials {
 
 // Admin Auth types
 export interface AdminLoginCredentials {
+  email: string;
+  password: string;
+}
+
+// Admin DTOs for backend compatibility
+export interface LoginDto {
   email: string;
   password: string;
 }

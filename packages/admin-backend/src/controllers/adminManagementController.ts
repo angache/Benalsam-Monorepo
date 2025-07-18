@@ -8,7 +8,8 @@ import {
   Permission,
   AdminRoleDefinition,
   PaginationParams,
-  ApiResponse 
+  ApiResponse,
+  AdminApiResponse
 } from '../types';
 import { ApiResponseUtil } from '../utils/response';
 import { PermissionService } from '../services/permissionService';
@@ -72,7 +73,7 @@ export class AdminManagementController {
 
       const totalPages = Math.ceil((count || 0) / Number(limit));
 
-      const response: ApiResponse<AdminUser[]> = {
+      const response: AdminApiResponse<AdminUser[]> = {
         success: true,
         data: adminsWithRoles,
         pagination: {
@@ -244,7 +245,7 @@ export class AdminManagementController {
         // Remove existing user-specific permissions
         const existingPermissions = await PermissionService.getUserPermissions(id);
         for (const perm of existingPermissions) {
-          await PermissionService.revokeUserPermission(id, perm.permissionId);
+          await PermissionService.revokeUserPermission(id, perm.permission_id);
         }
 
         // Grant new permissions

@@ -1,16 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.databaseConfig = exports.prisma = void 0;
-const client_1 = require("@prisma/client");
+exports.databaseConfig = exports.supabase = void 0;
+const supabase_1 = require("./supabase");
+Object.defineProperty(exports, "supabase", { enumerable: true, get: function () { return supabase_1.supabase; } });
 const databaseConfig = {
-    url: process.env.DATABASE_URL || 'postgresql://username:password@localhost:5432/benalsam_admin',
+    url: process.env.SUPABASE_URL || '',
+    key: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 };
 exports.databaseConfig = databaseConfig;
-const prisma = new client_1.PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
-exports.prisma = prisma;
-process.on('beforeExit', async () => {
-    await prisma.$disconnect();
-});
 //# sourceMappingURL=database.js.map

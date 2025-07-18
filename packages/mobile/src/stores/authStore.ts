@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabaseClient';
 import { AuthChangeEvent } from '@supabase/supabase-js';
 import { fcmTokenService } from '../services/fcmTokenService';
-import type { User } from '@benalsam/shared-types';
+import type { User } from '../types';
 
 interface AuthState {
   // State
