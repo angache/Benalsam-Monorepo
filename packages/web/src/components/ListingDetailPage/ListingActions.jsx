@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/stores';
-import { trackEvent } from '@/services/analyticsService.js';
+import { trackEvent } from '@/services/analyticsService';
 
 const ListingActions = ({ 
   listing, 

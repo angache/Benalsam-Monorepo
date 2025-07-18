@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  generateAISuggestion,
   checkPremiumFeature,
   addOfferAttachment,
   showPremiumUpgradeToast
 } from '@/services/premiumService';
+import { generateAISuggestion } from '@/services/aiServiceManager';
 
 const MakeOfferForm = React.memo(({ 
   listing, 

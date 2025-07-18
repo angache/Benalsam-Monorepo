@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.jsx'
 import { Edit3, User, MapPin, Image as ImageIcon, Star, Eye, MessageSquare, ShoppingBag, Award, Settings, UserPlus, UserMinus, Users, WifiOff, RefreshCw } from 'lucide-react';
 import ListingCard from '@/components/ListingCard';
 import { ThemeContext } from '@/contexts/ThemeContext';
-import { followUser, unfollowUser } from '@/services/followService.js';
-import { incrementProfileView } from '@/services/profileService.js';
+import { followUser, unfollowUser } from '@/services/followService';
+import { incrementProfileView } from '@/services/profileService';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import TrustScoreModal from '@/components/TrustScoreModal';

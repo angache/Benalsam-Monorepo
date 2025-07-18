@@ -47,6 +47,7 @@ import { getListingHistory } from '../services/userActivityService';
 import { fetchMostOfferedListings } from '../services/listingService/fetchers';
 import { supabase  } from '../services/supabaseClient';
 import { ListingWithFavorite } from '../services/categoryFollowService';
+import { formatDate, formatPrice } from '@benalsam/shared-types';
 
 type RootStackParamList = {
   Search: { query?: string };

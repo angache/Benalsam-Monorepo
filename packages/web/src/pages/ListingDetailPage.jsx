@@ -19,7 +19,7 @@ import EditListingModal from '@/components/EditListingModal';
 import UnpublishListingModal from '@/components/UnpublishListingModal';
 import { updateListingStatus, deleteListing } from '@/services/listingService';
 import { addToListingHistory } from '@/services/userActivityService.js';
-import { trackEvent } from '@/services/analyticsService.js';
+import { trackEvent } from '@/services/analyticsService';
 
 const ListingDetailPage = ({ setListings, onToggleFavorite }) => {
   const { listingId } = useParams();

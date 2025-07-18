@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabaseClient';
-import { fetchUserProfile } from '@/services/profileService.js';
+import { fetchUserProfile } from '@/services/profileService';
 
 interface User {
   id: string;
