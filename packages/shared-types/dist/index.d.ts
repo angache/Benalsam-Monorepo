@@ -1,4 +1,6 @@
 export * from './types/index';
+export * from './types/search';
+export { ElasticsearchService } from './services/elasticsearchService';
 /**
  * Format price with Turkish Lira symbol
  */

@@ -21,6 +21,7 @@ import {
   Package,
   Folder,
   Shield,
+  Database,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -61,6 +62,13 @@ const navigationItems = [
     title: 'Admin Yönetimi',
     path: '/admin-management',
     icon: Shield,
+    permission: PERMISSIONS.ADMINS_VIEW,
+  },
+  {
+    id: 'elasticsearch',
+    title: 'Elasticsearch',
+    path: '/elasticsearch',
+    icon: Database,
     permission: PERMISSIONS.ADMINS_VIEW,
   },
   {

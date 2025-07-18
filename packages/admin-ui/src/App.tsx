@@ -12,6 +12,7 @@ import { CategoryAttributesPage } from './pages/CategoryAttributesPage';
 import { CategoryEditPage } from './pages/CategoryEditPage';
 import { UsersPage } from './pages/UsersPage';
 import AdminManagementPage from './pages/AdminManagementPage';
+import ElasticsearchDashboardPage from './pages/ElasticsearchDashboardPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -127,6 +128,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <AdminManagementPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/elasticsearch"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ElasticsearchDashboardPage />
                   </Layout>
                 </ProtectedRoute>
               }

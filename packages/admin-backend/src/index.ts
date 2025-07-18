@@ -10,10 +10,62 @@ import path from 'path';
 import { serverConfig, securityConfig } from './config/app';
 import logger, { logStream } from './config/logger';
 
+// Elasticsearch Services
+import { 
+  AdminElasticsearchService, 
+  MessageQueueService, 
+  IndexerService, 
+  SyncService 
+} from './services';
+
 // Load environment variables
 dotenv.config();
 
 const app = express();
+
+// Initialize Elasticsearch Services
+let elasticsearchService: AdminElasticsearchService;
+let messageQueueService: MessageQueueService;
+let indexerService: IndexerService;
+let syncService: SyncService;
+
+// Initialize services
+async function initializeServices() {
+  try {
+    logger.info('🚀 Initializing Elasticsearch services...');
+
+    // Initialize Elasticsearch Service
+    elasticsearchService = new AdminElasticsearchService();
+    await elasticsearchService.testConnection();
+    logger.info('✅ Elasticsearch service initialized');
+
+    // Initialize Message Queue Service
+    messageQueueService = new MessageQueueService();
+    await messageQueueService.testConnection();
+    logger.info('✅ Message queue service initialized');
+
+    // Initialize Indexer Service
+    indexerService = new IndexerService(elasticsearchService, messageQueueService);
+    logger.info('✅ Indexer service initialized');
+
+    // Initialize Sync Service
+    syncService = new SyncService(elasticsearchService, messageQueueService, indexerService);
+    await syncService.initialize();
+    logger.info('✅ Sync service initialized');
+
+    // Start initial data migration if needed
+    const shouldMigrate = process.env.ELASTICSEARCH_INITIAL_MIGRATION === 'true';
+    if (shouldMigrate) {
+      logger.info('🔄 Starting initial data migration...');
+      await syncService.initialDataMigration();
+      logger.info('✅ Initial data migration completed');
+    }
+
+  } catch (error) {
+    logger.error('❌ Error initializing Elasticsearch services:', error);
+    // Don't throw error, continue with app startup
+  }
+}
 
 // Security middleware
 app.use(helmet({
@@ -102,21 +154,54 @@ app.use('*', (req, res) => {
 // Start server
 const PORT = serverConfig.port;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   logger.info(`🚀 Admin Backend API server running on port ${PORT}`);
   logger.info(`📊 Environment: ${serverConfig.nodeEnv}`);
   logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
   logger.info(`📚 API version: ${serverConfig.apiVersion}`);
+
+  // Initialize Elasticsearch services after server starts
+  await initializeServices();
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
+async function gracefulShutdown(signal: string) {
+  logger.info(`${signal} received, shutting down gracefully`);
+  
+  try {
+    // Stop sync service
+    if (syncService) {
+      await syncService.shutdown();
+    }
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
+    // Stop indexer service
+    if (indexerService) {
+      await indexerService.stop();
+    }
+
+    // Disconnect message queue
+    if (messageQueueService) {
+      await messageQueueService.disconnect();
+    }
+
+    // Close server
+    server.close(() => {
+      logger.info('✅ Server closed');
+      process.exit(0);
+    });
+
+    // Force exit after 10 seconds
+    setTimeout(() => {
+      logger.error('❌ Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+
+  } catch (error) {
+    logger.error('❌ Error during graceful shutdown:', error);
+    process.exit(1);
+  }
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 

@@ -5,6 +5,7 @@ import { categoriesRouter } from './categories';
 import { usersRouter } from './users';
 import adminManagementRoutes from './admin-management';
 import searchRoutes from './search';
+import elasticsearchRoutes from './elasticsearch';
 
 const router = Router();
 
@@ -38,6 +39,9 @@ router.use('/admin-management', adminManagementRoutes);
 
 // Search routes
 router.use('/search', searchRoutes);
+
+// Elasticsearch routes
+router.use('/elasticsearch', elasticsearchRoutes);
 
 router.get('/reports', (req, res) => {
   res.status(501).json({

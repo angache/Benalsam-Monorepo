@@ -35,23 +35,31 @@ export interface SearchResult {
 }
 
 export class SearchService {
-  private supabase: any;
-  private elasticsearchClient: any;
-  private redisClient: any;
+  private supabase: any = null;
+  private elasticsearchClient: any = null;
+  private redisClient: any = null;
   private isElasticsearchAvailable: boolean = false;
 
   constructor() {
-    // Initialize Supabase client
-    this.supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     // Initialize Elasticsearch client (will be implemented later)
     this.initializeElasticsearch();
     
     // Initialize Redis client (will be implemented later)
     this.initializeRedis();
+  }
+
+  private getSupabaseClient() {
+    if (!this.supabase) {
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Supabase configuration missing. Please check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.');
+      }
+      
+      this.supabase = createClient(supabaseUrl, supabaseServiceKey);
+    }
+    return this.supabase;
   }
 
   private async initializeElasticsearch() {
@@ -170,7 +178,7 @@ export class SearchService {
 
       logger.info('Searching with Supabase RPC:', rpcParams);
 
-      const { data, error } = await this.supabase.rpc('search_listings_with_attributes', rpcParams);
+      const { data, error } = await this.getSupabaseClient().rpc('search_listings_with_attributes', rpcParams);
 
       if (error) {
         logger.error('Supabase search error:', error);

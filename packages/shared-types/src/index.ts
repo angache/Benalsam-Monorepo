@@ -6,6 +6,20 @@
 export * from './types/index';
 
 // ===========================
+// SEARCH TYPES EXPORT
+// ===========================
+
+// Export search types
+export * from './types/search';
+
+// ===========================
+// ELASTICSEARCH SERVICE EXPORT
+// ===========================
+
+// Export Elasticsearch service
+export { ElasticsearchService } from './services/elasticsearchService';
+
+// ===========================
 // SHARED UTILITIES
 // ===========================
 

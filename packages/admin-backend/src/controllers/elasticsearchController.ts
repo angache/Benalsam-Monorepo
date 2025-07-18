@@ -1,0 +1,357 @@
+import { Request, Response } from 'express';
+import { 
+  AdminElasticsearchService, 
+  MessageQueueService, 
+  IndexerService, 
+  SyncService 
+} from '../services';
+import logger from '../config/logger';
+
+export class ElasticsearchController {
+  private elasticsearchService: AdminElasticsearchService;
+  private messageQueueService: MessageQueueService;
+  private indexerService: IndexerService;
+  private syncService: SyncService;
+
+  constructor() {
+    this.elasticsearchService = new AdminElasticsearchService();
+    this.messageQueueService = new MessageQueueService();
+    this.indexerService = new IndexerService(this.elasticsearchService, this.messageQueueService);
+    this.syncService = new SyncService(this.elasticsearchService, this.messageQueueService, this.indexerService);
+  }
+
+  /**
+   * Elasticsearch health check
+   */
+  async getHealth(req: Request, res: Response) {
+    try {
+      const health = await this.elasticsearchService.getHealth();
+      
+      res.json({
+        success: true,
+        data: health,
+        message: 'Elasticsearch health check completed'
+      });
+    } catch (error) {
+      logger.error('❌ Elasticsearch health check failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Elasticsearch health check failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Search listings
+   */
+  async searchListings(req: Request, res: Response) {
+    try {
+      const { query, filters, sort, page = 1, limit = 20 } = req.body;
+
+      const searchResult = await this.elasticsearchService.searchListings({
+        query,
+        filters,
+        sort,
+        page: parseInt(page),
+        limit: parseInt(limit)
+      });
+
+      res.json({
+        success: true,
+        data: searchResult,
+        message: 'Search completed successfully'
+      });
+    } catch (error) {
+      logger.error('❌ Search failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Search failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Get index statistics
+   */
+  async getIndexStats(req: Request, res: Response) {
+    try {
+      const stats = await this.elasticsearchService.getIndexStats();
+      
+      res.json({
+        success: true,
+        data: stats,
+        message: 'Index statistics retrieved'
+      });
+    } catch (error) {
+      logger.error('❌ Failed to get index stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get index statistics',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Reindex all listings
+   */
+  async reindexAll(req: Request, res: Response) {
+    try {
+      logger.info('🔄 Manual reindex requested');
+      
+      const result = await this.elasticsearchService.reindexAllListings();
+      
+      res.json({
+        success: result.success,
+        data: result,
+        message: result.success ? 'Reindex completed successfully' : 'Reindex failed'
+      });
+    } catch (error) {
+      logger.error('❌ Reindex failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Reindex failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Get sync status
+   */
+  async getSyncStatus(req: Request, res: Response) {
+    try {
+      const status = this.syncService.getSyncStatus();
+      const stats = await this.syncService.getSyncStats();
+      
+      res.json({
+        success: true,
+        data: {
+          status,
+          stats
+        },
+        message: 'Sync status retrieved'
+      });
+    } catch (error) {
+      logger.error('❌ Failed to get sync status:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get sync status',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Trigger manual sync
+   */
+  async triggerManualSync(req: Request, res: Response) {
+    try {
+      logger.info('🔧 Manual sync triggered via API');
+      
+      const result = await this.syncService.triggerManualSync();
+      
+      res.json({
+        success: result.success,
+        data: result,
+        message: result.success ? 'Manual sync completed' : 'Manual sync failed'
+      });
+    } catch (error) {
+      logger.error('❌ Manual sync failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Manual sync failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Get queue statistics
+   */
+  async getQueueStats(req: Request, res: Response) {
+    try {
+      const queueStats = await this.messageQueueService.getStats();
+      const indexerStats = this.indexerService.getStats();
+      
+      res.json({
+        success: true,
+        data: {
+          queue: queueStats,
+          indexer: indexerStats
+        },
+        message: 'Queue statistics retrieved'
+      });
+    } catch (error) {
+      logger.error('❌ Failed to get queue stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get queue statistics',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Retry failed jobs
+   */
+  async retryFailedJobs(req: Request, res: Response) {
+    try {
+      const retryCount = await this.indexerService.retryFailedJobs();
+      
+      res.json({
+        success: true,
+        data: { retryCount },
+        message: `Retried ${retryCount} failed jobs`
+      });
+    } catch (error) {
+      logger.error('❌ Failed to retry jobs:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retry jobs',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Clear queue
+   */
+  async clearQueue(req: Request, res: Response) {
+    try {
+      const { queueType = 'completed' } = req.body;
+      
+      const clearedCount = await this.indexerService.clearQueue(queueType);
+      
+      res.json({
+        success: true,
+        data: { clearedCount },
+        message: `Cleared ${clearedCount} jobs from ${queueType} queue`
+      });
+    } catch (error) {
+      logger.error('❌ Failed to clear queue:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to clear queue',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Get sync configuration
+   */
+  async getSyncConfig(req: Request, res: Response) {
+    try {
+      const config = this.syncService.getConfig();
+      
+      res.json({
+        success: true,
+        data: config,
+        message: 'Sync configuration retrieved'
+      });
+    } catch (error) {
+      logger.error('❌ Failed to get sync config:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get sync configuration',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Update sync configuration
+   */
+  async updateSyncConfig(req: Request, res: Response) {
+    try {
+      const { enabled, batchSize, syncInterval, maxRetries, retryDelay } = req.body;
+      
+      this.syncService.updateConfig({
+        enabled,
+        batchSize,
+        syncInterval,
+        maxRetries,
+        retryDelay
+      });
+      
+      res.json({
+        success: true,
+        message: 'Sync configuration updated'
+      });
+    } catch (error) {
+      logger.error('❌ Failed to update sync config:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update sync configuration',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Get comprehensive health check
+   */
+  async getHealthCheck(req: Request, res: Response) {
+    try {
+      const health = await this.syncService.healthCheck();
+      
+      res.json({
+        success: true,
+        data: health,
+        message: 'Health check completed'
+      });
+    } catch (error) {
+      logger.error('❌ Health check failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Health check failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Test Elasticsearch connection
+   */
+  async testConnection(req: Request, res: Response) {
+    try {
+      await this.elasticsearchService.testConnection();
+      
+      res.json({
+        success: true,
+        message: 'Elasticsearch connection test successful'
+      });
+    } catch (error) {
+      logger.error('❌ Elasticsearch connection test failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Elasticsearch connection test failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Test Redis connection
+   */
+  async testRedisConnection(req: Request, res: Response) {
+    try {
+      await this.messageQueueService.testConnection();
+      
+      res.json({
+        success: true,
+        message: 'Redis connection test successful'
+      });
+    } catch (error) {
+      logger.error('❌ Redis connection test failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Redis connection test failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+} 

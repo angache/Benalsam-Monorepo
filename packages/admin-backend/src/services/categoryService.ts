@@ -1,10 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 import logger from '../config/logger';
 
-// Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Lazy Supabase client
+let supabase: any = null;
+
+function getSupabaseClient() {
+  if (!supabase) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Supabase configuration missing. Please check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.');
+    }
+    
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return supabase;
+}
 
 // Types
 export interface CategoryAttribute {
@@ -83,7 +95,7 @@ export const categoryService = {
     try {
       logger.info('Fetching categories from Supabase');
 
-      const { data: categories, error } = await supabase
+      const { data: categories, error } = await getSupabaseClient()
         .from('categories')
         .select(`
           *,
@@ -122,7 +134,7 @@ export const categoryService = {
       const categoryId = typeof id === 'string' ? parseInt(id, 10) : id;
       logger.info(`Fetching category with ID: ${categoryId}`);
 
-      const { data: category, error } = await supabase
+      const { data: category, error } = await getSupabaseClient()
         .from('categories')
         .select(`
           *,
@@ -141,7 +153,7 @@ export const categoryService = {
       }
 
       // Get subcategories
-      const { data: subcategories } = await supabase
+      const { data: subcategories } = await getSupabaseClient()
         .from('categories')
         .select(`
           *,
@@ -151,14 +163,14 @@ export const categoryService = {
         .order('sort_order', { ascending: true });
 
       // Get attributes for the current category
-      const { data: attributes } = await supabase
+      const { data: attributes } = await getSupabaseClient()
         .from('category_attributes')
         .select('*')
         .eq('category_id', categoryId)
         .order('sort_order', { ascending: true });
 
       // Parse options for attributes
-      const parsedAttributes = (attributes || []).map(attr => ({
+      const parsedAttributes = (attributes || []).map((attr: any) => ({
         ...attr,
         options: attr.options ? JSON.parse(attr.options) : null
       }));
@@ -187,7 +199,7 @@ export const categoryService = {
     try {
       logger.info(`Fetching category with path: ${path}`);
 
-      const { data: category, error } = await supabase
+      const { data: category, error } = await getSupabaseClient()
         .from('categories')
         .select(`
           *,
@@ -206,7 +218,7 @@ export const categoryService = {
       }
 
       // Get subcategories
-      const { data: subcategories } = await supabase
+      const { data: subcategories } = await getSupabaseClient()
         .from('categories')
         .select(`
           *,
@@ -216,19 +228,19 @@ export const categoryService = {
         .order('sort_order', { ascending: true });
 
       // Get attributes for the current category
-      const { data: attributes } = await supabase
+      const { data: attributes } = await getSupabaseClient()
         .from('category_attributes')
         .select('*')
         .eq('category_id', category.id)
         .order('sort_order', { ascending: true });
 
       // Parse options for attributes
-      const parsedAttributes = (attributes || []).map(attr => ({
+      const parsedAttributes = (attributes || []).map((attr: any) => ({
         ...attr,
         options: attr.options ? JSON.parse(attr.options) : null
       }));
 
-      const categoryWithDetails = {
+      const categoryWithSubcategories = {
         ...category,
         subcategories: subcategories || [],
         attributes: parsedAttributes,
@@ -239,7 +251,7 @@ export const categoryService = {
         })
       };
 
-      return categoryWithDetails;
+      return categoryWithSubcategories;
 
     } catch (error) {
       logger.error('Error in getCategoryByPath:', error);
@@ -252,28 +264,26 @@ export const categoryService = {
     try {
       logger.info('Creating new category:', data);
 
-      // Get parent category to build path
+      // Generate path if parent_id is provided
       let path = data.name;
       let level = 0;
 
       if (data.parent_id) {
         const parent = await this.getCategory(data.parent_id);
-        if (parent) {
-          path = `${parent.path}/${data.name}`;
-          level = parent.level + 1;
+        if (!parent) {
+          throw new Error('Parent category not found');
         }
+        path = `${parent.path} > ${data.name}`;
+        level = parent.level + 1;
       }
 
-      const { data: category, error } = await supabase
+      const { data: category, error } = await getSupabaseClient()
         .from('categories')
         .insert({
-          name: data.name,
-          icon: data.icon,
-          color: data.color,
+          ...data,
           path,
-          parent_id: data.parent_id,
           level,
-          sort_order: data.sort_order || level * 1000,
+          sort_order: data.sort_order || 0,
           is_active: data.is_active !== false
         })
         .select()
@@ -284,7 +294,7 @@ export const categoryService = {
         throw error;
       }
 
-      logger.info(`Created category: ${category.name} (ID: ${category.id})`);
+      logger.info('Category created successfully:', category.id);
       return category;
 
     } catch (error) {
@@ -297,16 +307,13 @@ export const categoryService = {
   async updateCategory(id: string | number, data: UpdateCategoryRequest): Promise<Category> {
     try {
       const categoryId = typeof id === 'string' ? parseInt(id, 10) : id;
-      logger.info(`Updating category ${categoryId}:`, data);
+      logger.info(`Updating category with ID: ${categoryId}`);
 
-      const { data: category, error } = await supabase
+      const { data: category, error } = await getSupabaseClient()
         .from('categories')
         .update({
-          name: data.name,
-          icon: data.icon,
-          color: data.color,
-          sort_order: data.sort_order,
-          is_active: data.is_active
+          ...data,
+          updated_at: new Date().toISOString()
         })
         .eq('id', categoryId)
         .select()
@@ -317,7 +324,7 @@ export const categoryService = {
         throw error;
       }
 
-      logger.info(`Updated category: ${category.name}`);
+      logger.info('Category updated successfully:', category.id);
       return category;
 
     } catch (error) {
@@ -330,10 +337,10 @@ export const categoryService = {
   async deleteCategory(id: string | number): Promise<void> {
     try {
       const categoryId = typeof id === 'string' ? parseInt(id, 10) : id;
-      logger.info(`Deleting category ${categoryId}`);
+      logger.info(`Deleting category with ID: ${categoryId}`);
 
       // Check if category has subcategories
-      const { data: subcategories } = await supabase
+      const { data: subcategories } = await getSupabaseClient()
         .from('categories')
         .select('id')
         .eq('parent_id', categoryId);
@@ -342,7 +349,7 @@ export const categoryService = {
         throw new Error('Cannot delete category with subcategories');
       }
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('categories')
         .delete()
         .eq('id', categoryId);
@@ -352,7 +359,7 @@ export const categoryService = {
         throw error;
       }
 
-      logger.info(`Deleted category ${categoryId}`);
+      logger.info('Category deleted successfully:', categoryId);
 
     } catch (error) {
       logger.error('Error in deleteCategory:', error);
@@ -363,16 +370,14 @@ export const categoryService = {
   // Create attribute
   async createAttribute(categoryId: string, data: CreateAttributeRequest): Promise<CategoryAttribute> {
     try {
-      logger.info(`Creating attribute for category ${categoryId}:`, data);
+      const catId = typeof categoryId === 'string' ? parseInt(categoryId, 10) : categoryId;
+      logger.info(`Creating attribute for category ${catId}:`, data);
 
-      const { data: attribute, error } = await supabase
+      const { data: attribute, error } = await getSupabaseClient()
         .from('category_attributes')
         .insert({
-          category_id: categoryId,
-          key: data.key,
-          label: data.label,
-          type: data.type,
-          required: data.required || false,
+          category_id: catId,
+          ...data,
           options: data.options ? JSON.stringify(data.options) : null,
           sort_order: data.sort_order || 0
         })
@@ -384,7 +389,7 @@ export const categoryService = {
         throw error;
       }
 
-      logger.info(`Created attribute: ${attribute.key}`);
+      logger.info('Attribute created successfully:', attribute.id);
       return attribute;
 
     } catch (error) {
@@ -396,19 +401,17 @@ export const categoryService = {
   // Update attribute
   async updateAttribute(id: string, data: UpdateAttributeRequest): Promise<CategoryAttribute> {
     try {
-      logger.info(`Updating attribute ${id}:`, data);
+      const attributeId = typeof id === 'string' ? parseInt(id, 10) : id;
+      logger.info(`Updating attribute with ID: ${attributeId}`);
 
-      const { data: attribute, error } = await supabase
+      const { data: attribute, error } = await getSupabaseClient()
         .from('category_attributes')
         .update({
-          key: data.key,
-          label: data.label,
-          type: data.type,
-          required: data.required,
-          options: data.options ? JSON.stringify(data.options) : null,
-          sort_order: data.sort_order
+          ...data,
+          options: data.options ? JSON.stringify(data.options) : undefined,
+          updated_at: new Date().toISOString()
         })
-        .eq('id', id)
+        .eq('id', attributeId)
         .select()
         .single();
 
@@ -417,7 +420,7 @@ export const categoryService = {
         throw error;
       }
 
-      logger.info(`Updated attribute: ${attribute.key}`);
+      logger.info('Attribute updated successfully:', attribute.id);
       return attribute;
 
     } catch (error) {
@@ -429,19 +432,20 @@ export const categoryService = {
   // Delete attribute
   async deleteAttribute(id: string): Promise<void> {
     try {
-      logger.info(`Deleting attribute ${id}`);
+      const attributeId = typeof id === 'string' ? parseInt(id, 10) : id;
+      logger.info(`Deleting attribute with ID: ${attributeId}`);
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('category_attributes')
         .delete()
-        .eq('id', id);
+        .eq('id', attributeId);
 
       if (error) {
         logger.error('Error deleting attribute:', error);
         throw error;
       }
 
-      logger.info(`Deleted attribute ${id}`);
+      logger.info('Attribute deleted successfully:', attributeId);
 
     } catch (error) {
       logger.error('Error in deleteAttribute:', error);
@@ -449,76 +453,64 @@ export const categoryService = {
     }
   },
 
-  // Helper: Build category tree
+  // Build category tree
   buildCategoryTree(categories: any[]): Category[] {
     const categoryMap = new Map();
     const rootCategories: Category[] = [];
 
     // Create map of all categories
     categories.forEach(category => {
-      // Parse options for attributes
-      const parsedAttributes = (category.category_attributes || []).map((attr: any) => ({
-        ...attr,
-        options: attr.options ? JSON.parse(attr.options) : null
-      }));
-
       categoryMap.set(category.id, {
         ...category,
         subcategories: [],
-        attributes: parsedAttributes
+        attributes: category.category_attributes || []
       });
     });
 
     // Build tree structure
     categories.forEach(category => {
-      const categoryNode = categoryMap.get(category.id);
+      const categoryWithSubcategories = categoryMap.get(category.id);
       
-      if (category.parent_id) {
+      if (category.parent_id && categoryMap.has(category.parent_id)) {
         const parent = categoryMap.get(category.parent_id);
-        if (parent) {
-          parent.subcategories.push(categoryNode);
-        }
+        parent.subcategories.push(categoryWithSubcategories);
       } else {
-        rootCategories.push(categoryNode);
+        rootCategories.push(categoryWithSubcategories);
       }
     });
 
     return rootCategories;
   },
 
-  // Helper: Calculate category stats
+  // Calculate category stats
   calculateCategoryStats(category: Category): {
     subcategoryCount: number;
     totalSubcategories: number;
     attributeCount: number;
     totalAttributes: number;
   } {
-    let subcategoryCount = 0;
-    let totalSubcategories = 0;
-    let attributeCount = 0;
-    let totalAttributes = 0;
-
     const countRecursive = (cat: Category, level: number = 0) => {
-      if (level === 1) subcategoryCount++;
-      if (level > 0) totalSubcategories++;
-      
-      if (cat.attributes) {
-        if (level === 0) attributeCount = cat.attributes.length;
-        totalAttributes += cat.attributes.length;
-      }
+      let subcategoryCount = cat.subcategories?.length || 0;
+      let totalSubcategories = subcategoryCount;
+      let attributeCount = cat.attributes?.length || 0;
+      let totalAttributes = attributeCount;
 
       if (cat.subcategories) {
-        cat.subcategories.forEach(sub => countRecursive(sub, level + 1));
+        for (const subcategory of cat.subcategories) {
+          const subStats = countRecursive(subcategory, level + 1);
+          totalSubcategories += subStats.totalSubcategories;
+          totalAttributes += subStats.totalAttributes;
+        }
       }
+
+      return {
+        subcategoryCount,
+        totalSubcategories,
+        attributeCount,
+        totalAttributes
+      };
     };
 
-    countRecursive(category);
-
-    return {
-      subcategoryCount,
-      totalSubcategories,
-      attributeCount,
-      totalAttributes
-    };
+    return countRecursive(category);
   }
 }; 

@@ -35,7 +35,8 @@
   "author": "Benalsam Team",
   "license": "MIT",
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.3"
+    "@supabase/supabase-js": "^2.50.3",
+    "@elastic/elasticsearch": "^8.11.0"
   },
   "devDependencies": {
     "typescript": "^5.8.3",
