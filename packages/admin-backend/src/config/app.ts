@@ -8,7 +8,14 @@ export const serverConfig = {
 
 // Security configuration
 export const securityConfig = {
-  corsOrigin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3003'],
+  corsOrigin: process.env.CORS_ORIGIN 
+    ? process.env.CORS_ORIGIN.split(',') 
+    : [
+        'http://localhost:3003',
+        'http://209.227.228.96:3003',
+        'http://209.227.228.96:3000',
+        'http://localhost:3000'
+      ],
   rateLimitWindowMs: 15 * 60 * 1000, // 15 minutes
   rateLimitMaxRequests: 100, // limit each IP to 100 requests per windowMs
   jwtSecret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',

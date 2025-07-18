@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// Environment detection
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+const VPS_IP = '209.227.228.96';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -10,7 +15,9 @@ export default defineConfig({
     strictPort: true, // Port kullanımdaysa hata ver
     cors: true, // CORS'u etkinleştir
     hmr: {
-      host: '192.168.1.7', // HMR için network IP'sini belirt
+      host: isDevelopment ? 'localhost' : VPS_IP, // Environment-based HMR host
+      port: 3003,
+      protocol: 'ws',
     },
   },
   build: {
@@ -19,6 +26,15 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    'import.meta.env.VITE_API_URL': JSON.stringify('http://localhost:3002/api/v1'),
+    'import.meta.env.VITE_API_URL': JSON.stringify(
+      isDevelopment 
+        ? 'http://localhost:3002/api/v1'
+        : `http://${VPS_IP}:3002/api/v1`
+    ),
+    'import.meta.env.VITE_WS_URL': JSON.stringify(
+      isDevelopment 
+        ? 'ws://localhost:3003'
+        : `ws://${VPS_IP}:3003`
+    ),
   },
 })
