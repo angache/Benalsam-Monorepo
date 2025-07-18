@@ -16,6 +16,7 @@ import { useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
 import { getOrCreateConversation } from '../services/conversationService';
 import { canUserReview } from '../services/reviewService';
+import { formatDate } from '@benalsam/shared-types';
 
 // 🚀 React Query Hooks - YENİ!
 import { useReceivedOffers, useUpdateOfferStatus } from '../hooks/queries/useOffers';
@@ -188,17 +189,7 @@ const ReceivedOffersScreen = () => {
     navigation.navigate('LeaveReview', { offerId: offer.id });
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "Bilinmiyor";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+
 
   const handleBack = () => {
     navigation.goBack();

@@ -1,72 +1,19 @@
-// Format price with Turkish Lira symbol
-export const formatPrice = (price: number): string => {
-  return `₺${price.toLocaleString('tr-TR')}`;
-};
+// Re-export utility functions from shared-types
+export { 
+  formatPrice, 
+  formatDate, 
+  formatRelativeTime,
+  validateEmail,
+  getInitials,
+  truncateText,
+  getAvatarUrl,
+  isPremiumUser,
+  getTrustLevel,
+  getTrustLevelColor,
+  formatPhoneNumber
+} from '@benalsam/shared-types';
 
-// Format date to Turkish format
-export const formatDate = (date: string | Date): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('tr-TR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-};
-
-// Format relative time (e.g., "2 saat önce")
-export const formatRelativeTime = (date: string | Date): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
-
-  if (diffInSeconds < 60) {
-    return 'Az önce';
-  }
-
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} dakika önce`;
-  }
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} saat önce`;
-  }
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} gün önce`;
-  }
-
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks} hafta önce`;
-  }
-
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths < 12) {
-    return `${diffInMonths} ay önce`;
-  }
-
-  const diffInYears = Math.floor(diffInDays / 365);
-  return `${diffInYears} yıl önce`;
-};
-
-// Truncate text with ellipsis
-export const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-};
-
-// Generate initials from name
-export const getInitials = (name: string): string => {
-  return name
-    .split(' ')
-    .map(word => word.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-};
+// Mobile-specific utility functions (not in shared-types)
 
 // Validate email format
 export const isValidEmail = (email: string): boolean => {

@@ -16,6 +16,7 @@ import { useUserProfile } from '../hooks/queries/useAuth';
 import { usePublicTrustScore } from '../hooks/queries/useTrustScore';
 import { useUserListings } from '../hooks/queries/useListings';
 import { getTrustLevelColor, getTrustLevelDescription } from '../services/trustScoreService';
+import { formatDate } from '@benalsam/shared-types';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -88,14 +89,7 @@ const PublicProfileScreen = () => {
     return `${Math.floor(diffDays / 365)}Y`;
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+
 
   const getVerificationStatus = () => {
     const verifications = [];

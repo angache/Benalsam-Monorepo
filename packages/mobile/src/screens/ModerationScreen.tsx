@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { firebaseService } from '../services/firebaseService';
+import { formatDate } from '@benalsam/shared-types';
 import { CheckCircle, XCircle, Clock, Tag, Settings } from 'lucide-react-native';
 
 interface PendingItem {
@@ -86,15 +87,7 @@ const ModerationScreen = () => {
     }
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+
 
   const renderPendingItem = (item: PendingItem) => (
     <View key={`${item.type}-${item.id}`} style={[styles.itemCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -110,7 +103,7 @@ const ModerationScreen = () => {
           </Text>
         </View>
         <Text style={[styles.itemDate, { color: colors.textSecondary }]}>
-          {formatDate(item.created_at)}
+          {formatDate(new Date(item.created_at))}
         </Text>
       </View>
 
