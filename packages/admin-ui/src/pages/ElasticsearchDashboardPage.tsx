@@ -1,4 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Grid,
+  Chip,
+  LinearProgress,
+  Alert,
+  CircularProgress,
+  Paper,
+  Divider,
+  IconButton,
+  Tooltip,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import {
+  Refresh as RefreshIcon,
+  Bolt as BoltIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  Warning as WarningIcon,
+  Info as InfoIcon,
+  Timeline as TimelineIcon,
+  Storage as StorageIcon,
+  Queue as QueueIcon,
+  Sync as SyncIcon
+} from '@mui/icons-material';
 
 interface HealthStatus {
   elasticsearch: boolean;
@@ -34,6 +64,9 @@ interface IndexerStats {
 }
 
 const ElasticsearchDashboardPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [healthStatus, setHealthStatus] = useState<HealthStatus>({
     elasticsearch: false,
     redis: false,
@@ -177,242 +210,440 @@ const ElasticsearchDashboardPage: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (status: boolean, label: string) => {
+  const getStatusChip = (status: boolean, label: string) => {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        status 
-          ? 'bg-green-100 text-green-800' 
-          : 'bg-red-100 text-red-800'
-      }`}>
-        {status ? '✅' : '❌'} {label}
-      </span>
+      <Chip
+        icon={status ? <CheckCircleIcon /> : <ErrorIcon />}
+        label={label}
+        color={status ? 'success' : 'error'}
+        variant="outlined"
+        size="small"
+      />
     );
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2">Loading dashboard...</span>
-      </div>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="400px"
+        gap={2}
+      >
+        <CircularProgress size={60} />
+        <Typography variant="h6" color="text.secondary">
+          Loading dashboard...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Elasticsearch Dashboard</h1>
-          <p className="text-gray-600">
-            Monitor Elasticsearch sync status and system health
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={loadDashboardData}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            🔄 Refresh
-          </button>
-          <button 
-            onClick={triggerManualSync} 
-            disabled={syncStatus.isRunning}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            ⚡ Manual Sync
-          </button>
-        </div>
-      </div>
+    <Box sx={{ maxWidth: '100%', mx: 'auto' }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: 2 }}>
+          <Box>
+            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+              Elasticsearch Dashboard
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Monitor Elasticsearch sync status and system health
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: isMobile ? 'column' : 'row' }}>
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={loadDashboardData}
+              sx={{ minWidth: 120 }}
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<BoltIcon />}
+              onClick={triggerManualSync}
+              disabled={syncStatus.isRunning}
+              sx={{ minWidth: 140 }}
+            >
+              Manual Sync
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
+      {/* Error Alert */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          ❌ {error}
-        </div>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
       )}
 
       {/* Health Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">Elasticsearch</h3>
-            {getStatusBadge(healthStatus.elasticsearch, 'Healthy')}
-          </div>
-        </div>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ height: '100%', transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 } }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                    Elasticsearch
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 1 }}>
+                    Active
+                  </Typography>
+                </Box>
+                {getStatusChip(healthStatus.elasticsearch, 'Healthy')}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">Redis</h3>
-            {getStatusBadge(healthStatus.redis, 'Connected')}
-          </div>
-        </div>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ height: '100%', transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 } }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                    Redis
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 1 }}>
+                    Connected
+                  </Typography>
+                </Box>
+                {getStatusChip(healthStatus.redis, 'Connected')}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">Indexer</h3>
-            {getStatusBadge(healthStatus.indexer, 'Running')}
-          </div>
-        </div>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ height: '100%', transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 } }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                    Indexer
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 1 }}>
+                    Running
+                  </Typography>
+                </Box>
+                {getStatusChip(healthStatus.indexer, 'Running')}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">Sync Service</h3>
-            {getStatusBadge(healthStatus.syncService, 'Active')}
-          </div>
-        </div>
-      </div>
+        <Grid item xs={12} sm={6} lg={3}>
+          <Card sx={{ height: '100%', transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 } }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                    Sync Service
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 1 }}>
+                    Active
+                  </Typography>
+                </Box>
+                {getStatusChip(healthStatus.syncService, 'Active')}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Main Dashboard Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         {/* Sync Progress */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">📊 Sync Progress</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Progress</span>
-              <span className="text-sm text-gray-600">{syncStatus.progress}%</span>
-            </div>
-            
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${syncStatus.progress}%` }}
-              ></div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-600">Total Synced</p>
-                <p className="font-semibold">{syncStatus.totalSynced.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Status</p>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  syncStatus.isRunning 
-                    ? 'bg-blue-100 text-blue-800' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {syncStatus.isRunning ? '🔄 Running' : '⏸️ Idle'}
-                </span>
-              </div>
-            </div>
+        <Grid item xs={12} lg={6}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <TimelineIcon sx={{ mr: 1, color: 'primary.main' }} />
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Sync Progress
+                </Typography>
+              </Box>
+              
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Progress
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                    {syncStatus.progress}%
+                  </Typography>
+                </Box>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={syncStatus.progress} 
+                  sx={{ height: 8, borderRadius: 4 }}
+                />
+              </Box>
+              
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={6}>
+                  <Paper sx={{ 
+                    p: 2, 
+                    bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50',
+                    color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                  }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Synced
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                      {syncStatus.totalSynced.toLocaleString()}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper sx={{ 
+                    p: 2, 
+                    bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50',
+                    color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                  }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Status
+                    </Typography>
+                    <Chip
+                      icon={syncStatus.isRunning ? <SyncIcon /> : <InfoIcon />}
+                      label={syncStatus.isRunning ? 'Running' : 'Idle'}
+                      color={syncStatus.isRunning ? 'primary' : 'default'}
+                      size="small"
+                      sx={{ mt: 0.5 }}
+                    />
+                  </Paper>
+                </Grid>
+              </Grid>
 
-            {syncStatus.lastSyncAt && (
-              <div className="text-sm">
-                <p className="text-gray-600">Last Sync</p>
-                <p>{new Date(syncStatus.lastSyncAt).toLocaleString()}</p>
-              </div>
-            )}
-          </div>
-        </div>
+              {syncStatus.lastSyncAt && (
+                <Paper sx={{ 
+                  p: 2, 
+                  bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50',
+                  color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Last Sync
+                  </Typography>
+                  <Typography variant="body2">
+                    {new Date(syncStatus.lastSyncAt).toLocaleString()}
+                  </Typography>
+                </Paper>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
 
         {/* Indexer Stats */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">🗄️ Indexer Statistics</h3>
-          
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-600">Total Processed</p>
-              <p className="font-semibold">{indexerStats.totalProcessed.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Success Rate</p>
-              <p className="font-semibold">
-                {indexerStats.totalProcessed > 0 
-                  ? ((indexerStats.totalSuccess / indexerStats.totalProcessed) * 100).toFixed(1)
-                  : 0}%
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-600">Failed</p>
-              <p className="font-semibold text-red-600">{indexerStats.totalFailed}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Avg Time</p>
-              <p className="font-semibold">{indexerStats.avgProcessingTime}ms</p>
-            </div>
-          </div>
+        <Grid item xs={12} lg={6}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <StorageIcon sx={{ mr: 1, color: 'secondary.main' }} />
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Indexer Statistics
+                </Typography>
+              </Box>
+              
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={6}>
+                  <Paper sx={{ p: 2, bgcolor: 'primary.50' }}>
+                    <Typography variant="body2" color="primary.main">
+                      Total Processed
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                      {indexerStats.totalProcessed.toLocaleString()}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper sx={{ p: 2, bgcolor: 'success.50' }}>
+                    <Typography variant="body2" color="success.main">
+                      Success Rate
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                      {indexerStats.totalProcessed > 0 
+                        ? ((indexerStats.totalSuccess / indexerStats.totalProcessed) * 100).toFixed(1)
+                        : 0}%
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper sx={{ p: 2, bgcolor: 'error.50' }}>
+                    <Typography variant="body2" color="error.main">
+                      Failed
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                      {indexerStats.totalFailed}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper sx={{ p: 2, bgcolor: 'warning.50' }}>
+                    <Typography variant="body2" color="warning.main">
+                      Avg Time
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                      {indexerStats.avgProcessingTime}ms
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
 
-          {indexerStats.lastProcessedAt && (
-            <div className="text-sm mt-4">
-              <p className="text-gray-600">Last Processed</p>
-              <p>{new Date(indexerStats.lastProcessedAt).toLocaleString()}</p>
-            </div>
-          )}
-        </div>
-      </div>
+              {indexerStats.lastProcessedAt && (
+                <Paper sx={{ 
+                  p: 2, 
+                  bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50',
+                  color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Last Processed
+                  </Typography>
+                  <Typography variant="body2">
+                    {new Date(indexerStats.lastProcessedAt).toLocaleString()}
+                  </Typography>
+                </Paper>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Queue Management */}
-      <div className="bg-white p-6 rounded-lg shadow border">
-        <h3 className="text-lg font-semibold mb-4">⚙️ Queue Management</h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{queueStats.pending}</div>
-            <div className="text-sm text-gray-600">Pending</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">{queueStats.processing}</div>
-            <div className="text-sm text-gray-600">Processing</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{queueStats.completed}</div>
-            <div className="text-sm text-gray-600">Completed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{queueStats.failed}</div>
-            <div className="text-sm text-gray-600">Failed</div>
-          </div>
-        </div>
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <QueueIcon sx={{ mr: 1, color: 'warning.main' }} />
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              Queue Management
+            </Typography>
+          </Box>
+          
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+                  {queueStats.pending}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Pending
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main', mb: 1 }}>
+                  {queueStats.processing}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Processing
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main', mb: 1 }}>
+                  {queueStats.completed}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Completed
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.main', mb: 1 }}>
+                  {queueStats.failed}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Failed
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
 
-        <button 
-          onClick={retryFailedJobs} 
-          disabled={queueStats.failed === 0}
-          className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50"
-        >
-          🔄 Retry Failed Jobs ({queueStats.failed})
-        </button>
-      </div>
+          <Button
+            variant="contained"
+            color="warning"
+            startIcon={<RefreshIcon />}
+            onClick={retryFailedJobs}
+            disabled={queueStats.failed === 0}
+            sx={{ minWidth: 200 }}
+          >
+            Retry Failed Jobs ({queueStats.failed})
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Sync Management */}
-      <div className="bg-white p-6 rounded-lg shadow border">
-        <h3 className="text-lg font-semibold mb-4">🔄 Sync Management</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <h4 className="font-medium">Sync Status</h4>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              syncStatus.isRunning 
-                ? 'bg-blue-100 text-blue-800' 
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              {syncStatus.isRunning ? '🔄 Running' : '⏸️ Idle'}
-            </span>
-          </div>
+      <Card>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <SyncIcon sx={{ mr: 1, color: 'info.main' }} />
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              Sync Management
+            </Typography>
+          </Box>
+          
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
+              <Paper sx={{ 
+                p: 2, 
+                bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50',
+                color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+              }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Sync Status
+                </Typography>
+                <Chip
+                  icon={syncStatus.isRunning ? <SyncIcon /> : <InfoIcon />}
+                  label={syncStatus.isRunning ? 'Running' : 'Idle'}
+                  color={syncStatus.isRunning ? 'primary' : 'default'}
+                />
+              </Paper>
+            </Grid>
 
-          <div>
-            <h4 className="font-medium">Next Sync</h4>
-            <p className="text-sm text-gray-600">
-              {syncStatus.nextSyncAt 
-                ? new Date(syncStatus.nextSyncAt).toLocaleString()
-                : "Not scheduled"
-              }
-            </p>
-          </div>
-        </div>
+            <Grid item xs={12} md={6}>
+              <Paper sx={{ 
+                p: 2, 
+                bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.50',
+                color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+              }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Next Sync
+                </Typography>
+                <Typography variant="body2">
+                  {syncStatus.nextSyncAt 
+                    ? new Date(syncStatus.nextSyncAt).toLocaleString()
+                    : "Not scheduled"
+                  }
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
 
-        {syncStatus.errors.length > 0 && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <strong>Sync Errors:</strong>
-            <ul className="mt-2 list-disc list-inside">
-              {syncStatus.errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
+          {syncStatus.errors.length > 0 && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                Sync Errors
+              </Typography>
+              <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                {syncStatus.errors.map((error, index) => (
+                  <Typography component="li" key={index} variant="body2">
+                    {error}
+                  </Typography>
+                ))}
+              </Box>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 
