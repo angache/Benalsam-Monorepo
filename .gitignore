@@ -1,3 +1,30 @@
 packages/mobile/.env
 packages/mobile/.env
 node_modules/
+
+# Logs
+logs/
+*.log
+packages/*/logs/
+packages/*/dist/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
