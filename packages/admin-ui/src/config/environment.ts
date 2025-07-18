@@ -13,7 +13,11 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   // VPS IP address
   const VPS_IP = '209.227.228.96';
   
-  if (isDevelopment) {
+  // Check if we're running on VPS (by checking if we can access VPS IP)
+  const isVPS = window.location.hostname === VPS_IP || window.location.hostname === '209.227.228.96';
+  
+  if (isDevelopment && !isVPS) {
+    // Local development
     return {
       apiUrl: 'http://localhost:3002',
       wsUrl: 'ws://localhost:3003',
@@ -22,16 +26,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
     };
   }
   
-  if (isProduction) {
-    return {
-      apiUrl: `http://${VPS_IP}:3002`,
-      wsUrl: `ws://${VPS_IP}:3003`,
-      environment: 'production',
-      elasticsearchUrl: `http://${VPS_IP}:3002/api/v1/elasticsearch`
-    };
-  }
-  
-  // Fallback for VPS development
+  // VPS environment (both development and production)
   return {
     apiUrl: `http://${VPS_IP}:3002`,
     wsUrl: `ws://${VPS_IP}:3003`,

@@ -2221,3 +2221,14 @@
 {"level":"info","message":"👂 Listening for jobs...","service":"admin-backend","timestamp":"2025-07-18T15:57:34.470Z"}
 {"level":"info","message":"::1 - - [18/Jul/2025:15:57:43 +0000] \"GET /api/elasticsearch/health HTTP/1.1\" 404 65 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-18T15:57:43.258Z"}
 {"level":"info","message":"::1 - - [18/Jul/2025:15:57:59 +0000] \"GET /api/v1/elasticsearch/health HTTP/1.1\" 200 461 \"-\" \"curl/8.4.0\"","service":"admin-backend","timestamp":"2025-07-18T15:57:59.264Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-18T16:32:23.654Z"}
+{"level":"info","message":"🛑 Shutting down sync service...","service":"admin-backend","timestamp":"2025-07-18T16:32:23.666Z"}
+{"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T16:32:23.667Z"}
+{"level":"info","message":"✅ Sync service shut down successfully","service":"admin-backend","timestamp":"2025-07-18T16:32:23.668Z"}
+{"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T16:32:23.668Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"admin-backend","timestamp":"2025-07-18T16:32:23.670Z"}
+{"level":"info","message":"🛑 Shutting down sync service...","service":"admin-backend","timestamp":"2025-07-18T16:32:23.670Z"}
+{"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T16:32:23.671Z"}
+{"level":"info","message":"✅ Sync service shut down successfully","service":"admin-backend","timestamp":"2025-07-18T16:32:23.671Z"}
+{"level":"info","message":"🛑 Elasticsearch indexer stopped","service":"admin-backend","timestamp":"2025-07-18T16:32:23.671Z"}
+{"level":"info","message":"🔌 Redis connection closed","service":"admin-backend","timestamp":"2025-07-18T16:32:27.289Z"}

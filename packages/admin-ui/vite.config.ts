@@ -15,7 +15,7 @@ export default defineConfig({
     strictPort: true, // Port kullanımdaysa hata ver
     cors: true, // CORS'u etkinleştir
     hmr: {
-      host: isDevelopment ? 'localhost' : VPS_IP, // Environment-based HMR host
+      host: VPS_IP, // Always use VPS IP for HMR
       port: 3003,
       protocol: 'ws',
     },
@@ -26,15 +26,7 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    'import.meta.env.VITE_API_URL': JSON.stringify(
-      isDevelopment 
-        ? 'http://localhost:3002/api/v1'
-        : `http://${VPS_IP}:3002/api/v1`
-    ),
-    'import.meta.env.VITE_WS_URL': JSON.stringify(
-      isDevelopment 
-        ? 'ws://localhost:3003'
-        : `ws://${VPS_IP}:3003`
-    ),
+    'import.meta.env.VITE_API_URL': JSON.stringify(`http://${VPS_IP}:3002/api/v1`),
+    'import.meta.env.VITE_WS_URL': JSON.stringify(`ws://${VPS_IP}:3003`),
   },
 })
