@@ -1,6 +1,7 @@
 {
   "name": "@benalsam/shared-types",
   "version": "1.0.0",
+  "private": true,
   "description": "Shared TypeScript types and services for Benalsam mobile and web applications",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -9,10 +10,6 @@
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./esm": {
-      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },

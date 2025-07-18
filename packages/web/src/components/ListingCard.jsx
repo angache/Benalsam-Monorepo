@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
-import { formatDate } from '@benalsam/shared-types/esm';
+import { formatDate } from '@benalsam/shared-types';
 import OptimizedImage from '@/components/OptimizedImage';
 
 

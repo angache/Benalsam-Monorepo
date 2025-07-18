@@ -1,172 +1,28 @@
-import { 
-  formatPrice, 
-  formatDate, 
-  formatRelativeTime,
-  truncateText,
-  getInitials,
-  isValidEmail,
-  isValidPhoneNumber,
+import {
+  isValidTurkishPhoneNumber,
   capitalize,
-  generateId,
-  debounce
-} from "../helpers";
+  generateMobileId,
+  debounce,
+  isDeviceOnline,
+  getDevicePixelRatio,
+  formatFileSize,
+  isImageCached,
+  formatMobileDate
+} from '../helpers';
 
-describe("Helper Functions", () => {
-  describe("formatPrice", () => {
-    it("formats price correctly with Turkish locale", () => {
-      expect(formatPrice(100)).toBe("₺100");
-      expect(formatPrice(1500)).toBe("₺1.500");
-      expect(formatPrice(0)).toBe("₺0");
-      expect(formatPrice(999999)).toBe("₺999.999");
-    });
-
-    it("handles decimal values", () => {
-      expect(formatPrice(99.99)).toBe("₺99,99");
-      expect(formatPrice(1234.56)).toBe("₺1.234,56");
-    });
-  });
-
-  describe("formatDate", () => {
-    it("formats date to Turkish format", () => {
-      const date = new Date('2023-01-15T10:30:00Z');
-      const formatted = formatDate(date);
-      
-      expect(formatted).toContain('15');
-      expect(formatted).toContain('2023');
-      expect(formatted).toContain('Ocak');
-    });
-
-    it("handles string dates", () => {
-      const dateString = '2023-12-25T00:00:00Z';
-      const formatted = formatDate(dateString);
-      
-      expect(formatted).toContain('25');
-      expect(formatted).toContain('2023');
-    });
-  });
-
-  describe("formatRelativeTime", () => {
-    beforeEach(() => {
-      // Mock current time to 2023-01-01 12:00:00
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2023-01-01T12:00:00Z'));
-    });
-
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
-    it("formats recent times correctly", () => {
-      const now = new Date('2023-01-01T12:00:00Z');
-      
-      // 30 seconds ago
-      const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000);
-      expect(formatRelativeTime(thirtySecondsAgo)).toBe('Az önce');
-      
-      // 5 minutes ago
-      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-      expect(formatRelativeTime(fiveMinutesAgo)).toBe('5 dakika önce');
-      
-      // 2 hours ago
-      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-      expect(formatRelativeTime(twoHoursAgo)).toBe('2 saat önce');
-      
-      // 3 days ago
-      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-      expect(formatRelativeTime(threeDaysAgo)).toBe('3 gün önce');
-      
-      // 2 weeks ago
-      const twoWeeksAgo = new Date(now.getTime() - 2 * 7 * 24 * 60 * 60 * 1000);
-      expect(formatRelativeTime(twoWeeksAgo)).toBe('2 hafta önce');
-      
-      // 6 months ago
-      const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000);
-      expect(formatRelativeTime(sixMonthsAgo)).toBe('6 ay önce');
-      
-      // 2 years ago
-      const twoYearsAgo = new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000);
-      expect(formatRelativeTime(twoYearsAgo)).toBe('2 yıl önce');
-    });
-
-    it("handles string dates", () => {
-      const oneHourAgo = '2023-01-01T11:00:00Z';
-      expect(formatRelativeTime(oneHourAgo)).toBe('1 saat önce');
-    });
-  });
-
-  describe("truncateText", () => {
-    it("truncates long text correctly", () => {
-      const longText = "Bu çok uzun bir metin örneği";
-      expect(truncateText(longText, 10)).toBe("Bu çok uzu...");
-      expect(truncateText(longText, 5)).toBe("Bu ço...");
-    });
-
-    it("returns original text if shorter than max length", () => {
-      const shortText = "Kısa";
-      expect(truncateText(shortText, 10)).toBe("Kısa");
-      expect(truncateText(shortText, 4)).toBe("Kısa");
-    });
-
-    it("handles edge cases", () => {
-      expect(truncateText("", 5)).toBe("");
-      expect(truncateText("Test", 0)).toBe("...");
-    });
-  });
-
-  describe("getInitials", () => {
-    it("generates initials from single name", () => {
-      expect(getInitials("Ali")).toBe("A");
-    });
-
-    it("generates initials from full name", () => {
-      expect(getInitials("Ali Veli")).toBe("AV");
-      expect(getInitials("Mehmet Ali Kaya")).toBe("MA");
-    });
-
-    it("handles lowercase names", () => {
-      expect(getInitials("ali veli")).toBe("AV");
-    });
-
-    it("handles extra spaces", () => {
-      expect(getInitials("  Ali   Veli  ")).toBe("AV");
-    });
-
-    it("handles empty string", () => {
-      expect(getInitials("")).toBe("");
-    });
-  });
-
-  describe("isValidEmail", () => {
-    it("validates correct email addresses", () => {
-      expect(isValidEmail("test@example.com")).toBe(true);
-      expect(isValidEmail("user.name@domain.org")).toBe(true);
-      expect(isValidEmail("test+label@email.co.uk")).toBe(true);
-      expect(isValidEmail("123@numbers.com")).toBe(true);
-    });
-
-    it("rejects invalid email addresses", () => {
-      expect(isValidEmail("invalid-email")).toBe(false);
-      expect(isValidEmail("@domain.com")).toBe(false);
-      expect(isValidEmail("test@")).toBe(false);
-      expect(isValidEmail("")).toBe(false);
-      expect(isValidEmail("test.domain.com")).toBe(false);
-      expect(isValidEmail("test@domain")).toBe(false);
-    });
-  });
-
-  describe("isValidPhoneNumber", () => {
+describe("Mobile Helper Functions", () => {
+  describe("isValidTurkishPhoneNumber", () => {
     it("validates Turkish phone numbers", () => {
-      expect(isValidPhoneNumber("05551234567")).toBe(true);
-      expect(isValidPhoneNumber("+905551234567")).toBe(true);
-      expect(isValidPhoneNumber("0555 123 45 67")).toBe(true);
+      expect(isValidTurkishPhoneNumber("05551234567")).toBe(true);
+      expect(isValidTurkishPhoneNumber("+905551234567")).toBe(true);
+      expect(isValidTurkishPhoneNumber("0555 123 45 67")).toBe(true);
     });
 
     it("rejects invalid phone numbers", () => {
-      expect(isValidPhoneNumber("1234567890")).toBe(false);
-      expect(isValidPhoneNumber("05551234567")).toBe(true); // 555 is valid
-      expect(isValidPhoneNumber("0555123456")).toBe(false); // too short
-      expect(isValidPhoneNumber("055512345678")).toBe(false); // too long
-      expect(isValidPhoneNumber("")).toBe(false);
+      expect(isValidTurkishPhoneNumber("1234567890")).toBe(false);
+      expect(isValidTurkishPhoneNumber("0555123456")).toBe(false); // too short
+      expect(isValidTurkishPhoneNumber("055512345678")).toBe(false); // too long
+      expect(isValidTurkishPhoneNumber("")).toBe(false);
     });
   });
 
@@ -186,11 +42,11 @@ describe("Helper Functions", () => {
     });
   });
 
-  describe("generateId", () => {
+  describe("generateMobileId", () => {
     it("generates unique IDs", () => {
-      const id1 = generateId();
-      const id2 = generateId();
-      
+      const id1 = generateMobileId();
+      const id2 = generateMobileId();
+
       expect(id1).toBeTruthy();
       expect(id2).toBeTruthy();
       expect(id1).not.toBe(id2);
@@ -198,7 +54,7 @@ describe("Helper Functions", () => {
     });
 
     it("generates alphanumeric IDs", () => {
-      const id = generateId();
+      const id = generateMobileId();
       expect(id).toMatch(/^[a-z0-9]+$/);
     });
   });
@@ -231,6 +87,8 @@ describe("Helper Functions", () => {
       debouncedFn();
       debouncedFn();
 
+      expect(mockFn).not.toHaveBeenCalled();
+
       jest.advanceTimersByTime(100);
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
@@ -240,9 +98,105 @@ describe("Helper Functions", () => {
       const debouncedFn = debounce(mockFn, 100);
 
       debouncedFn("test", 123);
+
       jest.advanceTimersByTime(100);
 
       expect(mockFn).toHaveBeenCalledWith("test", 123);
+    });
+  });
+
+  describe("isDeviceOnline", () => {
+    it("returns online status", () => {
+      // Mock navigator.onLine
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        value: true
+      });
+
+      expect(isDeviceOnline()).toBe(true);
+
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        value: false
+      });
+
+      expect(isDeviceOnline()).toBe(false);
+    });
+  });
+
+  describe("getDevicePixelRatio", () => {
+    it("returns device pixel ratio", () => {
+      // Mock window.devicePixelRatio
+      Object.defineProperty(window, 'devicePixelRatio', {
+        writable: true,
+        value: 2
+      });
+
+      expect(getDevicePixelRatio()).toBe(2);
+
+      Object.defineProperty(window, 'devicePixelRatio', {
+        writable: true,
+        value: undefined
+      });
+
+      expect(getDevicePixelRatio()).toBe(1);
+    });
+  });
+
+  describe("formatFileSize", () => {
+    it("formats file sizes correctly", () => {
+      expect(formatFileSize(0)).toBe("0 Bytes");
+      expect(formatFileSize(1024)).toBe("1 KB");
+      expect(formatFileSize(1048576)).toBe("1 MB");
+      expect(formatFileSize(1073741824)).toBe("1 GB");
+    });
+
+    it("handles decimal values", () => {
+      expect(formatFileSize(1536)).toBe("1.5 KB");
+      expect(formatFileSize(1572864)).toBe("1.5 MB");
+    });
+  });
+
+  describe("isImageCached", () => {
+    it("checks if image is cached", () => {
+      // Mock Image constructor
+      const mockImage = {
+        src: '',
+        complete: true
+      };
+      
+      global.Image = jest.fn(() => mockImage as any);
+
+      expect(isImageCached("test.jpg")).toBe(true);
+
+      mockImage.complete = false;
+      expect(isImageCached("test.jpg")).toBe(false);
+    });
+  });
+
+  describe("formatMobileDate", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2023-01-01T12:00:00Z'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("formats recent times correctly", () => {
+      const oneHourAgo = new Date('2023-01-01T11:00:00Z');
+      const oneDayAgo = new Date('2022-12-31T12:00:00Z');
+      const threeDaysAgo = new Date('2022-12-29T12:00:00Z');
+
+      expect(formatMobileDate(oneHourAgo)).toMatch(/\d{1,2}:\d{2}/);
+      expect(formatMobileDate(oneDayAgo)).toBe("Dün");
+      expect(formatMobileDate(threeDaysAgo)).toMatch(/Ara \d{1,2}/);
+    });
+
+    it("handles string dates", () => {
+      const oneHourAgo = "2023-01-01T11:00:00Z";
+      expect(formatMobileDate(oneHourAgo)).toMatch(/\d{1,2}:\d{2}/);
     });
   });
 });

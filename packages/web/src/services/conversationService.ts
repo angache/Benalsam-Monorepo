@@ -279,6 +279,9 @@ export const fetchConversationDetails = async (
           id,
           title,
           user_id
+        ),
+        conversation_participants (
+          user_id
         )
       `)
       .eq('id', conversationId)
