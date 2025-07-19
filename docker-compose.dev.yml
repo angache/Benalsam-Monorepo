@@ -4,26 +4,59 @@ services:
   # Admin Backend with hot reload
   admin-backend:
     build:
-      context: ./packages/admin-backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: packages/admin-backend/Dockerfile
     container_name: benalsam-admin-backend-dev
     ports:
       - "3002:3002"
     volumes:
       # Hot reload için source code'u mount et
-      - ./packages/admin-backend/src:/app/src
-      - ./packages/admin-backend/package.json:/app/package.json
-      - ./packages/admin-backend/tsconfig.json:/app/tsconfig.json
-      - ./packages/admin-backend/nodemon.json:/app/nodemon.json
+      - ./packages/admin-backend/src:/app/packages/admin-backend/src
+      - ./packages/admin-backend/package.json:/app/packages/admin-backend/package.json
+      - ./packages/admin-backend/tsconfig.json:/app/packages/admin-backend/tsconfig.json
+      - ./packages/admin-backend/nodemon.json:/app/packages/admin-backend/nodemon.json
+      # Shared-types'ı da mount et
+      - ./packages/shared-types/src:/app/packages/shared-types/src
+      - ./packages/shared-types/package.json:/app/packages/shared-types/package.json
+      - ./packages/shared-types/tsconfig.json:/app/packages/shared-types/tsconfig.json
       # Node modules'ı container içinde tut (performance için)
       - /app/node_modules
+      - /app/packages/admin-backend/node_modules
+      - /app/packages/shared-types/node_modules
     environment:
       - NODE_ENV=development
       - PORT=3002
+      - CORS_ORIGIN=http://localhost:3003,http://localhost:3000,http://localhost:3002
     env_file:
       - ./packages/admin-backend/.env
     depends_on:
       - redis
+    networks:
+      - benalsam-network
+    restart: unless-stopped
+
+  # Admin UI with hot reload
+  admin-ui:
+    build:
+      context: ./packages/admin-ui
+      dockerfile: Dockerfile
+    container_name: benalsam-admin-ui-dev
+    ports:
+      - "3003:3003"
+    volumes:
+      # Hot reload için source code'u mount et
+      - ./packages/admin-ui/src:/app/src
+      - ./packages/admin-ui/package.json:/app/package.json
+      - ./packages/admin-ui/vite.config.ts:/app/vite.config.ts
+      - ./packages/admin-ui/tsconfig.json:/app/tsconfig.json
+      - ./packages/admin-ui/index.html:/app/index.html
+      # Node modules'ı container içinde tut (performance için)
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3002/api/v1
+    depends_on:
+      - admin-backend
     networks:
       - benalsam-network
     restart: unless-stopped

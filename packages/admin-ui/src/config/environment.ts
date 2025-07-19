@@ -16,8 +16,8 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   // Check if we're running on VPS (by checking if we can access VPS IP)
   const isVPS = window.location.hostname === VPS_IP || window.location.hostname === '209.227.228.96';
   
+  // For local development (both Docker and local), use localhost
   if (isDevelopment && !isVPS) {
-    // Local development
     return {
       apiUrl: 'http://localhost:3002',
       wsUrl: 'ws://localhost:3003',
@@ -49,5 +49,6 @@ export const VITE_CONFIG = {
 console.log('🔧 Environment Config:', {
   environment: config.environment,
   apiUrl: config.apiUrl,
-  elasticsearchUrl: config.elasticsearchUrl
+  elasticsearchUrl: config.elasticsearchUrl,
+  hostname: window.location.hostname
 }); 
