@@ -58,11 +58,9 @@ export class AdminElasticsearchService extends BaseElasticsearchService {
             description: listing.description,
             category: listing.category,
             budget: listing.budget,
-            location: listing.location ? {
-              lat: listing.location.lat,
-              lon: listing.location.lon,
-              text: listing.location.text
-            } : null,
+            location: listing.location || '',
+            latitude: listing.latitude || null,
+            longitude: listing.longitude || null,
             urgency: listing.urgency,
             attributes: listing.attributes,
             user_id: listing.user_id,

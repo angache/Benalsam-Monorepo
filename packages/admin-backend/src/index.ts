@@ -1,71 +1,46 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
-import path from 'path';
+import { config } from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
-import { serverConfig, securityConfig } from './config/app';
-import logger, { logStream } from './config/logger';
+// Import routes
+import authRoutes from './routes/auth';
+import { listingsRouter } from './routes/listings';
+import { usersRouter } from './routes/users';
+import { categoriesRouter } from './routes/categories';
+import healthRoutes from './routes/health';
+import monitoringRoutes from './routes/monitoring';
+import elasticsearchRoutes from './routes/elasticsearch';
 
-// Elasticsearch Services
-import { 
-  AdminElasticsearchService, 
-  MessageQueueService, 
-  IndexerService, 
-  SyncService 
-} from './services';
+// Import services
+import { AdminElasticsearchService } from './services/elasticsearchService';
+import QueueProcessorService from './services/queueProcessorService';
+
+// Import middleware
+import { authenticateToken } from './middleware/auth';
+import { errorHandler } from './middleware/errorHandler';
+
+// Import logger
+import logger from './config/logger';
 
 // Load environment variables
-dotenv.config();
+config();
 
 const app = express();
+const PORT = process.env.PORT || 3002;
 
-// Initialize Elasticsearch Services
-let elasticsearchService: AdminElasticsearchService;
-let messageQueueService: MessageQueueService;
-let indexerService: IndexerService;
-let syncService: SyncService;
+// Initialize Supabase client
+export const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // Initialize services
-async function initializeServices() {
-  try {
-    logger.info('🚀 Initializing Elasticsearch services...');
-
-    // Initialize Elasticsearch Service
-    elasticsearchService = new AdminElasticsearchService();
-    await elasticsearchService.testConnection();
-    logger.info('✅ Elasticsearch service initialized');
-
-    // Initialize Message Queue Service
-    messageQueueService = new MessageQueueService();
-    await messageQueueService.testConnection();
-    logger.info('✅ Message queue service initialized');
-
-    // Initialize Indexer Service
-    indexerService = new IndexerService(elasticsearchService, messageQueueService);
-    logger.info('✅ Indexer service initialized');
-
-    // Initialize Sync Service
-    syncService = new SyncService(elasticsearchService, messageQueueService, indexerService);
-    await syncService.initialize();
-    logger.info('✅ Sync service initialized');
-
-    // Start initial data migration if needed
-    const shouldMigrate = process.env.ELASTICSEARCH_INITIAL_MIGRATION === 'true';
-    if (shouldMigrate) {
-      logger.info('🔄 Starting initial data migration...');
-      await syncService.initialDataMigration();
-      logger.info('✅ Initial data migration completed');
-    }
-
-  } catch (error) {
-    logger.error('❌ Error initializing Elasticsearch services:', error);
-    // Don't throw error, continue with app startup
-  }
-}
+const elasticsearchService = new AdminElasticsearchService();
+const queueProcessor = new QueueProcessorService();
 
 // Security middleware
 app.use(helmet({
@@ -80,118 +55,137 @@ app.use(helmet({
 }));
 
 // CORS configuration
-app.use(cors({
-  origin: securityConfig.corsOrigin,
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3003'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: securityConfig.rateLimitWindowMs,
-  max: securityConfig.rateLimitMaxRequests,
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again later.',
-    error: 'RATE_LIMIT_EXCEEDED',
-  },
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use('/api/', limiter);
 
-// Compression
-app.use(compression());
-
 // Body parsing middleware
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Logging middleware
-app.use(morgan('combined', { stream: logStream }));
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path}`, {
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Health check endpoint
+// Health check endpoint (no auth required)
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.json({
     success: true,
     message: 'Admin Backend API is running',
     timestamp: new Date().toISOString(),
-    environment: serverConfig.nodeEnv,
-    version: serverConfig.apiVersion,
+    environment: process.env.NODE_ENV,
+    version: 'v1'
   });
 });
 
-// Import routes and error handlers
-import routes from './routes';
-import { errorHandler, notFoundHandler, timeoutHandler } from './middleware/errorHandler';
-
-// Request timeout middleware
-app.use(timeoutHandler(30000)); // 30 seconds timeout
-
 // API routes
-app.use(`/api/${serverConfig.apiVersion}`, routes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/listings', authenticateToken, listingsRouter);
+app.use('/api/v1/users', authenticateToken, usersRouter);
+app.use('/api/v1/categories', authenticateToken, categoriesRouter);
+app.use('/api/v1/health', healthRoutes);
+app.use('/api/v1/monitoring', monitoringRoutes);
+app.use('/api/v1/elasticsearch', elasticsearchRoutes);
 
-// 404 handler (must be before error handler)
-app.use(notFoundHandler);
-
-// Global error handler (must be last)
+// Global error handler
 app.use(errorHandler);
 
-// Start server
-const PORT = serverConfig.port;
-
-const server = app.listen(PORT, async () => {
-  logger.info(`🚀 Admin Backend API server running on port ${PORT}`);
-  logger.info(`📊 Environment: ${serverConfig.nodeEnv}`);
-  logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
-  logger.info(`📚 API version: ${serverConfig.apiVersion}`);
-
-  // Initialize Elasticsearch services after server starts
-  await initializeServices();
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Endpoint not found',
+    path: req.originalUrl
+  });
 });
 
-// Graceful shutdown
-async function gracefulShutdown(signal: string) {
-  logger.info(`${signal} received, shutting down gracefully`);
-  
+// Start server
+const startServer = async () => {
   try {
-    // Stop sync service
-    if (syncService) {
-      await syncService.shutdown();
+    // Test database connection
+    const { data, error } = await supabase.from('admin_users').select('count').limit(1);
+    if (error) {
+      logger.error('❌ Database connection failed:', error);
+      process.exit(1);
+    }
+    logger.info('✅ Database connection verified');
+
+    // Test Elasticsearch connection
+    try {
+      await elasticsearchService.getHealth();
+      logger.info('✅ Elasticsearch connection verified');
+    } catch (error) {
+      logger.warn('⚠️ Elasticsearch connection failed:', error);
     }
 
-    // Stop indexer service
-    if (indexerService) {
-      await indexerService.stop();
+    // Start queue processor
+    try {
+      await queueProcessor.startProcessing(10000); // 10 saniye aralıklarla
+      logger.info('✅ Queue processor started');
+    } catch (error) {
+      logger.error('❌ Queue processor failed to start:', error);
     }
 
-    // Disconnect message queue
-    if (messageQueueService) {
-      await messageQueueService.disconnect();
-    }
-
-    // Close server
-    server.close(() => {
-      logger.info('✅ Server closed');
-      process.exit(0);
+    app.listen(PORT, () => {
+      logger.info(`🚀 Admin Backend API running on port ${PORT}`);
+      logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
+      logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
+      logger.info(`📚 API version: v1`);
     });
 
-    // Force exit after 10 seconds
-    setTimeout(() => {
-      logger.error('❌ Forced shutdown after timeout');
-      process.exit(1);
-    }, 10000);
-
   } catch (error) {
-    logger.error('❌ Error during graceful shutdown:', error);
+    logger.error('❌ Failed to start server:', error);
     process.exit(1);
   }
-}
+};
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  logger.info('🛑 SIGTERM received, shutting down gracefully...');
+  
+  try {
+    await queueProcessor.stopProcessing();
+    logger.info('✅ Queue processor stopped');
+  } catch (error) {
+    logger.error('❌ Error stopping queue processor:', error);
+  }
+  
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  logger.info('🛑 SIGINT received, shutting down gracefully...');
+  
+  try {
+    await queueProcessor.stopProcessing();
+    logger.info('✅ Queue processor stopped');
+  } catch (error) {
+    logger.error('❌ Error stopping queue processor:', error);
+  }
+  
+  process.exit(0);
+});
+
+// Start the server
+startServer();
 

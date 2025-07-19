@@ -97,12 +97,9 @@ class ElasticsearchService {
                                 }
                             },
                             budget: { type: 'float' },
-                            location: {
-                                type: 'geo_point',
-                                fields: {
-                                    text: { type: 'text', analyzer: 'turkish_analyzer' }
-                                }
-                            },
+                            location: { type: 'text', analyzer: 'turkish_analyzer' },
+                            latitude: { type: 'float' },
+                            longitude: { type: 'float' },
                             urgency: { type: 'keyword' },
                             attributes: { type: 'object' },
                             user_id: { type: 'keyword' },
