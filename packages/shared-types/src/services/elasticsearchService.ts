@@ -88,14 +88,7 @@ export class ElasticsearchService {
             analysis: {
               analyzer: {
                 turkish_analyzer: {
-                  type: 'custom',
-                  tokenizer: 'standard',
-                  filter: [
-                    'lowercase',
-                    'turkish_stop',
-                    'turkish_stemmer',
-                    'asciifolding'
-                  ]
+                  type: 'turkish'
                 }
               }
             }

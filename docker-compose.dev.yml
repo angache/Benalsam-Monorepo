@@ -27,6 +27,9 @@ services:
       - NODE_ENV=development
       - PORT=3002
       - CORS_ORIGIN=http://localhost:3003,http://localhost:3000,http://localhost:3002
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
     env_file:
       - ./packages/admin-backend/.env
     depends_on:
