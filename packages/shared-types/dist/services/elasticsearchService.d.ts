@@ -6,6 +6,10 @@ export declare class ElasticsearchService {
     protected isConnected: boolean;
     constructor(node?: string, indexName?: string);
     /**
+     * Get Elasticsearch client instance
+     */
+    getClient(): Client;
+    /**
      * Elasticsearch bağlantısını test et
      */
     testConnection(): Promise<boolean>;

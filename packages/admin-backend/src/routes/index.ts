@@ -6,21 +6,19 @@ import { usersRouter } from './users';
 import adminManagementRoutes from './admin-management';
 import searchRoutes from './search';
 import elasticsearchRoutes from './elasticsearch';
+import healthRoutes from './health';
+import monitoringRoutes from './monitoring';
 
 const router = Router();
 
 // API version prefix
 const API_VERSION = process.env.API_VERSION || 'v1';
 
-// Health check
-router.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Admin Backend API is running',
-    timestamp: new Date().toISOString(),
-    version: API_VERSION,
-  });
-});
+// Health check routes
+router.use('/health', healthRoutes);
+
+// Monitoring routes
+router.use('/monitoring', monitoringRoutes);
 
 // Auth routes
 router.use('/auth', authRoutes);

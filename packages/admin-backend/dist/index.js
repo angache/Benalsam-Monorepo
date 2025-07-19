@@ -121,22 +121,11 @@ app.get('/health', (req, res) => {
     });
 });
 const routes_1 = __importDefault(require("./routes"));
+const errorHandler_1 = require("./middleware/errorHandler");
+app.use((0, errorHandler_1.timeoutHandler)(30000));
 app.use(`/api/${app_1.serverConfig.apiVersion}`, routes_1.default);
-app.use((err, req, res, next) => {
-    logger_1.default.error('Unhandled error:', err);
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.stack : 'INTERNAL_ERROR',
-    });
-});
-app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        message: 'Route not found',
-        error: 'NOT_FOUND',
-    });
-});
+app.use(errorHandler_1.notFoundHandler);
+app.use(errorHandler_1.errorHandler);
 const PORT = app_1.serverConfig.port;
 const server = app.listen(PORT, async () => {
     logger_1.default.info(`🚀 Admin Backend API server running on port ${PORT}`);

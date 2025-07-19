@@ -369,4 +369,7 @@ export class AdminElasticsearchService extends BaseElasticsearchService {
       throw error;
     }
   }
-} 
+}
+
+// Export elasticsearch client instance for health checks
+export const elasticsearchClient = new AdminElasticsearchService().getClient(); 

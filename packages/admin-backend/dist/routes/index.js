@@ -11,16 +11,12 @@ const users_1 = require("./users");
 const admin_management_1 = __importDefault(require("./admin-management"));
 const search_1 = __importDefault(require("./search"));
 const elasticsearch_1 = __importDefault(require("./elasticsearch"));
+const health_1 = __importDefault(require("./health"));
+const monitoring_1 = __importDefault(require("./monitoring"));
 const router = (0, express_1.Router)();
 const API_VERSION = process.env.API_VERSION || 'v1';
-router.get('/health', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Admin Backend API is running',
-        timestamp: new Date().toISOString(),
-        version: API_VERSION,
-    });
-});
+router.use('/health', health_1.default);
+router.use('/monitoring', monitoring_1.default);
 router.use('/auth', auth_1.default);
 router.use('/listings', listings_1.listingsRouter);
 router.use('/categories', categories_1.categoriesRouter);

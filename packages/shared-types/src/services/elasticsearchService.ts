@@ -33,6 +33,13 @@ export class ElasticsearchService {
   }
 
   /**
+   * Get Elasticsearch client instance
+   */
+  getClient(): Client {
+    return this.client;
+  }
+
+  /**
    * Elasticsearch bağlantısını test et
    */
   async testConnection(): Promise<boolean> {

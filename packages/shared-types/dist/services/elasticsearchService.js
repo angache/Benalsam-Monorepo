@@ -18,6 +18,12 @@ class ElasticsearchService {
         this.indexName = indexName;
     }
     /**
+     * Get Elasticsearch client instance
+     */
+    getClient() {
+        return this.client;
+    }
+    /**
      * Elasticsearch bağlantısını test et
      */
     async testConnection() {

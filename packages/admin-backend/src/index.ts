@@ -125,31 +125,21 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Import routes
+// Import routes and error handlers
 import routes from './routes';
+import { errorHandler, notFoundHandler, timeoutHandler } from './middleware/errorHandler';
+
+// Request timeout middleware
+app.use(timeoutHandler(30000)); // 30 seconds timeout
 
 // API routes
 app.use(`/api/${serverConfig.apiVersion}`, routes);
 
-// Global error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error('Unhandled error:', err);
+// 404 handler (must be before error handler)
+app.use(notFoundHandler);
 
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err.stack : 'INTERNAL_ERROR',
-  });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-    error: 'NOT_FOUND',
-  });
-});
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start server
 const PORT = serverConfig.port;
