@@ -14,6 +14,7 @@ import { categoriesRouter } from './routes/categories';
 import healthRoutes from './routes/health';
 import monitoringRoutes from './routes/monitoring';
 import elasticsearchRoutes from './routes/elasticsearch';
+import adminManagementRoutes from './routes/admin-management';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -106,6 +107,7 @@ app.use('/api/v1/categories', authenticateToken, categoriesRouter);
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/monitoring', monitoringRoutes);
 app.use('/api/v1/elasticsearch', elasticsearchRoutes);
+app.use('/api/v1/admin-management', authenticateToken, adminManagementRoutes);
 
 // Global error handler
 app.use(errorHandler);

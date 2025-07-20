@@ -7,11 +7,21 @@ import logger from '../config/logger';
 
 export class ElasticsearchController {
   private elasticsearchService: AdminElasticsearchService;
-  private queueProcessorService: QueueProcessorService;
+  private queueProcessorService: QueueProcessorService | null = null;
 
   constructor() {
     this.elasticsearchService = new AdminElasticsearchService();
-    this.queueProcessorService = new QueueProcessorService();
+    // QueueProcessorService'i lazy loading yap - environment variables yüklendikten sonra
+  }
+
+  /**
+   * QueueProcessorService'i lazy loading ile başlat
+   */
+  private getQueueProcessorService(): QueueProcessorService {
+    if (!this.queueProcessorService) {
+      this.queueProcessorService = new QueueProcessorService();
+    }
+    return this.queueProcessorService;
   }
 
   /**
@@ -161,7 +171,7 @@ export class ElasticsearchController {
    */
   async getQueueStats(req: Request, res: Response) {
     try {
-      const queueStats = await this.queueProcessorService.getQueueStats();
+      const queueStats = await this.getQueueProcessorService().getQueueStats();
       
       res.json({
         success: true,
@@ -183,7 +193,7 @@ export class ElasticsearchController {
    */
   async retryFailedJobs(req: Request, res: Response) {
     try {
-      const retryCount = await this.queueProcessorService.retryFailedJobs();
+      const retryCount = await this.getQueueProcessorService().retryFailedJobs();
       
       res.json({
         success: true,

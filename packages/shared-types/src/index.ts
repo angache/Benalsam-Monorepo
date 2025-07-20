@@ -13,13 +13,6 @@ export * from './types/index';
 export * from './types/search';
 
 // ===========================
-// ELASTICSEARCH SERVICE EXPORT
-// ===========================
-
-// Export Elasticsearch service
-export { ElasticsearchService } from './services/elasticsearchService';
-
-// ===========================
 // SHARED UTILITIES
 // ===========================
 
