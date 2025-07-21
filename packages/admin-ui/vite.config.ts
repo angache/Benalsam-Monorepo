@@ -9,6 +9,7 @@ const VPS_IP = '209.227.228.96';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/admin/', // Nginx reverse proxy için base path
   server: {
     port: 3003,
     host: '0.0.0.0', // Tüm network interface'lerini dinle
@@ -26,7 +27,5 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    'import.meta.env.VITE_API_URL': JSON.stringify('http://localhost:3002/api/v1'),
-    'import.meta.env.VITE_WS_URL': JSON.stringify('ws://localhost:3003'),
   },
 })
