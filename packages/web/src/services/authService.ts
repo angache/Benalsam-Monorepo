@@ -56,7 +56,7 @@ export class AuthService {
       }
 
       if (!authData.user) {
-        return { error: { message: 'Kullanıcı oluşturulamadı' } };
+        return { error: { code: 'USER_CREATION_FAILED', message: 'Kullanıcı oluşturulamadı' } };
       }
 
       // Profil oluştur
@@ -69,7 +69,7 @@ export class AuthService {
       });
 
       if (profileError) {
-        return { error: { message: 'Profil oluşturulamadı', details: profileError } };
+        return { error: { code: 'PROFILE_CREATION_FAILED', message: 'Profil oluşturulamadı', details: profileError } };
       }
 
       // Kullanıcı bilgilerini getir
