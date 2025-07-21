@@ -26,6 +26,16 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
     };
   }
   
+  // Always use VPS IP for VPS environment
+  if (isVPS) {
+    return {
+      apiUrl: `http://${VPS_IP}:3002`,
+      wsUrl: `ws://${VPS_IP}:3002`,
+      environment: 'production',
+      elasticsearchUrl: `http://${VPS_IP}:3002/api/v1/elasticsearch`
+    };
+  }
+  
   // VPS environment (both development and production)
   return {
     apiUrl: `http://${VPS_IP}:3002`,
