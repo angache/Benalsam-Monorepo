@@ -1,5 +1,5 @@
 import { supabase } from '../config/database';
-import { Permission, RolePermission, UserPermission, AdminRole, AdminRoleDefinition } from '../types';
+import { Permission, RolePermission, UserPermission, AdminRole, AdminRoleDefinition } from '../types/admin-types';
 import logger from '../config/logger';
 
 export class PermissionService {

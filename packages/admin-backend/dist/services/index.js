@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchService = exports.PermissionService = exports.categoryService = exports.SyncService = exports.IndexerService = exports.MessageQueueService = exports.AdminElasticsearchService = void 0;
+exports.SearchService = exports.PermissionService = exports.categoryService = exports.QueueProcessorService = exports.SyncService = exports.IndexerService = exports.MessageQueueService = exports.AdminElasticsearchService = void 0;
 var elasticsearchService_1 = require("./elasticsearchService");
 Object.defineProperty(exports, "AdminElasticsearchService", { enumerable: true, get: function () { return elasticsearchService_1.AdminElasticsearchService; } });
 var messageQueueService_1 = require("./messageQueueService");
@@ -9,6 +9,8 @@ var indexerService_1 = require("./indexerService");
 Object.defineProperty(exports, "IndexerService", { enumerable: true, get: function () { return indexerService_1.IndexerService; } });
 var syncService_1 = require("./syncService");
 Object.defineProperty(exports, "SyncService", { enumerable: true, get: function () { return syncService_1.SyncService; } });
+var queueProcessorService_1 = require("./queueProcessorService");
+Object.defineProperty(exports, "QueueProcessorService", { enumerable: true, get: function () { return queueProcessorService_1.QueueProcessorService; } });
 var categoryService_1 = require("./categoryService");
 Object.defineProperty(exports, "categoryService", { enumerable: true, get: function () { return categoryService_1.categoryService; } });
 var permissionService_1 = require("./permissionService");

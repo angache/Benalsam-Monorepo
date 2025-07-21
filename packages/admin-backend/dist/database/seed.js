@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../config/supabase");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const types_1 = require("../types");
+const admin_types_1 = require("../types/admin-types");
 async function seedAdminUser() {
     try {
         console.log('🌱 Seeding admin user...');
@@ -26,7 +26,7 @@ async function seedAdminUser() {
             password: hashedPassword,
             first_name: 'Admin',
             last_name: 'User',
-            role: types_1.AdminRole.SUPER_ADMIN,
+            role: admin_types_1.AdminRole.SUPER_ADMIN,
             permissions: [
                 { resource: 'listings', action: 'read' },
                 { resource: 'listings', action: 'write' },

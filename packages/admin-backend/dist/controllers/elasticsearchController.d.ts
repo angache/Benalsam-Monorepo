@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 export declare class ElasticsearchController {
     private elasticsearchService;
-    private messageQueueService;
-    private indexerService;
-    private syncService;
+    private queueProcessorService;
     constructor();
+    private getQueueProcessorService;
     getHealth(req: Request, res: Response): Promise<void>;
     searchListings(req: Request, res: Response): Promise<void>;
     getIndexStats(req: Request, res: Response): Promise<void>;

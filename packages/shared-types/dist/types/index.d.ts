@@ -1,117 +1,4 @@
 export type IconType = any;
-export declare enum AdminRole {
-    SUPER_ADMIN = "SUPER_ADMIN",
-    ADMIN = "ADMIN",
-    MODERATOR = "MODERATOR",
-    SUPPORT = "SUPPORT",
-    CATEGORY_MANAGER = "CATEGORY_MANAGER",
-    ANALYTICS_MANAGER = "ANALYTICS_MANAGER",
-    USER_MANAGER = "USER_MANAGER",
-    CONTENT_MANAGER = "CONTENT_MANAGER"
-}
-export interface AdminPermission {
-    id: string;
-    name: string;
-    resource: string;
-    action: string;
-    description?: string;
-    created_at: string;
-    updated_at: string;
-}
-export type Permission = AdminPermission;
-export type RolePermission = AdminRolePermission;
-export type UserPermission = AdminUserPermission;
-export interface AdminRolePermission {
-    id: string;
-    role: AdminRole;
-    permission_id: string;
-    permission?: AdminPermission;
-    created_at: string;
-}
-export interface AdminUserPermission {
-    id: string;
-    admin_id: string;
-    permission_id: string;
-    granted_by?: string;
-    permission?: AdminPermission;
-    created_at: string;
-}
-export interface AdminRoleDefinition {
-    id: string;
-    name: string;
-    display_name: string;
-    description?: string;
-    level: number;
-    is_active: boolean;
-    created_at: string;
-    updated_at: string;
-}
-export interface AdminUser {
-    id: string;
-    email: string;
-    password: string;
-    first_name: string;
-    last_name: string;
-    role: AdminRole;
-    permissions: any[];
-    is_active: boolean;
-    last_login?: string;
-    created_at: string;
-    updated_at: string;
-}
-export interface AdminProfile {
-    id: string;
-    admin_id: string;
-    display_name?: string;
-    avatar_url?: string;
-    bio?: string;
-    department?: string;
-    position?: string;
-    permissions: any;
-    is_active: boolean;
-    last_activity?: string;
-    created_at: string;
-    updated_at: string;
-}
-export interface AdminActivityLog {
-    id: string;
-    admin_id: string;
-    action: string;
-    resource: string;
-    resource_id?: string;
-    details?: Record<string, any>;
-    ip_address?: string;
-    user_agent?: string;
-    created_at: string;
-}
-export interface AdminWorkflowAssignment {
-    id: string;
-    admin_profile_id?: string;
-    workflow_type: string;
-    resource_id?: string;
-    resource_type?: string;
-    priority: number;
-    status: string;
-    assigned_at: string;
-    started_at?: string;
-    completed_at?: string;
-    notes?: string;
-    performance_rating?: number;
-}
-export interface AdminPerformanceMetric {
-    id: string;
-    admin_id: string;
-    metric_type: string;
-    target_value: number;
-    achieved_percentage: number;
-    created_at: string;
-}
-export interface AdminDepartment {
-    id: string;
-    name: string;
-    description?: string;
-    created_at: string;
-}
 export interface User {
     id: string;
     email?: string;
@@ -180,15 +67,15 @@ export interface ListingWithUser extends Listing {
     total_views?: number;
     popularity_score?: number;
 }
-export declare enum ListingStatus {
-    ACTIVE = "active",
-    INACTIVE = "inactive",
-    PENDING = "pending",
-    REJECTED = "rejected",
-    SOLD = "sold",
-    DELETED = "deleted",
-    EXPIRED = "expired"
-}
+export declare const ListingStatus: {
+    readonly ACTIVE: "active";
+    readonly INACTIVE: "inactive";
+    readonly PENDING: "pending";
+    readonly REJECTED: "rejected";
+    readonly SOLD: "sold";
+    readonly DELETED: "deleted";
+    readonly EXPIRED: "expired";
+};
 export interface Message {
     id: string;
     conversation_id: string;
@@ -257,20 +144,6 @@ export interface ApiResponse<T> {
         details?: any;
     };
 }
-export interface AdminApiResponse<T = any> {
-    success: boolean;
-    data?: T;
-    message?: string;
-    error?: string;
-    pagination?: {
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
-        hasNext?: boolean;
-        hasPrev?: boolean;
-    };
-}
 export type ID = string;
 export interface Pagination {
     page: number;
@@ -319,23 +192,6 @@ export interface AuthCredentials {
 }
 export interface RegisterData extends AuthCredentials {
     username: string;
-}
-export interface AdminLoginCredentials {
-    email: string;
-    password: string;
-}
-export interface LoginDto {
-    email: string;
-    password: string;
-}
-export interface AdminAuthResponse {
-    success: boolean;
-    data: {
-        admin: AdminUser;
-        token: string;
-        refreshToken: string;
-    };
-    message: string;
 }
 export type FeedbackType = 'bug_report' | 'feature_request' | 'general_feedback' | 'complaint' | 'praise';
 export interface UserFeedback {

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.optionalAuth = exports.authMiddleware = exports.requireAllPermissions = exports.requireAnyPermission = exports.requirePermission = exports.requireRole = exports.authenticateToken = void 0;
 const database_1 = require("../config/database");
-const types_1 = require("../types");
+const admin_types_1 = require("../types/admin-types");
 const response_1 = require("../utils/response");
 const jwt_1 = require("../utils/jwt");
 const permissionService_1 = require("../services/permissionService");
@@ -59,14 +59,14 @@ const requireRole = (requiredRole) => {
             return;
         }
         const roleHierarchy = {
-            [types_1.AdminRole.SUPPORT]: 1,
-            [types_1.AdminRole.MODERATOR]: 2,
-            [types_1.AdminRole.CONTENT_MANAGER]: 3,
-            [types_1.AdminRole.ANALYTICS_MANAGER]: 4,
-            [types_1.AdminRole.CATEGORY_MANAGER]: 5,
-            [types_1.AdminRole.USER_MANAGER]: 6,
-            [types_1.AdminRole.ADMIN]: 7,
-            [types_1.AdminRole.SUPER_ADMIN]: 8,
+            [admin_types_1.AdminRole.SUPPORT]: 1,
+            [admin_types_1.AdminRole.MODERATOR]: 2,
+            [admin_types_1.AdminRole.CONTENT_MANAGER]: 3,
+            [admin_types_1.AdminRole.ANALYTICS_MANAGER]: 4,
+            [admin_types_1.AdminRole.CATEGORY_MANAGER]: 5,
+            [admin_types_1.AdminRole.USER_MANAGER]: 6,
+            [admin_types_1.AdminRole.ADMIN]: 7,
+            [admin_types_1.AdminRole.SUPER_ADMIN]: 8,
         };
         const userRoleLevel = roleHierarchy[req.admin.role];
         const requiredRoleLevel = roleHierarchy[requiredRole];
@@ -84,7 +84,7 @@ const requirePermission = (resource, action) => {
             response_1.ApiResponseUtil.unauthorized(res, 'Authentication required');
             return;
         }
-        if (req.admin.role === types_1.AdminRole.SUPER_ADMIN) {
+        if (req.admin.role === admin_types_1.AdminRole.SUPER_ADMIN) {
             next();
             return;
         }
@@ -104,7 +104,7 @@ const requireAnyPermission = (permissions) => {
             response_1.ApiResponseUtil.unauthorized(res, 'Authentication required');
             return;
         }
-        if (req.admin.role === types_1.AdminRole.SUPER_ADMIN) {
+        if (req.admin.role === admin_types_1.AdminRole.SUPER_ADMIN) {
             next();
             return;
         }
@@ -124,7 +124,7 @@ const requireAllPermissions = (permissions) => {
             response_1.ApiResponseUtil.unauthorized(res, 'Authentication required');
             return;
         }
-        if (req.admin.role === types_1.AdminRole.SUPER_ADMIN) {
+        if (req.admin.role === admin_types_1.AdminRole.SUPER_ADMIN) {
             next();
             return;
         }

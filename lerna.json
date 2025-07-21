@@ -3,15 +3,6 @@
   "version": "0.0.0",
   "npmClient": "npm",
   "command": {
-    "bootstrap": {
-      "hoist": true,
-      "nohoist": [
-        "**/react-native",
-        "**/expo",
-        "**/@expo/**",
-        "**/react-native-*"
-      ]
-    },
     "publish": {
       "conventionalCommits": true,
       "message": "chore(release): publish"

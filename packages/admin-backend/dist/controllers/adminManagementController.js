@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminManagementController = void 0;
 const database_1 = require("../config/database");
-const types_1 = require("../types");
+const admin_types_1 = require("../types/admin-types");
 const response_1 = require("../utils/response");
 const permissionService_1 = require("../services/permissionService");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -114,7 +114,7 @@ class AdminManagementController {
                 password: hashedPassword,
                 first_name: adminData.firstName,
                 last_name: adminData.lastName,
-                role: adminData.role || types_1.AdminRole.SUPPORT,
+                role: adminData.role || admin_types_1.AdminRole.SUPPORT,
                 is_active: true
             })
                 .select()

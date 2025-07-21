@@ -1,16 +1,14 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/database';
-import { 
-  AdminUser, 
-  CreateAdminUserDto, 
-  UpdateAdminUserDto, 
-  AdminRole, 
+import {
+  AdminUser,
+  AdminRole,
   Permission,
   AdminRoleDefinition,
-  PaginationParams,
-  ApiResponse,
-  AdminApiResponse
-} from '../types';
+  AdminApiResponse,
+  CreateAdminUserDto,
+  UpdateAdminUserDto
+} from '../types/admin-types';
 import { ApiResponseUtil } from '../utils/response';
 import { PermissionService } from '../services/permissionService';
 import bcrypt from 'bcryptjs';
@@ -20,12 +18,12 @@ export class AdminManagementController {
   // Get all admin users with pagination and filters
   static async getAdminUsers(req: Request, res: Response): Promise<void> {
     try {
-      const { 
-        page = 1, 
-        limit = 10, 
-        search = '', 
-        role = '', 
-        isActive = '' 
+      const {
+        page = 1,
+        limit = 10,
+        search = '',
+        role = '',
+        isActive = ''
       } = req.query;
 
       let query = supabase

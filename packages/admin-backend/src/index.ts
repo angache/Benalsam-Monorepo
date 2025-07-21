@@ -23,6 +23,7 @@ import QueueProcessorService from './services/queueProcessorService';
 // Import middleware
 import { authenticateToken } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
+import { securityConfig } from './config/app';
 
 // Import logger
 import logger from './config/logger';
@@ -57,7 +58,15 @@ app.use(helmet({
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3003'],
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Origin yoksa (postman, curl) veya whitelist'te ise izin ver
+    if (!origin || securityConfig.corsOrigin.includes(origin) || origin === undefined) {
+      callback(null, true);
+    } else {
+      console.error('CORS BLOCKED:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };

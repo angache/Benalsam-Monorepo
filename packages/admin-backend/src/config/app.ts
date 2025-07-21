@@ -14,7 +14,9 @@ export const securityConfig = {
         'http://localhost:3003',
         'http://209.227.228.96:3003',
         'http://209.227.228.96:3000',
-        'http://localhost:3000'
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:4173'
       ],
   rateLimitWindowMs: 15 * 60 * 1000, // 15 minutes
   rateLimitMaxRequests: 100, // limit each IP to 100 requests per windowMs

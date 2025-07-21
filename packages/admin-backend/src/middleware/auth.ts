@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { supabase } from '../config/database';
-import { AuthenticatedRequest, JwtPayload, AdminRole, Permission } from '../types';
+import { AuthenticatedRequest, JwtPayload } from '../types';
+import { AdminRole, Permission } from '../types/admin-types';
 import { ApiResponseUtil } from '../utils/response';
 import { jwtUtils } from '../utils/jwt';
 import { PermissionService } from '../services/permissionService';

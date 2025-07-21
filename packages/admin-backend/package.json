@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "dev:simple": "nodemon src/index-simple.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",

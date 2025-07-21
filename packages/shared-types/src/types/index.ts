@@ -2,147 +2,9 @@
 export type IconType = any; // Will be replaced with proper icon type based on platform
 
 // ===========================
-// ADMIN TYPES
-// ===========================
-
-// Admin Role enum
-export enum AdminRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR',
-  SUPPORT = 'SUPPORT',
-  CATEGORY_MANAGER = 'CATEGORY_MANAGER',
-  ANALYTICS_MANAGER = 'ANALYTICS_MANAGER',
-  USER_MANAGER = 'USER_MANAGER',
-  CONTENT_MANAGER = 'CONTENT_MANAGER'
-}
-
-// Admin Permission types
-export interface AdminPermission {
-  id: string;
-  name: string;
-  resource: string;
-  action: string;
-  description?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-// Backward compatibility aliases for admin-backend
-export type Permission = AdminPermission;
-export type RolePermission = AdminRolePermission;
-export type UserPermission = AdminUserPermission;
-
-export interface AdminRolePermission {
-  id: string;
-  role: AdminRole;
-  permission_id: string;
-  permission?: AdminPermission;
-  created_at: string;
-}
-
-export interface AdminUserPermission {
-  id: string;
-  admin_id: string;
-  permission_id: string;
-  granted_by?: string;
-  permission?: AdminPermission;
-  created_at: string;
-}
-
-export interface AdminRoleDefinition {
-  id: string;
-  name: string;
-  display_name: string;
-  description?: string;
-  level: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Admin User types
-export interface AdminUser {
-  id: string;
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  role: AdminRole;
-  permissions: any[]; // JSONB array
-  is_active: boolean;
-  last_login?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface AdminProfile {
-  id: string;
-  admin_id: string;
-  display_name?: string;
-  avatar_url?: string;
-  bio?: string;
-  department?: string;
-  position?: string;
-  permissions: any; // JSONB object
-  is_active: boolean;
-  last_activity?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-// Admin Activity Log types
-export interface AdminActivityLog {
-  id: string;
-  admin_id: string;
-  action: string;
-  resource: string;
-  resource_id?: string;
-  details?: Record<string, any>;
-  ip_address?: string;
-  user_agent?: string;
-  created_at: string;
-}
-
-// Admin Workflow Assignment types
-export interface AdminWorkflowAssignment {
-  id: string;
-  admin_profile_id?: string;
-  workflow_type: string;
-  resource_id?: string;
-  resource_type?: string;
-  priority: number;
-  status: string;
-  assigned_at: string;
-  started_at?: string;
-  completed_at?: string;
-  notes?: string;
-  performance_rating?: number;
-}
-
-// Admin Performance Metrics types
-export interface AdminPerformanceMetric {
-  id: string;
-  admin_id: string;
-  metric_type: string;
-  target_value: number;
-  achieved_percentage: number;
-  created_at: string;
-}
-
-// Admin Department types
-export interface AdminDepartment {
-  id: string;
-  name: string;
-  description?: string;
-  created_at: string;
-}
-
-// ===========================
 // USER TYPES
 // ===========================
 
-// User related types
 export interface User {
   id: string;
   email?: string;
@@ -179,7 +41,6 @@ export interface UserProfile {
 // LISTING TYPES
 // ===========================
 
-// Listing related types
 export interface Listing {
   id: string;
   user_id: string;
@@ -220,22 +81,20 @@ export interface ListingWithUser extends Listing {
   popularity_score?: number;
 }
 
-// Listing Status enum for admin compatibility
-export enum ListingStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  PENDING = 'pending',
-  REJECTED = 'rejected',
-  SOLD = 'sold',
-  DELETED = 'deleted',
-  EXPIRED = 'expired'
-}
+export const ListingStatus = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  PENDING: 'pending',
+  REJECTED: 'rejected',
+  SOLD: 'sold',
+  DELETED: 'deleted',
+  EXPIRED: 'expired'
+} as const;
 
 // ===========================
 // MESSAGE AND CONVERSATION TYPES
 // ===========================
 
-// Message and Conversation types
 export interface Message {
   id: string;
   conversation_id: string;
@@ -266,7 +125,6 @@ export interface Conversation {
 // OFFER TYPES
 // ===========================
 
-// Offer related types
 export interface InventoryItem {
   id: string;
   name: string;
@@ -294,7 +152,6 @@ export interface Offer {
   profiles?: UserProfile;
 }
 
-// Offer Attachment types
 export interface OfferAttachment {
   id: string;
   offer_id: string;
@@ -311,7 +168,6 @@ export interface OfferAttachment {
 // API RESPONSE TYPES
 // ===========================
 
-// API Response types
 export interface ApiResponse<T> {
   data?: T;
   error?: {
@@ -321,27 +177,10 @@ export interface ApiResponse<T> {
   };
 }
 
-// Admin API Response types
-export interface AdminApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext?: boolean;
-    hasPrev?: boolean;
-  };
-}
-
 // ===========================
 // COMMON TYPES
 // ===========================
 
-// Common types
 export type ID = string;
 
 export interface Pagination {
@@ -367,7 +206,6 @@ export interface QueryFilters {
 // CONFIG TYPES
 // ===========================
 
-// Server configuration types
 export interface ServerConfig {
   port: number;
   nodeEnv: string;
@@ -387,7 +225,6 @@ export interface SecurityConfig {
   rateLimitMaxRequests: number;
 }
 
-// Pagination types
 export interface PaginationInfo {
   page: number;
   limit: number;
@@ -401,7 +238,6 @@ export interface PaginationInfo {
 // AUTH TYPES
 // ===========================
 
-// Auth types
 export interface AuthCredentials {
   email: string;
   password: string;
@@ -411,33 +247,10 @@ export interface RegisterData extends AuthCredentials {
   username: string;
 }
 
-// Admin Auth types
-export interface AdminLoginCredentials {
-  email: string;
-  password: string;
-}
-
-// Admin DTOs for backend compatibility
-export interface LoginDto {
-  email: string;
-  password: string;
-}
-
-export interface AdminAuthResponse {
-  success: boolean;
-  data: {
-    admin: AdminUser;
-    token: string;
-    refreshToken: string;
-  };
-  message: string;
-}
-
 // ===========================
 // USER FEEDBACK TYPES
 // ===========================
 
-// User Feedback types
 export type FeedbackType = 'bug_report' | 'feature_request' | 'general_feedback' | 'complaint' | 'praise';
 
 export interface UserFeedback {
@@ -455,7 +268,6 @@ export interface UserFeedback {
 // USER STATISTICS TYPES
 // ===========================
 
-// User Statistics types
 export interface UserStatistics {
   id: string;
   user_id: string;
@@ -473,7 +285,6 @@ export interface UserStatistics {
   user?: UserProfile;
 }
 
-// Monthly Usage Stats types
 export interface MonthlyUsageStats {
   id: string;
   user_id: string;
@@ -495,7 +306,6 @@ export interface MonthlyUsageStats {
 // ERROR TYPES
 // ===========================
 
-// Error types
 export interface AppError {
   code: string;
   message: string;
@@ -506,7 +316,6 @@ export interface AppError {
 // LOCATION TYPES
 // ===========================
 
-// Location types
 export interface District {
   code: string;
   name: string;
@@ -522,7 +331,6 @@ export interface Province {
 // INTERNATIONALIZATION TYPES
 // ===========================
 
-// Internationalization types
 export interface Currency {
   code: string;
   name: string;
@@ -539,7 +347,6 @@ export interface Language {
 // CATEGORY TYPES
 // ===========================
 
-// Category types
 export interface Category {
   code: string;
   name: string;
@@ -550,7 +357,6 @@ export interface Category {
 // PREFERENCE TYPES
 // ===========================
 
-// Preference types
 export interface NotificationPreferences {
   new_offer_push: boolean;
   new_offer_email: boolean;
@@ -573,4 +379,4 @@ export interface PlatformPreferences {
   default_location_province?: string;
   default_location_district?: string;
   default_category?: string;
-} 
+}

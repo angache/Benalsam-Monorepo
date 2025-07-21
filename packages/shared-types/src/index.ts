@@ -1,16 +1,17 @@
-// ===========================
-// SHARED TYPES EXPORT
-// ===========================
+
+// Import types
+const types = require('./types/index');
+const searchTypes = require('./types/search');
 
 // Export all types from the types module
-export * from './types/index';
+// export * from './types/index';
 
 // ===========================
 // SEARCH TYPES EXPORT
 // ===========================
 
 // Export search types
-export * from './types/search';
+// export * from './types/search';
 
 // ===========================
 // SHARED UTILITIES
@@ -19,7 +20,7 @@ export * from './types/search';
 /**
  * Format price with Turkish Lira symbol
  */
-export const formatPrice = (price: number): string => {
+const formatPrice = (price: number): string => {
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
     currency: 'TRY',
@@ -31,7 +32,7 @@ export const formatPrice = (price: number): string => {
 /**
  * Format date to Turkish locale
  */
-export const formatDate = (date: string | Date): string => {
+const formatDate = (date: string | Date): string => {
   return new Intl.DateTimeFormat('tr-TR', {
     year: 'numeric',
     month: 'long',
@@ -42,7 +43,7 @@ export const formatDate = (date: string | Date): string => {
 /**
  * Format relative time (e.g., "2 saat önce")
  */
-export const formatRelativeTime = (date: string | Date): string => {
+const formatRelativeTime = (date: string | Date): string => {
   const now = new Date();
   const targetDate = new Date(date);
   const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
@@ -72,7 +73,7 @@ export const formatRelativeTime = (date: string | Date): string => {
 /**
  * Validate email format
  */
-export const validateEmail = (email: string): boolean => {
+const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
@@ -80,7 +81,7 @@ export const validateEmail = (email: string): boolean => {
 /**
  * Generate initials from name
  */
-export const getInitials = (name: string): string => {
+const getInitials = (name: string): string => {
   return name
     .split(' ')
     .map(word => word.charAt(0))
@@ -92,7 +93,7 @@ export const getInitials = (name: string): string => {
 /**
  * Truncate text with ellipsis
  */
-export const truncateText = (text: string, maxLength: number): string => {
+const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) {
     return text;
   }
@@ -102,7 +103,7 @@ export const truncateText = (text: string, maxLength: number): string => {
 /**
  * Generate avatar URL with fallback
  */
-export const getAvatarUrl = (avatarUrl?: string | null, userId?: string): string => {
+const getAvatarUrl = (avatarUrl?: string | null, userId?: string): string => {
   if (avatarUrl) {
     return avatarUrl;
   }
@@ -115,7 +116,7 @@ export const getAvatarUrl = (avatarUrl?: string | null, userId?: string): string
 /**
  * Check if user is premium
  */
-export const isPremiumUser = (user?: { is_premium?: boolean; premium_expires_at?: string }): boolean => {
+const isPremiumUser = (user?: { is_premium?: boolean; premium_expires_at?: string }): boolean => {
   if (!user) return false;
   
   if (!user.is_premium) return false;
@@ -131,7 +132,7 @@ export const isPremiumUser = (user?: { is_premium?: boolean; premium_expires_at?
 /**
  * Calculate trust score level
  */
-export const getTrustLevel = (trustScore: number): 'bronze' | 'silver' | 'gold' | 'platinum' => {
+const getTrustLevel = (trustScore: number): 'bronze' | 'silver' | 'gold' | 'platinum' => {
   if (trustScore >= 1000) return 'platinum';
   if (trustScore >= 500) return 'gold';
   if (trustScore >= 100) return 'silver';
@@ -141,7 +142,7 @@ export const getTrustLevel = (trustScore: number): 'bronze' | 'silver' | 'gold' 
 /**
  * Get trust level color
  */
-export const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platinum'): string => {
+const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platinum'): string => {
   switch (level) {
     case 'platinum': return '#E5E4E2';
     case 'gold': return '#FFD700';
@@ -154,7 +155,7 @@ export const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platin
 /**
  * Format phone number for display
  */
-export const formatPhoneNumber = (phone: string): string => {
+const formatPhoneNumber = (phone: string): string => {
   // Remove all non-digit characters
   const cleaned = phone.replace(/\D/g, '');
   
@@ -170,3 +171,19 @@ export const formatPhoneNumber = (phone: string): string => {
   
   return phone; // Return original if format doesn't match
 }; 
+// Export everything
+module.exports = {
+  ...types,
+  ...searchTypes,
+  formatPrice,
+  formatDate,
+  formatRelativeTime,
+  validateEmail,
+  getInitials,
+  truncateText,
+  getAvatarUrl,
+  isPremiumUser,
+  getTrustLevel,
+  getTrustLevelColor,
+  formatPhoneNumber
+};

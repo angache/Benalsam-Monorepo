@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
-import { AuthenticatedRequest, AdminRole } from '../types';
+import { AuthenticatedRequest } from '../types';
+import { AdminRole } from '../types/admin-types';
 export interface AuthMiddlewareOptions {
     requiredRole?: AdminRole;
     requiredPermissions?: string[];

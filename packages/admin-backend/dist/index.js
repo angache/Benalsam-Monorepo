@@ -1,83 +1,35 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.supabase = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
-const morgan_1 = __importDefault(require("morgan"));
 const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const path_1 = __importDefault(require("path"));
-const app_1 = require("./config/app");
-const logger_1 = __importStar(require("./config/logger"));
-const services_1 = require("./services");
-dotenv_1.default.config();
+const dotenv_1 = require("dotenv");
+const supabase_js_1 = require("@supabase/supabase-js");
+const index_js_1 = __importDefault(require("./routes/auth/index.js"));
+const listings_js_1 = require("./routes/listings.js");
+const users_js_1 = require("./routes/users.js");
+const categories_js_1 = require("./routes/categories.js");
+const health_js_1 = __importDefault(require("./routes/health.js"));
+const monitoring_js_1 = __importDefault(require("./routes/monitoring.js"));
+const elasticsearch_js_1 = __importDefault(require("./routes/elasticsearch.js"));
+const index_js_2 = __importDefault(require("./routes/admin-management/index.js"));
+const elasticsearchService_js_1 = require("./services/elasticsearchService.js");
+const queueProcessorService_1 = __importDefault(require("./services/queueProcessorService"));
+const auth_1 = require("./middleware/auth");
+const errorHandler_1 = require("./middleware/errorHandler");
+const logger_1 = __importDefault(require("./config/logger"));
+(0, dotenv_1.config)();
 const app = (0, express_1.default)();
-let elasticsearchService;
-let messageQueueService;
-let indexerService;
-let syncService;
-async function initializeServices() {
-    try {
-        logger_1.default.info('🚀 Initializing Elasticsearch services...');
-        elasticsearchService = new services_1.AdminElasticsearchService();
-        await elasticsearchService.testConnection();
-        logger_1.default.info('✅ Elasticsearch service initialized');
-        messageQueueService = new services_1.MessageQueueService();
-        await messageQueueService.testConnection();
-        logger_1.default.info('✅ Message queue service initialized');
-        indexerService = new services_1.IndexerService(elasticsearchService, messageQueueService);
-        logger_1.default.info('✅ Indexer service initialized');
-        syncService = new services_1.SyncService(elasticsearchService, messageQueueService, indexerService);
-        await syncService.initialize();
-        logger_1.default.info('✅ Sync service initialized');
-        const shouldMigrate = process.env.ELASTICSEARCH_INITIAL_MIGRATION === 'true';
-        if (shouldMigrate) {
-            logger_1.default.info('🔄 Starting initial data migration...');
-            await syncService.initialDataMigration();
-            logger_1.default.info('✅ Initial data migration completed');
-        }
-    }
-    catch (error) {
-        logger_1.default.error('❌ Error initializing Elasticsearch services:', error);
-    }
-}
+const PORT = process.env.PORT || 3002;
+exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const elasticsearchService = new elasticsearchService_js_1.AdminElasticsearchService();
+const queueProcessor = new queueProcessorService_1.default();
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
         directives: {
@@ -88,20 +40,16 @@ app.use((0, helmet_1.default)({
         },
     },
 }));
-app.use((0, cors_1.default)({
-    origin: app_1.securityConfig.corsOrigin,
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3003'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+    optionsSuccessStatus: 200
+};
+app.use((0, cors_1.default)(corsOptions));
 const limiter = (0, express_rate_limit_1.default)({
-    windowMs: app_1.securityConfig.rateLimitWindowMs,
-    max: app_1.securityConfig.rateLimitMaxRequests,
-    message: {
-        success: false,
-        message: 'Too many requests from this IP, please try again later.',
-        error: 'RATE_LIMIT_EXCEEDED',
-    },
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
 });
@@ -109,57 +57,94 @@ app.use('/api/', limiter);
 app.use((0, compression_1.default)());
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
-app.use((0, morgan_1.default)('combined', { stream: logger_1.logStream }));
-app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
+app.use((req, res, next) => {
+    logger_1.default.info(`${req.method} ${req.path}`, {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString()
+    });
+    next();
+});
 app.get('/health', (req, res) => {
-    res.status(200).json({
+    res.json({
         success: true,
         message: 'Admin Backend API is running',
         timestamp: new Date().toISOString(),
-        environment: app_1.serverConfig.nodeEnv,
-        version: app_1.serverConfig.apiVersion,
+        environment: process.env.NODE_ENV,
+        version: 'v1'
     });
 });
-const routes_1 = __importDefault(require("./routes"));
-const errorHandler_1 = require("./middleware/errorHandler");
-app.use((0, errorHandler_1.timeoutHandler)(30000));
-app.use(`/api/${app_1.serverConfig.apiVersion}`, routes_1.default);
-app.use(errorHandler_1.notFoundHandler);
+app.use('/api/v1/auth', index_js_1.default);
+app.use('/api/v1/listings', auth_1.authenticateToken, listings_js_1.listingsRouter);
+app.use('/api/v1/users', auth_1.authenticateToken, users_js_1.usersRouter);
+app.use('/api/v1/categories', auth_1.authenticateToken, categories_js_1.categoriesRouter);
+app.use('/api/v1/health', health_js_1.default);
+app.use('/api/v1/monitoring', monitoring_js_1.default);
+app.use('/api/v1/elasticsearch', elasticsearch_js_1.default);
+app.use('/api/v1/admin-management', auth_1.authenticateToken, index_js_2.default);
 app.use(errorHandler_1.errorHandler);
-const PORT = app_1.serverConfig.port;
-const server = app.listen(PORT, async () => {
-    logger_1.default.info(`🚀 Admin Backend API server running on port ${PORT}`);
-    logger_1.default.info(`📊 Environment: ${app_1.serverConfig.nodeEnv}`);
-    logger_1.default.info(`🔗 Health check: http://localhost:${PORT}/health`);
-    logger_1.default.info(`📚 API version: ${app_1.serverConfig.apiVersion}`);
-    await initializeServices();
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Endpoint not found',
+        path: req.originalUrl
+    });
 });
-async function gracefulShutdown(signal) {
-    logger_1.default.info(`${signal} received, shutting down gracefully`);
+const startServer = async () => {
     try {
-        if (syncService) {
-            await syncService.shutdown();
-        }
-        if (indexerService) {
-            await indexerService.stop();
-        }
-        if (messageQueueService) {
-            await messageQueueService.disconnect();
-        }
-        server.close(() => {
-            logger_1.default.info('✅ Server closed');
-            process.exit(0);
-        });
-        setTimeout(() => {
-            logger_1.default.error('❌ Forced shutdown after timeout');
+        const { data, error } = await exports.supabase.from('admin_users').select('count').limit(1);
+        if (error) {
+            logger_1.default.error('❌ Database connection failed:', error);
             process.exit(1);
-        }, 10000);
+        }
+        logger_1.default.info('✅ Database connection verified');
+        try {
+            await elasticsearchService.getHealth();
+            logger_1.default.info('✅ Elasticsearch connection verified');
+        }
+        catch (error) {
+            logger_1.default.warn('⚠️ Elasticsearch connection failed:', error);
+        }
+        try {
+            await queueProcessor.startProcessing(10000);
+            logger_1.default.info('✅ Queue processor started');
+        }
+        catch (error) {
+            logger_1.default.error('❌ Queue processor failed to start:', error);
+        }
+        app.listen(PORT, () => {
+            logger_1.default.info(`🚀 Admin Backend API running on port ${PORT}`);
+            logger_1.default.info(`📊 Environment: ${process.env.NODE_ENV}`);
+            logger_1.default.info(`🔗 Health check: http://localhost:${PORT}/health`);
+            logger_1.default.info(`📚 API version: v1`);
+        });
     }
     catch (error) {
-        logger_1.default.error('❌ Error during graceful shutdown:', error);
+        logger_1.default.error('❌ Failed to start server:', error);
         process.exit(1);
     }
-}
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+};
+process.on('SIGTERM', async () => {
+    logger_1.default.info('🛑 SIGTERM received, shutting down gracefully...');
+    try {
+        await queueProcessor.stopProcessing();
+        logger_1.default.info('✅ Queue processor stopped');
+    }
+    catch (error) {
+        logger_1.default.error('❌ Error stopping queue processor:', error);
+    }
+    process.exit(0);
+});
+process.on('SIGINT', async () => {
+    logger_1.default.info('🛑 SIGINT received, shutting down gracefully...');
+    try {
+        await queueProcessor.stopProcessing();
+        logger_1.default.info('✅ Queue processor stopped');
+    }
+    catch (error) {
+        logger_1.default.error('❌ Error stopping queue processor:', error);
+    }
+    process.exit(0);
+});
+startServer();
 //# sourceMappingURL=index.js.map

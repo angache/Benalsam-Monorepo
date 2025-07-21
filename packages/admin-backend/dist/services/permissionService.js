@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PermissionService = void 0;
 const database_1 = require("../config/database");
-const types_1 = require("../types");
+const admin_types_1 = require("../types/admin-types");
 const logger_1 = __importDefault(require("../config/logger"));
 class PermissionService {
     static async getAdminPermissions(adminId) {
@@ -290,7 +290,7 @@ class PermissionService {
                 logger_1.default.error('Error getting users for management check:', { managerError, targetError });
                 throw managerError || targetError;
             }
-            if (manager.role === types_1.AdminRole.SUPER_ADMIN) {
+            if (manager.role === admin_types_1.AdminRole.SUPER_ADMIN) {
                 return true;
             }
             if (managerId === targetUserId) {

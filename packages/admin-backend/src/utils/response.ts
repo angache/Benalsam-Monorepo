@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AdminApiResponse } from '../types';
+import { AdminApiResponse } from '../types/admin-types';
 
 // PaginationInfo type definition
 export interface PaginationInfo {

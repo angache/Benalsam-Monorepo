@@ -1,4 +1,4 @@
-import { Permission, UserPermission, AdminRole, AdminRoleDefinition } from '../types';
+import { Permission, UserPermission, AdminRole, AdminRoleDefinition } from '../types/admin-types';
 export declare class PermissionService {
     static getAdminPermissions(adminId: string): Promise<Permission[]>;
     static hasPermission(adminId: string, permissionName: string): Promise<boolean>;

@@ -1,41 +1,26 @@
-import { ElasticsearchService as BaseElasticsearchService } from '@benalsam/shared-types';
-export declare class AdminElasticsearchService extends BaseElasticsearchService {
-    constructor();
+import { Client } from '@elastic/elasticsearch';
+export declare class AdminElasticsearchService {
+    protected client: Client;
+    protected indexName: string;
+    protected isConnected: boolean;
+    constructor(node?: string, indexName?: string, username?: string, password?: string);
+    getClient(): Client;
+    testConnection(): Promise<boolean>;
+    getHealth(): Promise<any>;
+    createIndex(mapping?: any): Promise<boolean>;
+    deleteIndex(): Promise<boolean>;
+    recreateIndex(mapping?: any): Promise<boolean>;
+    bulkIndex(documents: any[]): Promise<boolean>;
+    indexDocument(id: string, document: any): Promise<boolean>;
+    updateDocument(id: string, document: any): Promise<boolean>;
+    deleteDocument(id: string): Promise<boolean>;
+    search(query: any): Promise<any>;
+    getIndexStats(): Promise<any>;
     reindexAllListings(): Promise<{
         success: boolean;
         count: number;
         errors: string[];
     }>;
-    getIndexStats(): Promise<{
-        cluster_health: import("@benalsam/shared-types").ElasticsearchHealth;
-        index_name: string;
-        timestamp: string;
-        index: string;
-        docs: {
-            count: number;
-            deleted: number;
-        };
-        store: {
-            size_in_bytes: number;
-            total_data_set_size_in_bytes: number;
-        };
-        indexing: {
-            index_total: number;
-            index_time_in_millis: number;
-            index_current: number;
-            index_failed: number;
-        };
-        search: {
-            query_total: number;
-            query_time_in_millis: number;
-            query_current: number;
-            fetch_total: number;
-            fetch_time_in_millis: number;
-            fetch_current: number;
-        };
-    }>;
-    optimizeIndex(): Promise<boolean>;
-    addTestDocument(): Promise<boolean>;
     searchListings(params: {
         query?: string;
         filters?: any;
@@ -43,9 +28,6 @@ export declare class AdminElasticsearchService extends BaseElasticsearchService 
         page?: number;
         limit?: number;
     }): Promise<any>;
-    getIndexMapping(): Promise<any>;
-    getIndexSettings(): Promise<any>;
-    recreateIndex(): Promise<boolean>;
-    clearIndex(): Promise<boolean>;
 }
+export declare const elasticsearchClient: Client;
 //# sourceMappingURL=elasticsearchService.d.ts.map

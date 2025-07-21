@@ -7,7 +7,7 @@ exports.AuthController = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const database_1 = require("../config/database");
 const app_1 = require("../config/app");
-const types_1 = require("../types");
+const admin_types_1 = require("../types/admin-types");
 const response_1 = require("../utils/response");
 const jwt_1 = require("../utils/jwt");
 const logger_1 = __importDefault(require("../config/logger"));
@@ -100,7 +100,7 @@ class AuthController {
                 password: hashedPassword,
                 first_name: firstName,
                 last_name: lastName,
-                role: role || types_1.AdminRole.ADMIN,
+                role: role || admin_types_1.AdminRole.ADMIN,
                 permissions: permissions || [],
                 is_active: true,
             })

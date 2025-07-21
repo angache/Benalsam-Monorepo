@@ -1,6 +1,6 @@
 import { supabase } from '../config/supabase';
 import bcrypt from 'bcryptjs';
-import { AdminRole } from '../types';
+import { AdminRole } from '../types/admin-types';
 
 async function seedAdminUser() {
   try {

@@ -1,20 +1,21 @@
-// ===========================
-// SHARED TYPES EXPORT
-// ===========================
+"use strict";
+// Import types
+const types = require('./types/index');
+const searchTypes = require('./types/search');
 // Export all types from the types module
-export * from './types/index';
+// export * from './types/index';
 // ===========================
 // SEARCH TYPES EXPORT
 // ===========================
 // Export search types
-export * from './types/search';
+// export * from './types/search';
 // ===========================
 // SHARED UTILITIES
 // ===========================
 /**
  * Format price with Turkish Lira symbol
  */
-export const formatPrice = (price) => {
+const formatPrice = (price) => {
     return new Intl.NumberFormat('tr-TR', {
         style: 'currency',
         currency: 'TRY',
@@ -25,7 +26,7 @@ export const formatPrice = (price) => {
 /**
  * Format date to Turkish locale
  */
-export const formatDate = (date) => {
+const formatDate = (date) => {
     return new Intl.DateTimeFormat('tr-TR', {
         year: 'numeric',
         month: 'long',
@@ -35,7 +36,7 @@ export const formatDate = (date) => {
 /**
  * Format relative time (e.g., "2 saat önce")
  */
-export const formatRelativeTime = (date) => {
+const formatRelativeTime = (date) => {
     const now = new Date();
     const targetDate = new Date(date);
     const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
@@ -59,14 +60,14 @@ export const formatRelativeTime = (date) => {
 /**
  * Validate email format
  */
-export const validateEmail = (email) => {
+const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
 /**
  * Generate initials from name
  */
-export const getInitials = (name) => {
+const getInitials = (name) => {
     return name
         .split(' ')
         .map(word => word.charAt(0))
@@ -77,7 +78,7 @@ export const getInitials = (name) => {
 /**
  * Truncate text with ellipsis
  */
-export const truncateText = (text, maxLength) => {
+const truncateText = (text, maxLength) => {
     if (text.length <= maxLength) {
         return text;
     }
@@ -86,7 +87,7 @@ export const truncateText = (text, maxLength) => {
 /**
  * Generate avatar URL with fallback
  */
-export const getAvatarUrl = (avatarUrl, userId) => {
+const getAvatarUrl = (avatarUrl, userId) => {
     if (avatarUrl) {
         return avatarUrl;
     }
@@ -97,7 +98,7 @@ export const getAvatarUrl = (avatarUrl, userId) => {
 /**
  * Check if user is premium
  */
-export const isPremiumUser = (user) => {
+const isPremiumUser = (user) => {
     if (!user)
         return false;
     if (!user.is_premium)
@@ -111,7 +112,7 @@ export const isPremiumUser = (user) => {
 /**
  * Calculate trust score level
  */
-export const getTrustLevel = (trustScore) => {
+const getTrustLevel = (trustScore) => {
     if (trustScore >= 1000)
         return 'platinum';
     if (trustScore >= 500)
@@ -123,7 +124,7 @@ export const getTrustLevel = (trustScore) => {
 /**
  * Get trust level color
  */
-export const getTrustLevelColor = (level) => {
+const getTrustLevelColor = (level) => {
     switch (level) {
         case 'platinum': return '#E5E4E2';
         case 'gold': return '#FFD700';
@@ -135,7 +136,7 @@ export const getTrustLevelColor = (level) => {
 /**
  * Format phone number for display
  */
-export const formatPhoneNumber = (phone) => {
+const formatPhoneNumber = (phone) => {
     // Remove all non-digit characters
     const cleaned = phone.replace(/\D/g, '');
     // Turkish phone number format: +90 5XX XXX XX XX
@@ -147,5 +148,21 @@ export const formatPhoneNumber = (phone) => {
         return `+90 ${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 8)} ${cleaned.slice(8)}`;
     }
     return phone; // Return original if format doesn't match
+};
+// Export everything
+module.exports = {
+    ...types,
+    ...searchTypes,
+    formatPrice,
+    formatDate,
+    formatRelativeTime,
+    validateEmail,
+    getInitials,
+    truncateText,
+    getAvatarUrl,
+    isPremiumUser,
+    getTrustLevel,
+    getTrustLevelColor,
+    formatPhoneNumber
 };
 //# sourceMappingURL=index.js.map
