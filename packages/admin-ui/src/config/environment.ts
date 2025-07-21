@@ -7,10 +7,36 @@ export interface EnvironmentConfig {
 }
 
 const getEnvironmentConfig = (): EnvironmentConfig => {
-  // VPS IP address - always use VPS IP for production
+  const isDevelopment = import.meta.env.DEV;
+  const isProduction = import.meta.env.PROD;
+  
+  // VPS IP address
   const VPS_IP = '209.227.228.96';
   
-  // Always use VPS IP for production environment
+  // Check if we're running on VPS (by checking if we can access VPS IP)
+  const isVPS = window.location.hostname === VPS_IP || window.location.hostname === '209.227.228.96';
+  
+  // For local development (both Docker and local), use localhost
+  if (isDevelopment && !isVPS) {
+    return {
+      apiUrl: 'http://localhost:3002',
+      wsUrl: 'ws://localhost:3002',
+      environment: 'development',
+      elasticsearchUrl: 'http://localhost:3002/api/v1/elasticsearch'
+    };
+  }
+  
+  // Always use VPS IP for VPS environment
+  if (isVPS) {
+    return {
+      apiUrl: `http://${VPS_IP}:3002`,
+      wsUrl: `ws://${VPS_IP}:3002`,
+      environment: 'production',
+      elasticsearchUrl: `http://${VPS_IP}:3002/api/v1/elasticsearch`
+    };
+  }
+  
+  // VPS environment (both development and production)
   return {
     apiUrl: `http://${VPS_IP}:3002`,
     wsUrl: `ws://${VPS_IP}:3002`,
