@@ -23,7 +23,29 @@
     "pm2:status": "pm2 status",
     "pm2:monit": "pm2 monit",
     "pm2:flush": "pm2 flush",
-    "dev:pm2": "npm run pm2:start && npm run pm2:logs"
+    "dev:pm2": "pnpm run pm2:start && pnpm run pm2:logs",
+    "pm2:start:prod": "pm2 start ecosystem.production.config.js",
+    "pm2:stop:prod": "pm2 stop ecosystem.production.config.js",
+    "pm2:restart:prod": "pm2 restart ecosystem.production.config.js",
+    "pm2:reload:prod": "pm2 reload ecosystem.production.config.js",
+    "pm2:delete:prod": "pm2 delete ecosystem.production.config.js",
+    "pm2:logs:prod": "pm2 logs",
+    "pm2:status:prod": "pm2 status",
+    "pm2:monit:prod": "pm2 monit",
+    "deploy:prod": "pm2 deploy production",
+    "vps:setup": "pnpm install && pnpm run build && pm2 start ecosystem.production.config.js",
+    "vps:deploy": "./scripts/deploy-vps.sh",
+    "monorepo:clean": "lerna clean && pnpm store prune",
+    "monorepo:bootstrap": "lerna bootstrap",
+    "monorepo:build:all": "lerna run build --stream",
+    "monorepo:dev:all": "lerna run dev --parallel --stream",
+    "monorepo:test:all": "lerna run test --stream",
+    "monorepo:lint:all": "lerna run lint --stream",
+    "monorepo:type-check:all": "lerna run type-check --stream",
+    "monorepo:changed": "lerna changed",
+    "monorepo:diff": "lerna diff",
+    "monorepo:version": "lerna version",
+    "monorepo:publish": "lerna publish"
   },
   "devDependencies": {
     "lerna": "^8.2.3",
@@ -33,6 +55,6 @@
   },
   "engines": {
     "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "pnpm": ">=8.0.0"
   }
 } 

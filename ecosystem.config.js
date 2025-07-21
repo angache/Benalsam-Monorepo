@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'admin-backend',
       cwd: './packages/admin-backend',
-      script: 'npm',
+      script: 'pnpm',
       args: 'run dev',
       env: {
         NODE_ENV: 'development',
@@ -27,7 +27,7 @@ module.exports = {
     {
       name: 'admin-ui',
       cwd: './packages/admin-ui',
-      script: 'npm',
+      script: 'pnpm',
       args: 'run dev',
       env: {
         NODE_ENV: 'development',
@@ -48,7 +48,7 @@ module.exports = {
     {
       name: 'web',
       cwd: './packages/web',
-      script: 'npm',
+      script: 'pnpm',
       args: 'run dev',
       env: {
         NODE_ENV: 'development',
@@ -95,7 +95,7 @@ module.exports = {
       repo: 'git@github.com:angache/Benalsam-Monorepo.git',
       path: '/var/www/benalsam',
       'pre-deploy-local': '',
-      'post-deploy': 'npm install && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'pnpm install && pm2 reload ecosystem.config.js --env production',
       'pre-setup': ''
     }
   }
