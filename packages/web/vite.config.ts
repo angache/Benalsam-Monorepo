@@ -11,14 +11,14 @@ export default defineConfig({
   },
   base: '/admin/',
   server: {
-    port: 3003,
+    port: 5173, // Web için doğru port
     host: '0.0.0.0',
     strictPort: true,
     cors: true,
-    hmr: {
-      host: 'localhost',
-      port: 3003,
-      protocol: 'ws',
+    hmr: false, // VPS'de HMR sorunları yaşanıyor, devre dışı bırak
+    watch: {
+      usePolling: true, // VPS'de dosya değişikliklerini izlemek için polling kullan
+      interval: 1000, // 1 saniye aralıklarla kontrol et
     },
   },
   build: {

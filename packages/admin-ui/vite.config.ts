@@ -15,10 +15,10 @@ export default defineConfig({
     host: '0.0.0.0', // Tüm network interface'lerini dinle
     strictPort: true, // Port kullanımdaysa hata ver
     cors: true, // CORS'u etkinleştir
-    hmr: {
-      host: 'localhost', // Lokal geliştirme için localhost
-      port: 3003,
-      protocol: 'ws',
+    hmr: false, // VPS'de HMR sorunları yaşanıyor, devre dışı bırak
+    watch: {
+      usePolling: true, // VPS'de dosya değişikliklerini izlemek için polling kullan
+      interval: 1000, // 1 saniye aralıklarla kontrol et
     },
   },
   build: {
