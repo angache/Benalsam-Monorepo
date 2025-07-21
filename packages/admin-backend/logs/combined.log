@@ -2424,3 +2424,38 @@
 {"level":"info","message":"📊 Environment: development","service":"admin-backend","timestamp":"2025-07-21T13:42:04.507Z"}
 {"level":"info","message":"🔗 Health check: http://localhost:3002/health","service":"admin-backend","timestamp":"2025-07-21T13:42:04.508Z"}
 {"level":"info","message":"📚 API version: v1","service":"admin-backend","timestamp":"2025-07-21T13:42:04.508Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/categories","service":"admin-backend","timestamp":"2025-07-21T14:37:31.828Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:32.096Z"}
+{"level":"info","message":"Fetching categories from Supabase","service":"admin-backend","timestamp":"2025-07-21T14:37:32.331Z"}
+{"level":"info","message":"Fetching categories from Supabase","service":"admin-backend","timestamp":"2025-07-21T14:37:32.332Z"}
+{"level":"info","message":"Fetched 16 main categories","service":"admin-backend","timestamp":"2025-07-21T14:37:32.946Z"}
+{"level":"info","message":"Fetched 16 main categories","service":"admin-backend","timestamp":"2025-07-21T14:37:32.947Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/admin-management/users","service":"admin-backend","timestamp":"2025-07-21T14:37:34.953Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:35.189Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:35.528Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/admin-management/users","service":"admin-backend","timestamp":"2025-07-21T14:37:35.974Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"GET /api/v1/admin-management/roles","service":"admin-backend","timestamp":"2025-07-21T14:37:35.984Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:36.092Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:36.093Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:36.426Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:36.570Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/admin-management/permissions","service":"admin-backend","timestamp":"2025-07-21T14:37:36.752Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:36.862Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/admin-management/roles","service":"admin-backend","timestamp":"2025-07-21T14:37:37.013Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:37.119Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:37.196Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:37.447Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/admin-management/permissions","service":"admin-backend","timestamp":"2025-07-21T14:37:37.765Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:37.871Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:38.191Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/users","service":"admin-backend","timestamp":"2025-07-21T14:37:39.955Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:40.058Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:40.405Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/users","service":"admin-backend","timestamp":"2025-07-21T14:37:40.719Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:40.814Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:41.141Z"}
+{"ip":"::1","level":"info","message":"GET /api/v1/listings","service":"admin-backend","timestamp":"2025-07-21T14:37:41.932Z","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:42.033Z"}
+{"level":"warn","message":"Using fallback permissions for admin:","service":"admin-backend","timestamp":"2025-07-21T14:37:42.351Z"}
+{"level":"info","limit":100,"message":"Fetching listings with filters:","page":1,"search":"","service":"admin-backend","timestamp":"2025-07-21T14:37:42.563Z"}
+{"level":"info","message":"Fetched 21 listings out of 21 total","service":"admin-backend","timestamp":"2025-07-21T14:37:43.258Z"}
