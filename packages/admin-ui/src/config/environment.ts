@@ -20,7 +20,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   if (isDevelopment && !isVPS) {
     return {
       apiUrl: 'http://localhost:3002',
-      wsUrl: 'ws://localhost:3003',
+      wsUrl: 'ws://localhost:3002',
       environment: 'development',
       elasticsearchUrl: 'http://localhost:3002/api/v1/elasticsearch'
     };
@@ -29,7 +29,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   // VPS environment (both development and production)
   return {
     apiUrl: `http://${VPS_IP}:3002`,
-    wsUrl: `ws://${VPS_IP}:3003`,
+    wsUrl: `ws://${VPS_IP}:3002`,
     environment: 'production',
     elasticsearchUrl: `http://${VPS_IP}:3002/api/v1/elasticsearch`
   };
