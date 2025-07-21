@@ -3,32 +3,32 @@
 ## 🚀 **Faz 1: Temel Altyapı (1-2 gün)**
 
 ### **1.1 API Client Oluşturma**
-- [ ] `src/lib/apiClient.ts` dosyası oluştur
-- [ ] Base URL configuration
-- [ ] Token management (localStorage)
-- [ ] Request/Response interceptors
-- [ ] Error handling wrapper
+- [x] `src/lib/apiClient.ts` dosyası oluştur
+- [x] Base URL configuration
+- [x] Token management (localStorage)
+- [x] Request/Response interceptors
+- [x] Error handling wrapper
 
 ### **1.2 Environment Configuration**
-- [ ] `src/config/environment.ts` dosyası oluştur
-- [ ] VITE_ADMIN_API_URL environment variable
-- [ ] VITE_ADMIN_WS_URL environment variable
-- [ ] Environment detection (dev/prod)
-- [ ] Fallback URL'ler
+- [x] `src/config/environment.ts` dosyası oluştur
+- [x] VITE_ADMIN_API_URL environment variable
+- [x] VITE_ADMIN_WS_URL environment variable
+- [x] Environment detection (dev/prod)
+- [x] Fallback URL'ler
 
 ### **1.3 Admin Auth Service**
-- [ ] `src/services/adminAuthService.ts` oluştur
-- [ ] Admin login/logout methods
-- [ ] Token refresh logic
-- [ ] Session management
-- [ ] Permission checking
+- [x] `src/services/adminAuthService.ts` oluştur
+- [x] Admin login/logout methods
+- [x] Token refresh logic
+- [x] Session management
+- [x] Permission checking
 
 ### **1.4 Error Handling Middleware**
-- [ ] Global error handler
-- [ ] HTTP status code handling
-- [ ] Toast notifications
-- [ ] Redirect logic (401/403)
-- [ ] Retry mechanism
+- [x] Global error handler
+- [x] HTTP status code handling
+- [x] Toast notifications
+- [x] Redirect logic (401/403)
+- [x] Retry mechanism
 
 ---
 
