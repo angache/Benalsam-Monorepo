@@ -1,26 +1,10 @@
 
-// Import types
-const types = require('./types/index');
-const searchTypes = require('./types/search');
-
-// Export all types from the types module
-// export * from './types/index';
-
-// ===========================
-// SEARCH TYPES EXPORT
-// ===========================
-
-// Export search types
+// ESM exports
+export * from './types/index';
+// Eğer search tipi gerekiyorsa:
 // export * from './types/search';
 
-// ===========================
-// SHARED UTILITIES
-// ===========================
-
-/**
- * Format price with Turkish Lira symbol
- */
-const formatPrice = (price: number): string => {
+export const formatPrice = (price: number): string => {
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
     currency: 'TRY',
@@ -29,10 +13,7 @@ const formatPrice = (price: number): string => {
   }).format(price);
 };
 
-/**
- * Format date to Turkish locale
- */
-const formatDate = (date: string | Date): string => {
+export const formatDate = (date: string | Date): string => {
   return new Intl.DateTimeFormat('tr-TR', {
     year: 'numeric',
     month: 'long',
@@ -40,48 +21,26 @@ const formatDate = (date: string | Date): string => {
   }).format(new Date(date));
 };
 
-/**
- * Format relative time (e.g., "2 saat önce")
- */
-const formatRelativeTime = (date: string | Date): string => {
+export const formatRelativeTime = (date: string | Date): string => {
   const now = new Date();
   const targetDate = new Date(date);
   const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
-
-  if (diffInSeconds < 60) {
-    return 'Az önce';
-  }
-
+  if (diffInSeconds < 60) return 'Az önce';
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} dakika önce`;
-  }
-
+  if (diffInMinutes < 60) return `${diffInMinutes} dakika önce`;
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} saat önce`;
-  }
-
+  if (diffInHours < 24) return `${diffInHours} saat önce`;
   const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} gün önce`;
-  }
-
+  if (diffInDays < 7) return `${diffInDays} gün önce`;
   return formatDate(date);
 };
 
-/**
- * Validate email format
- */
-const validateEmail = (email: string): boolean => {
+export const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-/**
- * Generate initials from name
- */
-const getInitials = (name: string): string => {
+export const getInitials = (name: string): string => {
   return name
     .split(' ')
     .map(word => word.charAt(0))
@@ -90,59 +49,35 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-/**
- * Truncate text with ellipsis
- */
-const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) {
-    return text;
-  }
+export const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + '...';
 };
 
-/**
- * Generate avatar URL with fallback
- */
-const getAvatarUrl = (avatarUrl?: string | null, userId?: string): string => {
-  if (avatarUrl) {
-    return avatarUrl;
-  }
-  
-  // Fallback to UI Avatars service
+export const getAvatarUrl = (avatarUrl?: string | null, userId?: string): string => {
+  if (avatarUrl) return avatarUrl;
   const initials = userId ? getInitials(userId) : 'U';
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=random&color=fff&size=200`;
 };
 
-/**
- * Check if user is premium
- */
-const isPremiumUser = (user?: { is_premium?: boolean; premium_expires_at?: string }): boolean => {
+export const isPremiumUser = (user?: { is_premium?: boolean; premium_expires_at?: string }): boolean => {
   if (!user) return false;
-  
   if (!user.is_premium) return false;
-  
   if (user.premium_expires_at) {
     const expiryDate = new Date(user.premium_expires_at);
     return expiryDate > new Date();
   }
-  
   return true;
 };
 
-/**
- * Calculate trust score level
- */
-const getTrustLevel = (trustScore: number): 'bronze' | 'silver' | 'gold' | 'platinum' => {
+export const getTrustLevel = (trustScore: number): 'bronze' | 'silver' | 'gold' | 'platinum' => {
   if (trustScore >= 1000) return 'platinum';
   if (trustScore >= 500) return 'gold';
   if (trustScore >= 100) return 'silver';
   return 'bronze';
 };
 
-/**
- * Get trust level color
- */
-const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platinum'): string => {
+export const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platinum'): string => {
   switch (level) {
     case 'platinum': return '#E5E4E2';
     case 'gold': return '#FFD700';
@@ -152,38 +87,34 @@ const getTrustLevelColor = (level: 'bronze' | 'silver' | 'gold' | 'platinum'): s
   }
 };
 
-/**
- * Format phone number for display
- */
-const formatPhoneNumber = (phone: string): string => {
-  // Remove all non-digit characters
+export const formatPhoneNumber = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, '');
-  
-  // Turkish phone number format: +90 5XX XXX XX XX
   if (cleaned.length === 11 && cleaned.startsWith('90')) {
     return `+${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8, 10)} ${cleaned.slice(10)}`;
   }
-  
-  // Turkish mobile number without country code: 5XX XXX XX XX
   if (cleaned.length === 10 && cleaned.startsWith('5')) {
     return `+90 ${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 8)} ${cleaned.slice(8)}`;
   }
-  
-  return phone; // Return original if format doesn't match
-}; 
-// Export everything
-module.exports = {
-  ...types,
-  ...searchTypes,
-  formatPrice,
-  formatDate,
-  formatRelativeTime,
-  validateEmail,
-  getInitials,
-  truncateText,
-  getAvatarUrl,
-  isPremiumUser,
-  getTrustLevel,
-  getTrustLevelColor,
-  formatPhoneNumber
+  return phone;
 };
+
+// CJS uyumluluğu için (opsiyonel)
+if (typeof module !== 'undefined' && module.exports) {
+  const types = require('./types/index');
+  // const searchTypes = require('./types/search');
+  module.exports = {
+    ...types,
+    // ...searchTypes,
+    formatPrice,
+    formatDate,
+    formatRelativeTime,
+    validateEmail,
+    getInitials,
+    truncateText,
+    getAvatarUrl,
+    isPremiumUser,
+    getTrustLevel,
+    getTrustLevelColor,
+    formatPhoneNumber
+  };
+}

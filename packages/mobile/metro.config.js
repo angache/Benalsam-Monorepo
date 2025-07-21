@@ -3,13 +3,13 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Add resolver for shared-types package
 config.resolver.alias = {
   ...config.resolver.alias,
+  'react': path.resolve(__dirname, '../../../node_modules/react'),
+  'react-native': path.resolve(__dirname, '../../../node_modules/react-native'),
   '@benalsam/shared-types': path.resolve(__dirname, '../shared-types/dist'),
 };
 
-// Add shared-types to watchFolders
 config.watchFolders = [
   ...(config.watchFolders || []),
   path.resolve(__dirname, '../shared-types'),
