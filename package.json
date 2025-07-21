@@ -13,7 +13,17 @@
     "type-check": "lerna run type-check --stream",
     "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,js,jsx,json}\"",
     "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,js,jsx,json}\"",
-    "publish": "lerna publish"
+    "publish": "lerna publish",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js",
+    "pm2:reload": "pm2 reload ecosystem.config.js",
+    "pm2:delete": "pm2 delete ecosystem.config.js",
+    "pm2:logs": "pm2 logs",
+    "pm2:status": "pm2 status",
+    "pm2:monit": "pm2 monit",
+    "pm2:flush": "pm2 flush",
+    "dev:pm2": "npm run pm2:start && npm run pm2:logs"
   },
   "devDependencies": {
     "lerna": "^8.2.3",
