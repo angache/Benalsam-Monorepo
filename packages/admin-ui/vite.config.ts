@@ -26,6 +26,10 @@ export default defineConfig({
     sourcemap: true,
   },
   define: {
-    'process.env': {},
+    'process.env': {
+      NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
+      VITE_API_URL: JSON.stringify(`http://${VPS_IP}:3002`),
+      VITE_ELASTICSEARCH_URL: JSON.stringify(`http://${VPS_IP}:3002/api/v1/elasticsearch`),
+    },
   },
 })
