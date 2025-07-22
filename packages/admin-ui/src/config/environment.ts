@@ -19,7 +19,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   const wsUrl = baseUrl.replace('http', 'ws');
   
   return {
-    apiUrl: baseUrl,
+    apiUrl: apiUrl, // Use full API URL with /api/v1
     wsUrl: wsUrl,
     environment: isProduction ? 'production' : 'development',
     elasticsearchUrl: elasticsearchUrl
