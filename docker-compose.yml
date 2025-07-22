@@ -48,6 +48,8 @@ services:
     build:
       context: .
       dockerfile: ./packages/admin-ui/Dockerfile
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - PORT=3003
@@ -65,6 +67,8 @@ services:
     build:
       context: .
       dockerfile: ./packages/web/Dockerfile
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - PORT=5173
