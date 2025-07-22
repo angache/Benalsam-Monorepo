@@ -1,5 +1,15 @@
 // React Native Polyfills
 
+// Buffer polyfill for React Native
+if (typeof global !== 'undefined' && !global.Buffer) {
+  try {
+    const { Buffer } = require('buffer');
+    global.Buffer = Buffer;
+  } catch (error) {
+    console.warn('Buffer polyfill failed:', error);
+  }
+}
+
 // structuredClone polyfill
 if (typeof global !== 'undefined') {
   if (!global.structuredClone) {

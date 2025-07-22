@@ -44,14 +44,6 @@
       ],
       "package": "com.angachebenalsam",
       "softwareKeyboardLayoutMode": "pan",
-      "statusBar": {
-        "backgroundColor": "#000000",
-        "barStyle": "light-content"
-      },
-      "navigationBar": {
-        "backgroundColor": "#000000",
-        "translucent": false
-      },
       "googleServicesFile": "./assets/google-services.json"
     },
     "web": {
