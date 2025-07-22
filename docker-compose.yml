@@ -1,0 +1,79 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+
+  admin-backend:
+    build:
+      context: .
+      dockerfile: ./packages/admin-backend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=benalsam_listings
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=http://${SERVER_IP}:3003,http://${SERVER_IP}:5173
+    ports:
+      - "3002:3002"
+    depends_on:
+      - redis
+      - elasticsearch
+    command: ["pnpm", "run", "dev"]
+
+  admin-ui:
+    build:
+      context: .
+      dockerfile: ./packages/admin-ui/Dockerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - VITE_API_URL=http://${SERVER_IP}:3002/api/v1
+      - VITE_ELASTICSEARCH_URL=http://${SERVER_IP}:9200
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    ports:
+      - "3003:3003"
+    depends_on:
+      - admin-backend
+    command: ["pnpm", "run", "dev"]
+
+  web:
+    build:
+      context: .
+      dockerfile: ./packages/web/Dockerfile
+    environment:
+      - NODE_ENV=development
+      - PORT=5173
+      - VITE_API_URL=http://${SERVER_IP}:3002/api/v1
+      - VITE_ELASTICSEARCH_URL=http://${SERVER_IP}:9200
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - admin-backend
+    command: ["pnpm", "run", "dev"] 

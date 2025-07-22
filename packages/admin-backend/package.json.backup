@@ -27,7 +27,7 @@
   "author": "Benalsam Team",
   "license": "MIT",
   "dependencies": {
-    "@benalsam/shared-types": "file:./shared-types",
+    "@benalsam/shared-types": "file:../shared-types",
     "@elastic/elasticsearch": "^8.12.0",
     "@prisma/client": "^5.10.0",
     "@supabase/supabase-js": "^2.51.0",

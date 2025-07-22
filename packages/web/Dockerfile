@@ -10,6 +10,6 @@ RUN npm install -g pnpm
 # Kökte install (tüm workspace bağımlılıkları yüklenir)
 RUN pnpm install --force --no-verify-store-integrity
 
-WORKDIR /app/packages/admin-ui
+WORKDIR /app/packages/web
 
-CMD ["pnpm", "run", "dev"] 
+CMD ["pnpm", "run", "dev"]
