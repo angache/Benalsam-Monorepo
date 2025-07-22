@@ -12,4 +12,7 @@ RUN pnpm install --force --no-verify-store-integrity
 
 WORKDIR /app/packages/admin-ui
 
+# Vite'ın tüm interface'leri dinlemesi için
+ENV HOST=0.0.0.0
+
 CMD ["pnpm", "run", "dev"] 
