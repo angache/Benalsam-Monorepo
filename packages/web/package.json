@@ -19,7 +19,7 @@
     "audit": "npm audit && npm run security-audit"
   },
   "dependencies": {
-    "@benalsam/shared-types": "file:./shared-types",
+    "@benalsam/shared-types": "file:../shared-types",
     "@emotion/is-prop-valid": "^1.2.1",
     "@faker-js/faker": "^8.4.1",
     "@radix-ui/react-alert-dialog": "^1.0.5",
