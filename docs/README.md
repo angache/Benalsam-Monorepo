@@ -5,14 +5,19 @@ Bu klasör, Benalsam monorepo'su için kapsamlı dokümantasyon içerir.
 ## 📖 Dokümantasyon Kategorileri
 
 ### 🏗️ [Mimari Rehberleri](./architecture/)
-- [Monorepo Rehberi](./architecture/monorepo-guide.md) - Monorepo yapısı ve best practices
-- [Shared-Types Rehberi](./architecture/shared-types-guide.md) - Shared-types paket kullanımı
-- [Shared-Types Entegrasyonu](./architecture/shared-types-integration.md) - Entegrasyon detayları
+- [Monorepo Rehberi](./architecture/MONOREPO_GUIDE.md) - Monorepo yapısı ve best practices
+- [Shared-Types Rehberi](./architecture/SHARED_TYPES_GUIDE.md) - Shared-types paket kullanımı
+- [Shared-Types Entegrasyonu](./architecture/SHARED_TYPES_INTEGRATION.md) - Entegrasyon detayları
+- [Development Setup Guide](./architecture/DEVELOPMENT_SETUP_GUIDE.md) - Geliştirme ortamı kurulumu
+- [Database Schema Documentation](./architecture/DATABASE_SCHEMA_DOCUMENTATION.md) - Veritabanı şeması ve yapısı
+- [Mobile App Documentation](./architecture/MOBILE_APP_DOCUMENTATION.md) - Mobil uygulama dokümantasyonu
+- [Security Documentation](./architecture/SECURITY_DOCUMENTATION.md) - Güvenlik politikaları ve önlemler
 
 ### 🚀 [Deployment Rehberleri](./deployment/)
-- [Production Deployment](./deployment/production-deployment-guide.md) - Production deployment
-- [Admin Panel Deployment](./deployment/admin-panel-deployment-guide.md) - Admin panel deployment
-- [Docker Setup](./deployment/docker-setup-howto.md) - Docker kurulumu
+- [Production Deployment](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) - Production deployment
+- [Admin Panel Deployment](./deployment/ADMIN_PANEL_DEPLOYMENT_GUIDE.md) - Admin panel deployment
+- [Docker Setup](./deployment/DOCKER_SETUP_HOWTO.md) - Docker kurulumu
+- [VPS Deployment Complete Guide](./deployment/VPS_DEPLOYMENT_COMPLETE_GUIDE.md) - VPS deployment tam rehberi
 - [VPS Migration](./deployment/vps-migration/) - VPS migration rehberleri
 
 ### 🔍 [Özellik Dokümantasyonu](./features/)
@@ -22,8 +27,10 @@ Bu klasör, Benalsam monorepo'su için kapsamlı dokümantasyon içerir.
 - [Admin RBAC](./features/admin-role-based-access-control.md) - Role-based access control
 
 ### 📚 [API Dokümantasyonu](./api/)
-- [API Documentation](./api/api-documentation.md) - Genel API dokümantasyonu
-- [Elasticsearch API](./api/elasticsearch-api-architecture.md) - Elasticsearch API mimarisi
+- [API Documentation](./api/API_DOCUMENTATION.md) - Genel API dokümantasyonu
+- [API Documentation (New)](./api/API_DOCUMENTATION_NEW.md) - Güncellenmiş API dokümantasyonu
+- [Elasticsearch API](./api/ELASTICSEARCH_API_ARCHITECTURE.md) - Elasticsearch API mimarisi
+- [Elasticsearch API Decision](./api/ELASTICSEARCH_API_DECISION.md) - Elasticsearch API kararları
 
 ### 🧪 [Testing](./testing/)
 - Testing rehberleri ve best practices
