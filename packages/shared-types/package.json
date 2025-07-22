@@ -22,7 +22,7 @@
     "dev:watch": "tsc --watch -p tsconfig.json",
     "clean": "rm -rf dist dist-esm",
     "prebuild": "npm run clean",
-    "postinstall": "npm run build",
+    "postinstall": "echo 'Skipping build for now'",
     "prepare": "npm run build",
     "test": "echo \"No tests specified\" && exit 0"
   },
