@@ -46,13 +46,10 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const isProduction = (import.meta as any).env?.PROD || false;
   const isStaging = (import.meta as any).env?.VITE_STAGING === 'true';
 
-  // VPS IP address
-  const VPS_IP = '209.227.228.96';
-
   // Check if we're running on VPS (by checking if we can access VPS IP)
   const isVPS = typeof window !== 'undefined' && (
-    window.location.hostname === VPS_IP ||
-    window.location.hostname === '209.227.228.96'
+    window.location.hostname !== 'localhost' && 
+    window.location.hostname !== '127.0.0.1'
   );
 
   // Production domain (replace with your actual domain)
@@ -67,20 +64,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 
     // Admin Backend configuration (new)
     adminApi: {
-      url: (import.meta as any).env?.VITE_ADMIN_API_URL || (
-        isProduction
-          ? `https://${PRODUCTION_DOMAIN}/api/v1`
-          : isVPS
-            ? `http://${VPS_IP}:3002/api/v1`
-            : 'http://localhost:3002/api/v1'
-      ),
-      wsUrl: (import.meta as any).env?.VITE_ADMIN_WS_URL || (
-        isProduction
-          ? `wss://${PRODUCTION_DOMAIN}`
-          : isVPS
-            ? `ws://${VPS_IP}:3002`
-            : 'ws://localhost:3002'
-      ),
+      url: (import.meta as any).env?.VITE_API_URL || 'http://localhost:3002/api/v1',
+      wsUrl: (import.meta as any).env?.VITE_WS_URL || 'ws://localhost:3002',
     },
 
     // Environment detection

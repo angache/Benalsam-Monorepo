@@ -27,7 +27,7 @@ export class ApiClient {
 
   constructor() {
     // Import environment config dynamically to avoid circular dependencies
-    const envConfig = (import.meta as any).env?.VITE_ADMIN_API_URL;
+    const envConfig = (import.meta as any).env?.VITE_API_URL;
     this.baseURL = envConfig || 'http://localhost:3002/api/v1';
     this.token = localStorage.getItem('admin_token');
   }

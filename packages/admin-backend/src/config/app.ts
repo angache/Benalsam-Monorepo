@@ -12,9 +12,6 @@ export const securityConfig = {
     ? process.env.CORS_ORIGIN.split(',') 
     : [
         'http://localhost:3003',
-        'http://209.227.228.96:3003',
-        'http://209.227.228.96:3000',
-        'http://localhost:3000',
         'http://localhost:5173',
         'http://localhost:4173'
       ],

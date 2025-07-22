@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react'
 // Environment detection
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
-const VPS_IP = '209.227.228.96';
 
 // https://vitejs.dev/config/
 export default defineConfig({
