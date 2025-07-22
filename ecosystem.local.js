@@ -8,9 +8,9 @@ module.exports = {
       env: {
         NODE_ENV: 'development',
         PORT: 3002,
-        REDIS_HOST: 'localhost',
+        REDIS_HOST: '209.227.228.96',
         REDIS_PORT: 6379,
-        ELASTICSEARCH_URL: 'http://localhost:9200',
+        ELASTICSEARCH_URL: 'http://209.227.228.96:9200',
         ELASTICSEARCH_INDEX: 'benalsam_listings',
         SUPABASE_URL: 'https://dnwreckpeenhbdtapmxr.supabase.co',
         SUPABASE_SERVICE_ROLE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRud3JlY2twZWVuaGJkdGFwbXhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTk5ODA3MCwiZXhwIjoyMDY1NTc0MDcwfQ.b6UNsncrPKXYB-17oyOEx8xY_hbofAx7ObwzKsyhsm4',
