@@ -15,6 +15,13 @@ export default defineConfig({
     strictPort: true, // Port kullanımdaysa hata ver
     cors: true, // CORS'u etkinleştir
     hmr: false, // VPS'de HMR sorunları yaşanıyor, devre dışı bırak
+    allowedHosts: [
+      'benalsam.com',
+      'www.benalsam.com',
+      'localhost',
+      '127.0.0.1',
+      '209.227.228.96'
+    ], // Domain'leri kabul et
     watch: {
       usePolling: true, // VPS'de dosya değişikliklerini izlemek için polling kullan
       interval: 1000, // 1 saniye aralıklarla kontrol et
