@@ -25,7 +25,7 @@ export class IndexerService {
   private stats: IndexerStats;
   private isRunning: boolean = false;
   private processingBatch: QueueJob[] = [];
-  private batchTimer: NodeJS.Timeout | null = null;
+  private batchTimer: any = null;
 
   constructor(
     elasticsearchService: AdminElasticsearchService,
