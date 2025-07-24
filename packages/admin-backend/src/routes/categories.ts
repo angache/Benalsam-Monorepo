@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { categoriesController } from '../controllers/categoriesController';
 import { authMiddleware } from '../middleware/auth';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Get all categories - temporarily without auth for testing
 router.get('/', categoriesController.getCategories);

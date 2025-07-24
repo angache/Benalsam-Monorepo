@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { usersController } from '../controllers/usersController';
 import { authMiddleware } from '../middleware/auth';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Get all users - requires users:view permission
 router.get('/', ...authMiddleware({ requiredPermissions: ['users:view'] }), usersController.getUsers);

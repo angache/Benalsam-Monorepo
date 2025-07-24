@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { AdminManagementController } from '../../controllers/adminManagementController';
 import { authMiddleware, requirePermission } from '../../middleware/auth';
 import { AdminRole } from '../../types/admin-types';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Admin Users Management Routes
 // All routes require admin management permissions

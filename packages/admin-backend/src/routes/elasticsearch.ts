@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { ElasticsearchController } from '../controllers/elasticsearchController';
 
-const router = Router();
+const router: IRouter = Router();
 const elasticsearchController = new ElasticsearchController();
 
 // Health & Status Routes

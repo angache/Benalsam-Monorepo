@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { listingsController } from '../controllers/listingsController';
 import { authenticateToken } from '../middleware/auth';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Apply auth middleware to all routes
 router.use(authenticateToken);

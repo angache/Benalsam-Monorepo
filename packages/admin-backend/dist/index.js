@@ -11,24 +11,25 @@ const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = require("dotenv");
 const supabase_js_1 = require("@supabase/supabase-js");
-const index_js_1 = __importDefault(require("./routes/auth/index.js"));
-const listings_js_1 = require("./routes/listings.js");
-const users_js_1 = require("./routes/users.js");
-const categories_js_1 = require("./routes/categories.js");
-const health_js_1 = __importDefault(require("./routes/health.js"));
-const monitoring_js_1 = __importDefault(require("./routes/monitoring.js"));
-const elasticsearch_js_1 = __importDefault(require("./routes/elasticsearch.js"));
-const index_js_2 = __importDefault(require("./routes/admin-management/index.js"));
-const elasticsearchService_js_1 = require("./services/elasticsearchService.js");
+const auth_1 = __importDefault(require("./routes/auth"));
+const listings_1 = require("./routes/listings");
+const users_1 = require("./routes/users");
+const categories_1 = require("./routes/categories");
+const health_1 = __importDefault(require("./routes/health"));
+const monitoring_1 = __importDefault(require("./routes/monitoring"));
+const elasticsearch_1 = __importDefault(require("./routes/elasticsearch"));
+const admin_management_1 = __importDefault(require("./routes/admin-management"));
+const elasticsearchService_1 = require("./services/elasticsearchService");
 const queueProcessorService_1 = __importDefault(require("./services/queueProcessorService"));
-const auth_1 = require("./middleware/auth");
+const auth_2 = require("./middleware/auth");
 const errorHandler_1 = require("./middleware/errorHandler");
+const app_1 = require("./config/app");
 const logger_1 = __importDefault(require("./config/logger"));
 (0, dotenv_1.config)();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3002;
 exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-const elasticsearchService = new elasticsearchService_js_1.AdminElasticsearchService();
+const elasticsearchService = new elasticsearchService_1.AdminElasticsearchService();
 const queueProcessor = new queueProcessorService_1.default();
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
@@ -41,7 +42,15 @@ app.use((0, helmet_1.default)({
     },
 }));
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3003'],
+    origin: (origin, callback) => {
+        if (!origin || app_1.securityConfig.corsOrigin.includes(origin) || origin === undefined) {
+            callback(null, true);
+        }
+        else {
+            console.error('CORS BLOCKED:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200
 };
@@ -74,14 +83,14 @@ app.get('/health', (req, res) => {
         version: 'v1'
     });
 });
-app.use('/api/v1/auth', index_js_1.default);
-app.use('/api/v1/listings', auth_1.authenticateToken, listings_js_1.listingsRouter);
-app.use('/api/v1/users', auth_1.authenticateToken, users_js_1.usersRouter);
-app.use('/api/v1/categories', auth_1.authenticateToken, categories_js_1.categoriesRouter);
-app.use('/api/v1/health', health_js_1.default);
-app.use('/api/v1/monitoring', monitoring_js_1.default);
-app.use('/api/v1/elasticsearch', elasticsearch_js_1.default);
-app.use('/api/v1/admin-management', auth_1.authenticateToken, index_js_2.default);
+app.use('/api/v1/auth', auth_1.default);
+app.use('/api/v1/listings', auth_2.authenticateToken, listings_1.listingsRouter);
+app.use('/api/v1/users', auth_2.authenticateToken, users_1.usersRouter);
+app.use('/api/v1/categories', auth_2.authenticateToken, categories_1.categoriesRouter);
+app.use('/api/v1/health', health_1.default);
+app.use('/api/v1/monitoring', monitoring_1.default);
+app.use('/api/v1/elasticsearch', elasticsearch_1.default);
+app.use('/api/v1/admin-management', auth_2.authenticateToken, admin_management_1.default);
 app.use(errorHandler_1.errorHandler);
 app.use('*', (req, res) => {
     res.status(404).json({

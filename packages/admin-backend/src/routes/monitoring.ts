@@ -1,10 +1,12 @@
-import express from 'express';
+import express, { IRouter } from 'express';
 import { redis } from '../config/redis';
 import { elasticsearchClient } from '../services/elasticsearchService';
 import { supabase } from '../config/supabase';
 import logger from '../config/logger';
+import { monitoringController } from '../controllers/monitoringController';
+import { authMiddleware } from '../middleware/auth';
 
-const router = express.Router();
+const router: IRouter = express.Router();
 
 // System metrics endpoint
 router.get('/metrics', async (req, res) => {

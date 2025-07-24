@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { IRouter } from 'express';
 import { redis } from '../config/redis';
 import { elasticsearchClient } from '../services/elasticsearchService';
 import { supabase } from '../config/supabase';
 
-const router = express.Router();
+const router: IRouter = express.Router();
 
 // Ana health check endpoint
 router.get('/', async (req, res) => {

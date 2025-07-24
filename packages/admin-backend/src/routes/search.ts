@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { SearchController } from '../controllers/searchController';
 import rateLimit from 'express-rate-limit';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Search-specific rate limiting (more lenient than general API)
 const searchRateLimit = rateLimit({

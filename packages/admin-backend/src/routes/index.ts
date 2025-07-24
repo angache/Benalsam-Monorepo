@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import authRoutes from './auth';
 import { listingsRouter } from './listings';
 import { categoriesRouter } from './categories';
@@ -9,7 +9,7 @@ import elasticsearchRoutes from './elasticsearch';
 import healthRoutes from './health';
 import monitoringRoutes from './monitoring';
 
-const router = Router();
+const router: IRouter = Router();
 
 // API version prefix
 const API_VERSION = process.env.API_VERSION || 'v1';
