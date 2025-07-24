@@ -1,6 +1,18 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 import { config } from '../config/environment';
+import type { 
+  LoginRequest, 
+  LoginResponse, 
+  ApiResponse, 
+  Listing, 
+  GetListingsParams, 
+  User, 
+  AdminUser, 
+  Role, 
+  Permission, 
+  AnalyticsData 
+} from '@benalsam/shared-types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || config.apiUrl;
 
@@ -33,151 +45,6 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Types
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  refreshToken: string;
-  admin: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-    role: string;
-    permissions: any[];
-    is_active: boolean;
-    last_login: string;
-    created_at: string;
-    updated_at: string;
-  };
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface Listing {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'REJECTED';
-  views: number;
-  favorites: number;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  images: string[];
-  location?: {
-    city: string;
-    district: string;
-    neighborhood: string;
-  };
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-  };
-}
-
-export interface GetListingsParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  filters?: {
-    status?: string;
-    category?: string;
-    userId?: string;
-  };
-  sort?: {
-    field: string;
-    order: 'asc' | 'desc';
-  };
-}
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'BANNED';
-  createdAt: string;
-  lastLoginAt?: string;
-  profileImage?: string;
-  permissions?: any[];
-}
-
-export interface AdminUser {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  name?: string;
-  role: string;
-  is_active: boolean;
-  status?: 'ACTIVE' | 'INACTIVE' | 'BANNED';
-  created_at: string;
-  updated_at: string;
-  last_login?: string;
-  lastLoginAt?: string;
-  roleDetails?: any;
-  userPermissions?: any[];
-  permissions?: any[];
-}
-
-export interface Role {
-  id: string;
-  name: string;
-  display_name: string;
-  displayName?: string; // For backward compatibility
-  description?: string;
-  level: number;
-  is_active: boolean;
-  isActive?: boolean; // For backward compatibility
-  created_at: string;
-  createdAt?: string; // For backward compatibility
-  updated_at: string;
-  updatedAt?: string; // For backward compatibility
-}
-
-export interface Permission {
-  id: string;
-  name: string;
-  resource: string;
-  action: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AnalyticsData {
-  totalListings: number;
-  totalUsers: number;
-  totalRevenue: number;
-  pendingListings: number;
-  activeListings: number;
-  rejectedListings: number;
-  monthlyStats: {
-    month: string;
-    listings: number;
-    users: number;
-    revenue: number;
-  }[];
-}
 
 // API Service
 export const apiService = {

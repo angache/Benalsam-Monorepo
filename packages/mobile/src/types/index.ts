@@ -195,18 +195,7 @@ export interface MobileConversationData {
 }
 
 // Mobile-specific user profile data
-export interface MobileUserProfileData {
-  id: string;
-  user_id: string;
-  email: string;
-  full_name: string;
-  avatar_url: string | null;
-  phone_number: string | null;
-  platform_preferences: any;
-  notification_preferences: any;
-  chat_preferences: any;
-  created_at: string;
-  updated_at: string;
+export interface MobileUserProfileData extends UserProfile {
   isOnline: boolean;
   lastSeen: string;
   deviceInfo?: MobileDeviceInfo;
