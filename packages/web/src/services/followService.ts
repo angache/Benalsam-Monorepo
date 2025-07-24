@@ -1,16 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
-
-// User interface
-interface User {
-  id: string;
-  name?: string;
-  avatar_url?: string;
-  bio?: string;
-  followers_count?: number;
-  following_count?: number;
-  followed_at?: string;
-}
+import { User } from '@benalsam/shared-types';
 
 // Follow relationship interface
 interface FollowRelationship {

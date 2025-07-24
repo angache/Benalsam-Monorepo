@@ -1,4 +1,29 @@
 export type IconType = any;
+export declare const MessageStatus: {
+    readonly SENT: "sent";
+    readonly DELIVERED: "delivered";
+    readonly READ: "read";
+};
+export type MessageStatusType = typeof MessageStatus[keyof typeof MessageStatus];
+export declare const PremiumSubscriptionStatus: {
+    readonly ACTIVE: "active";
+    readonly CANCELLED: "cancelled";
+    readonly EXPIRED: "expired";
+    readonly PENDING: "pending";
+};
+export type PremiumSubscriptionStatusType = typeof PremiumSubscriptionStatus[keyof typeof PremiumSubscriptionStatus];
+export declare const ProfileStatus: {
+    readonly ACTIVE: "active";
+    readonly INACTIVE: "inactive";
+};
+export type ProfileStatusType = typeof ProfileStatus[keyof typeof ProfileStatus];
+export declare const ReportStatus: {
+    readonly PENDING: "pending";
+    readonly REVIEWED: "reviewed";
+    readonly RESOLVED: "resolved";
+    readonly DISMISSED: "dismissed";
+};
+export type ReportStatusType = typeof ReportStatus[keyof typeof ReportStatus];
 export interface User {
     id: string;
     email?: string;
@@ -28,6 +53,47 @@ export interface UserProfile {
     chat_preferences: ChatPreferences;
     created_at: string;
     updated_at: string;
+    status?: ProfileStatusType;
+}
+export interface PremiumSubscription {
+    id: string;
+    user_id: string;
+    plan_type: 'monthly' | 'yearly' | 'lifetime';
+    status: PremiumSubscriptionStatusType;
+    start_date: string;
+    end_date?: string;
+    auto_renew: boolean;
+    payment_method?: string;
+    amount: number;
+    currency: string;
+    created_at: string;
+    updated_at: string;
+    user?: UserProfile;
+}
+export interface ListingReport {
+    id: string;
+    listing_id: string;
+    reporter_id: string;
+    report_type: 'inappropriate' | 'spam' | 'fake' | 'duplicate' | 'other';
+    reason: string;
+    status: ReportStatusType;
+    admin_notes?: string;
+    resolved_at?: string;
+    created_at: string;
+    updated_at: string;
+    listing?: Listing;
+    reporter?: UserProfile;
+}
+export interface UserActivity {
+    id: string;
+    user_id: string;
+    activity_type: 'login' | 'listing_created' | 'listing_updated' | 'offer_made' | 'offer_received' | 'message_sent' | 'profile_updated';
+    description: string;
+    metadata?: Record<string, any>;
+    ip_address?: string;
+    user_agent?: string;
+    created_at: string;
+    user?: UserProfile;
 }
 export interface AdminListing {
     id: string;
@@ -152,6 +218,7 @@ export interface Message {
     message_type: 'text' | 'image' | 'system';
     created_at: string;
     is_read: boolean;
+    status?: MessageStatusType;
     sender?: UserProfile;
 }
 export interface Conversation {

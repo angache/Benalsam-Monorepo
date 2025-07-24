@@ -1,18 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserProfile } from '@/services/profileService';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar_url?: string;
-  rating?: number;
-  total_ratings?: number;
-  rating_sum?: number;
-  created_at: string;
-  updated_at: string;
-}
+import { User } from '@benalsam/shared-types';
 
 interface AuthState {
   user: User | null;

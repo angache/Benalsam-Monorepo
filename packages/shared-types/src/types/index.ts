@@ -2,6 +2,43 @@
 export type IconType = any; // Will be replaced with proper icon type based on platform
 
 // ===========================
+// STATUS ENUMS
+// ===========================
+
+export const MessageStatus = {
+  SENT: 'sent',
+  DELIVERED: 'delivered',
+  READ: 'read'
+} as const;
+
+export type MessageStatusType = typeof MessageStatus[keyof typeof MessageStatus];
+
+export const PremiumSubscriptionStatus = {
+  ACTIVE: 'active',
+  CANCELLED: 'cancelled',
+  EXPIRED: 'expired',
+  PENDING: 'pending'
+} as const;
+
+export type PremiumSubscriptionStatusType = typeof PremiumSubscriptionStatus[keyof typeof PremiumSubscriptionStatus];
+
+export const ProfileStatus = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive'
+} as const;
+
+export type ProfileStatusType = typeof ProfileStatus[keyof typeof ProfileStatus];
+
+export const ReportStatus = {
+  PENDING: 'pending',
+  REVIEWED: 'reviewed',
+  RESOLVED: 'resolved',
+  DISMISSED: 'dismissed'
+} as const;
+
+export type ReportStatusType = typeof ReportStatus[keyof typeof ReportStatus];
+
+// ===========================
 // USER TYPES
 // ===========================
 
@@ -35,6 +72,62 @@ export interface UserProfile {
   chat_preferences: ChatPreferences;
   created_at: string;
   updated_at: string;
+  status?: ProfileStatusType;
+}
+
+// ===========================
+// PREMIUM SUBSCRIPTION TYPES
+// ===========================
+
+export interface PremiumSubscription {
+  id: string;
+  user_id: string;
+  plan_type: 'monthly' | 'yearly' | 'lifetime';
+  status: PremiumSubscriptionStatusType;
+  start_date: string;
+  end_date?: string;
+  auto_renew: boolean;
+  payment_method?: string;
+  amount: number;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+  user?: UserProfile;
+}
+
+// ===========================
+// REPORT TYPES
+// ===========================
+
+export interface ListingReport {
+  id: string;
+  listing_id: string;
+  reporter_id: string;
+  report_type: 'inappropriate' | 'spam' | 'fake' | 'duplicate' | 'other';
+  reason: string;
+  status: ReportStatusType;
+  admin_notes?: string;
+  resolved_at?: string;
+  created_at: string;
+  updated_at: string;
+  listing?: Listing;
+  reporter?: UserProfile;
+}
+
+// ===========================
+// USER ACTIVITY TYPES
+// ===========================
+
+export interface UserActivity {
+  id: string;
+  user_id: string;
+  activity_type: 'login' | 'listing_created' | 'listing_updated' | 'offer_made' | 'offer_received' | 'message_sent' | 'profile_updated';
+  description: string;
+  metadata?: Record<string, any>;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+  user?: UserProfile;
 }
 
 // ===========================
@@ -183,6 +276,7 @@ export interface Message {
   message_type: 'text' | 'image' | 'system';
   created_at: string;
   is_read: boolean;
+  status?: MessageStatusType;
   sender?: UserProfile;
 }
 

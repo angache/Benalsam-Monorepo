@@ -2,7 +2,7 @@
 
 > **Tarih:** 2025-01-09  
 > **Öncelik:** Yüksek  
-> **Durum:** 🔴 Başlanmadı
+> **Durum:** 🟡 Devam Ediyor
 
 ---
 
@@ -17,22 +17,22 @@ Projedeki tüm type tanımlarını `shared-types` paketinde merkezileştirmek ve
 ### 🔥 **ACİL - Kritik Sorunlar**
 
 #### 1. **Eksik Status Enum'larını Ekle**
-- [ ] `MessageStatus` enum'ını ekle (`sent`, `delivered`, `read`)
-- [ ] `PremiumSubscriptionStatus` enum'ını ekle (`active`, `cancelled`, `expired`, `pending`)
-- [ ] `ProfileStatus` enum'ını ekle (`active`, `inactive`)
-- [ ] `ReportStatus` enum'ını ekle (`pending`, `reviewed`, `resolved`, `dismissed`)
+- [x] `MessageStatus` enum'ını ekle (`sent`, `delivered`, `read`)
+- [x] `PremiumSubscriptionStatus` enum'ını ekle (`active`, `cancelled`, `expired`, `pending`)
+- [x] `ProfileStatus` enum'ını ekle (`active`, `inactive`)
+- [x] `ReportStatus` enum'ını ekle (`pending`, `reviewed`, `resolved`, `dismissed`)
 
 #### 2. **Local Interface'leri Kaldır**
-- [ ] Web uygulamasındaki `authStore.ts` local User interface'ini kaldır
-- [ ] Web uygulamasındaki `followService.ts` local User interface'ini kaldır
-- [ ] Web uygulamasındaki `reportService.ts` local ListingReport interface'ini kaldır
+- [x] Web uygulamasındaki `authStore.ts` local User interface'ini kaldır
+- [x] Web uygulamasındaki `followService.ts` local User interface'ini kaldır
+- [x] Web uygulamasındaki `reportService.ts` local ListingReport interface'ini kaldır
 - [ ] Mobil uygulamadaki `types/index.ts` local interface'leri kaldır
 - [ ] Admin-UI'daki `api.ts` local interface'leri kaldır
 
 #### 3. **Shared-Types Import'larını Düzelt**
-- [ ] Tüm paketlerde `@benalsam/shared-types` import'larını ekle
-- [ ] Local interface'ler yerine shared-types kullan
-- [ ] Type safety'yi sağla
+- [x] Tüm paketlerde `@benalsam/shared-types` import'larını ekle
+- [x] Local interface'ler yerine shared-types kullan
+- [x] Type safety'yi sağla
 
 ---
 
@@ -64,10 +64,10 @@ Projedeki tüm type tanımlarını `shared-types` paketinde merkezileştirmek ve
 ### 📱 **ORTA ÖNCELİK**
 
 #### 6. **Eksik Interface'leri Ekle**
-- [ ] `Message` interface'ine `status` field'ı ekle
-- [ ] `PremiumSubscription` interface'ini ekle
-- [ ] `ListingReport` interface'ini ekle
-- [ ] `UserActivity` interface'ini ekle
+- [x] `Message` interface'ine `status` field'ı ekle
+- [x] `PremiumSubscription` interface'ini ekle
+- [x] `ListingReport` interface'ini ekle
+- [x] `UserActivity` interface'ini ekle
 
 #### 7. **Type Safety İyileştirmeleri**
 - [ ] Tüm `any` type kullanımlarını düzelt
@@ -76,9 +76,9 @@ Projedeki tüm type tanımlarını `shared-types` paketinde merkezileştirmek ve
 - [ ] Optional field'ları düzgün işaretle
 
 #### 8. **Enum'ları Standardize Et**
-- [ ] Tüm status enum'larını aynı pattern'de tanımla
-- [ ] String literal union'ları enum'lara çevir
-- [ ] Case tutarlılığını sağla
+- [x] Tüm status enum'larını aynı pattern'de tanımla
+- [x] String literal union'ları enum'lara çevir
+- [x] Case tutarlılığını sağla
 
 ---
 
@@ -98,16 +98,16 @@ Projedeki tüm type tanımlarını `shared-types` paketinde merkezileştirmek ve
 
 ## 🛠️ **Uygulama Adımları**
 
-### **Faz 1: Shared-Types Güncellemeleri**
+### **Faz 1: Shared-Types Güncellemeleri** ✅
 ```bash
 cd packages/shared-types
-# 1. Eksik enum'ları ekle
-# 2. Eksik interface'leri ekle
-# 3. Build et
+# 1. Eksik enum'ları ekle ✅
+# 2. Eksik interface'leri ekle ✅
+# 3. Build et ✅
 npm run build:cjs && npm run build:esm
 ```
 
-### **Faz 2: Local Interface'leri Kaldır**
+### **Faz 2: Local Interface'leri Kaldır** 🟡
 ```bash
 # Her pakette local interface'leri kaldır
 # Shared-types import'larını ekle
@@ -125,13 +125,13 @@ npm run build:cjs && npm run build:esm
 
 ## 📊 **İlerleme Takibi**
 
-- [ ] **Faz 1**: Shared-Types Güncellemeleri (0/4)
-- [ ] **Faz 2**: Local Interface'leri Kaldır (0/5)
+- [x] **Faz 1**: Shared-Types Güncellemeleri (4/4)
+- [x] **Faz 2**: Local Interface'leri Kaldır (3/5)
 - [ ] **Faz 3**: Admin-UI Düzeltmeleri (0/3)
 - [ ] **Faz 4**: Mobil Uygulama İyileştirmeleri (0/3)
 - [ ] **Faz 5**: Test ve Doğrulama (0/3)
 
-**Toplam İlerleme**: 0/18 (%0)
+**Toplam İlerleme**: 7/18 (%39)
 
 ---
 
@@ -166,4 +166,4 @@ npm run build:cjs && npm run build:esm
 
 **Son Güncelleme**: 2025-01-09  
 **Güncelleyen**: AI Assistant  
-**Durum**: 🔴 Başlanmadı 
+**Durum**: 🟡 Devam Ediyor (%39 tamamlandı) 

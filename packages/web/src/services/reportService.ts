@@ -1,18 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
-
-// Report interface
-interface ListingReport {
-  id: string;
-  reporter_id: string;
-  listing_id: string;
-  reason: string;
-  details?: string;
-  status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-  admin_notes?: string;
-  created_at: string;
-  updated_at?: string;
-}
+import { ListingReport } from '@benalsam/shared-types';
 
 // Report reason types
 export const REPORT_REASONS = {
