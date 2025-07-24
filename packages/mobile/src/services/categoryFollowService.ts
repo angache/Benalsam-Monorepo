@@ -1,6 +1,6 @@
 import { supabase  } from '../services/supabaseClient';
 import { PostgrestError } from '@supabase/supabase-js';
-import { UserProfile, Listing } from '../types';
+import { UserProfile, Listing, ListingWithFavorite } from '../types';
 
 // Error types
 export class CategoryFollowError extends Error {
@@ -34,12 +34,6 @@ export interface FollowedCategory {
 export interface CategoryWithListings {
   category_name: string;
   listings: ListingWithFavorite[];
-}
-
-// Omit the user field from Listing first, then extend it with our own user field
-export interface ListingWithFavorite extends Omit<Listing, 'user'> {
-  user: Pick<UserProfile, 'id' | 'name' | 'avatar_url' | 'rating' | 'total_ratings' | 'rating_sum'>;
-  is_favorited: boolean;
 }
 
 export interface ApiResponse<T> {

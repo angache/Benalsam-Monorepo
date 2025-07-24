@@ -29,6 +29,69 @@ export interface UserProfile {
     created_at: string;
     updated_at: string;
 }
+export interface AdminListing {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    status: 'PENDING_APPROVAL' | 'ACTIVE' | 'INACTIVE' | 'REJECTED';
+    views: number;
+    favorites: number;
+    createdAt: string;
+    updatedAt: string;
+    userId: string;
+    images: string[];
+    user?: {
+        id: string;
+        email: string;
+        name: string;
+    };
+}
+export interface AdminUser {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    status: 'ACTIVE' | 'INACTIVE' | 'BANNED';
+    createdAt: string;
+    lastLoginAt?: string;
+    profileImage?: string;
+    permissions?: any[];
+}
+export interface AdminRole {
+    id: string;
+    name: string;
+    display_name: string;
+    description?: string;
+    level: number;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+export interface AdminPermission {
+    id: string;
+    name: string;
+    resource: string;
+    action: string;
+    description?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+export interface AdminAnalyticsData {
+    totalListings: number;
+    totalUsers: number;
+    totalRevenue: number;
+    pendingListings: number;
+    activeListings: number;
+    rejectedListings: number;
+    monthlyStats: {
+        month: string;
+        listings: number;
+        users: number;
+        revenue: number;
+    }[];
+}
 export interface Listing {
     id: string;
     user_id: string;
@@ -67,15 +130,20 @@ export interface ListingWithUser extends Listing {
     total_views?: number;
     popularity_score?: number;
 }
+export interface ListingWithFavorite extends Omit<Listing, 'user'> {
+    user: Pick<UserProfile, 'id' | 'full_name' | 'avatar_url'>;
+    is_favorited: boolean;
+}
 export declare const ListingStatus: {
-    readonly ACTIVE: "active";
-    readonly INACTIVE: "inactive";
-    readonly PENDING: "pending";
-    readonly REJECTED: "rejected";
-    readonly SOLD: "sold";
-    readonly DELETED: "deleted";
-    readonly EXPIRED: "expired";
+    readonly ACTIVE: "ACTIVE";
+    readonly INACTIVE: "INACTIVE";
+    readonly PENDING_APPROVAL: "PENDING_APPROVAL";
+    readonly REJECTED: "REJECTED";
+    readonly SOLD: "SOLD";
+    readonly DELETED: "DELETED";
+    readonly EXPIRED: "EXPIRED";
 };
+export type ListingStatusType = typeof ListingStatus[keyof typeof ListingStatus];
 export interface Message {
     id: string;
     conversation_id: string;

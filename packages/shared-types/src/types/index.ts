@@ -38,6 +38,78 @@ export interface UserProfile {
 }
 
 // ===========================
+// ADMIN PANEL TYPES
+// ===========================
+
+export interface AdminListing {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  status: 'PENDING_APPROVAL' | 'ACTIVE' | 'INACTIVE' | 'REJECTED';
+  views: number;
+  favorites: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  images: string[];
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+  };
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'BANNED';
+  createdAt: string;
+  lastLoginAt?: string;
+  profileImage?: string;
+  permissions?: any[];
+}
+
+export interface AdminRole {
+  id: string;
+  name: string;
+  display_name: string;
+  description?: string;
+  level: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminPermission {
+  id: string;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminAnalyticsData {
+  totalListings: number;
+  totalUsers: number;
+  totalRevenue: number;
+  pendingListings: number;
+  activeListings: number;
+  rejectedListings: number;
+  monthlyStats: {
+    month: string;
+    listings: number;
+    users: number;
+    revenue: number;
+  }[];
+}
+
+// ===========================
 // LISTING TYPES
 // ===========================
 
@@ -81,15 +153,23 @@ export interface ListingWithUser extends Listing {
   popularity_score?: number;
 }
 
+// Omit the user field from Listing first, then extend it with our own user field
+export interface ListingWithFavorite extends Omit<Listing, 'user'> {
+  user: Pick<UserProfile, 'id' | 'full_name' | 'avatar_url'>;
+  is_favorited: boolean;
+}
+
 export const ListingStatus = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-  PENDING: 'pending',
-  REJECTED: 'rejected',
-  SOLD: 'sold',
-  DELETED: 'deleted',
-  EXPIRED: 'expired'
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  REJECTED: 'REJECTED',
+  SOLD: 'SOLD',
+  DELETED: 'DELETED',
+  EXPIRED: 'EXPIRED'
 } as const;
+
+export type ListingStatusType = typeof ListingStatus[keyof typeof ListingStatus];
 
 // ===========================
 // MESSAGE AND CONVERSATION TYPES

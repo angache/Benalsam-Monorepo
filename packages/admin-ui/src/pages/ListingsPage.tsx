@@ -42,8 +42,12 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
-import type { Listing } from '../types';
+import type { Listing } from '@benalsam/shared-types';
+import { ListingStatus } from '@benalsam/shared-types';
 import { useNavigate } from 'react-router-dom';
+
+console.log('📄 ListingsPage.tsx loaded');
+console.log('📄 ListingStatus:', ListingStatus);
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -68,23 +72,25 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const statusColors = {
-  ACTIVE: 'success',
-  INACTIVE: 'default',
-  PENDING: 'warning',
-  REJECTED: 'error',
+  [ListingStatus.ACTIVE]: 'success',
+  [ListingStatus.INACTIVE]: 'default',
+  [ListingStatus.PENDING_APPROVAL]: 'warning',
+  [ListingStatus.REJECTED]: 'error',
 } as const;
 
 const statusLabels = {
-  ACTIVE: 'Aktif',
-  INACTIVE: 'Pasif',
-  PENDING: 'Onay Bekliyor',
-  REJECTED: 'Reddedildi',
+  [ListingStatus.ACTIVE]: 'Aktif',
+  [ListingStatus.INACTIVE]: 'Pasif',
+  [ListingStatus.PENDING_APPROVAL]: 'Onay Bekliyor',
+  [ListingStatus.REJECTED]: 'Reddedildi',
 } as const;
 
 export const ListingsPage: React.FC = () => {
+  console.log('🚀 ListingsPage component rendered');
+  
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>(ListingStatus.PENDING_APPROVAL); // İlk tab için PENDING_APPROVAL
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [moderationDialog, setModerationDialog] = useState(false);
   const [moderationAction, setModerationAction] = useState<'approve' | 'reject' | 're-evaluate'>('approve');
@@ -92,16 +98,40 @@ export const ListingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  console.log('🔧 Initial state:', {
+    tabValue,
+    searchTerm,
+    statusFilter,
+    ListingStatus: ListingStatus,
+    statusLabels,
+    statusColors
+  });
+
   // Fetch listings
   const { data: listingsResponse, isLoading } = useQuery({
     queryKey: ['listings', { search: searchTerm, status: statusFilter }],
-    queryFn: () => apiService.getListings({
-      page: 1,
-      limit: 100,
-      search: searchTerm,
-      filters: statusFilter !== 'ALL' ? { status: statusFilter } : undefined,
-    }),
+    queryFn: () => {
+      console.log('📡 API call params:', {
+        page: 1,
+        limit: 100,
+        search: searchTerm,
+        filters: statusFilter && statusFilter !== 'ALL' ? { status: statusFilter } : undefined,
+        statusFilter: statusFilter, // Debug için
+      });
+      return apiService.getListings({
+        page: 1,
+        limit: 100,
+        search: searchTerm,
+        filters: statusFilter && statusFilter !== 'ALL' ? { status: statusFilter } : undefined,
+      });
+    },
     staleTime: 30 * 1000, // 30 seconds
+  });
+
+  console.log('📊 API Response:', {
+    listingsResponse,
+    isLoading,
+    dataLength: listingsResponse?.data?.length || 0
   });
 
   // Moderation mutation
@@ -129,9 +159,25 @@ export const ListingsPage: React.FC = () => {
   });
 
   const listings = listingsResponse?.data || [];
-  const pendingListings = listings.filter(l => l.status === 'PENDING');
-  const activeListings = listings.filter(l => l.status === 'ACTIVE');
-  const rejectedListings = listings.filter(l => l.status === 'REJECTED');
+  
+  console.log('🔍 Raw listings:', {
+    totalListings: listings.length,
+    allStatuses: listings.map(l => l.status),
+    uniqueStatuses: [...new Set(listings.map(l => l.status))]
+  });
+  
+  const pendingListings = listings.filter(l => l.status === ListingStatus.PENDING_APPROVAL);
+  const activeListings = listings.filter(l => l.status === ListingStatus.ACTIVE);
+  const rejectedListings = listings.filter(l => l.status === ListingStatus.REJECTED);
+  
+  console.log('📋 Filtered listings:', {
+    pendingCount: pendingListings.length,
+    activeCount: activeListings.length,
+    rejectedCount: rejectedListings.length,
+    pendingListings: pendingListings.map(l => ({ id: l.id, title: l.title, status: l.status })),
+    activeListings: activeListings.map(l => ({ id: l.id, title: l.title, status: l.status })),
+    rejectedListings: rejectedListings.map(l => ({ id: l.id, title: l.title, status: l.status }))
+  });
 
   const handleModeration = () => {
     if (selectedListing) {
@@ -184,13 +230,22 @@ export const ListingsPage: React.FC = () => {
       field: 'status',
       headerName: 'Durum',
       width: 150,
-      renderCell: (params) => (
-        <Chip
-          label={statusLabels[params.value as keyof typeof statusLabels]}
-          color={statusColors[params.value as keyof typeof statusColors]}
-          size="small"
-        />
-      ),
+      renderCell: (params) => {
+        console.log('🔍 Status chip render:', {
+          value: params.value,
+          statusLabels: statusLabels,
+          statusColors: statusColors,
+          label: statusLabels[params.value as keyof typeof statusLabels],
+          color: statusColors[params.value as keyof typeof statusColors]
+        });
+        return (
+          <Chip
+            label={statusLabels[params.value as keyof typeof statusLabels]}
+            color={statusColors[params.value as keyof typeof statusColors]}
+            size="small"
+          />
+        );
+      },
     },
     {
       field: 'views',
@@ -237,7 +292,7 @@ export const ListingsPage: React.FC = () => {
             </IconButton>
           </Tooltip>
           
-          {params.row.status === 'PENDING' && (
+          {params.row.status === ListingStatus.PENDING_APPROVAL && (
             <>
               <Tooltip title="Onayla">
                 <IconButton
@@ -268,7 +323,7 @@ export const ListingsPage: React.FC = () => {
             </>
           )}
           
-          {(params.row.status === 'ACTIVE' || params.row.status === 'INACTIVE') && (
+          {(params.row.status === ListingStatus.ACTIVE || params.row.status === ListingStatus.INACTIVE) && (
             <Tooltip title="Tekrar Değerlendir">
               <IconButton
                 size="small"
@@ -280,7 +335,7 @@ export const ListingsPage: React.FC = () => {
             </Tooltip>
           )}
           
-          {params.row.status === 'REJECTED' && (
+          {params.row.status === ListingStatus.REJECTED && (
             <Tooltip title="Yeniden İncele">
               <IconButton
                 size="small"
@@ -420,7 +475,7 @@ export const ListingsPage: React.FC = () => {
                 >
                   <MenuItem value="ALL">Tümü</MenuItem>
                   <MenuItem value="ACTIVE">Aktif</MenuItem>
-                  <MenuItem value="PENDING">Onay Bekleyen</MenuItem>
+                  <MenuItem value="PENDING_APPROVAL">Onay Bekleyen</MenuItem>
                   <MenuItem value="INACTIVE">Pasif</MenuItem>
                   <MenuItem value="REJECTED">Reddedilen</MenuItem>
                 </Select>

@@ -39,7 +39,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <CustomThemeProvider>
-        <Router>
+        <Router basename={import.meta.env.DEV ? undefined : '/admin'}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route

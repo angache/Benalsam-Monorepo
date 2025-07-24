@@ -8,7 +8,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/admin/', // Nginx reverse proxy için base path
+  base: isDevelopment ? '/' : '/admin/', // Development'ta root, production'da /admin/
   server: {
     port: 3003,
     host: '0.0.0.0', // Tüm network interface'lerini dinle
@@ -25,7 +25,7 @@ export default defineConfig({
     watch: {
       usePolling: true, // VPS'de dosya değişikliklerini izlemek için polling kullan
       interval: 1000, // 1 saniye aralıklarla kontrol et
-    },
+    }
   },
   build: {
     outDir: 'dist',
