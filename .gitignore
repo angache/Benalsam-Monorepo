@@ -15,6 +15,18 @@ packages/*/dist/
 .env.test.local
 .env.production.local
 
+# SECURITY: Hassas dosyalar
+ecosystem.config.js
+ecosystem.*.config.js
+env.local.example
+env.production.template
+scripts/env.production.template
+packages/*/.env*
+packages/admin-backend/.env*
+packages/admin-ui/.env*
+packages/web/.env*
+packages/mobile/.env*
+
 # Build outputs
 dist/
 build/
