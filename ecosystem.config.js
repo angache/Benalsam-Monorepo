@@ -13,6 +13,7 @@ module.exports = {
         ELASTICSEARCH_URL: 'http://209.227.228.96:9200',
         ELASTICSEARCH_INDEX: 'benalsam_listings',
         SUPABASE_URL: 'https://dnwreckpeenhbdtapmxr.supabase.co',
+        SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRud3JlY2twZWVuaGJkdGFwbXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5OTgwNzAsImV4cCI6MjA2NTU3NDA3MH0.2lzsxTj4',
         SUPABASE_SERVICE_ROLE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRud3JlY2twZWVuaGJkdGFwbXhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTk5ODA3MCwiZXhwIjoyMDY1NTc0MDcwfQ.b6UNsncrPKXYB-17oyOEx8xY_hbofAx7ObwzKsyhsm4',
         ADMIN_JWT_SECRET: 'your-admin-jwt-secret-key-here'
       },
@@ -36,7 +37,7 @@ module.exports = {
         NODE_ENV: 'development',
         PORT: 3003,
         VITE_API_URL: 'http://localhost:3002/api/v1',
-        VITE_ELASTICSEARCH_URL: 'http://localhost:3002/api/v1/elasticsearch'
+        VITE_ELASTICSEARCH_URL: 'http://209.227.228.96:9200'
       },
       log_file: './logs/combined.log',
       error_file: './logs/error.log',
