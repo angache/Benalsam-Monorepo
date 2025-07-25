@@ -79,7 +79,7 @@ const AdBanner = ({ placement, format = 'static', className }) => {
           src={ad.image_url}
           alt={ad.title}
           className="w-full h-full object-cover rounded-lg"
-         src="https://images.unsplash.com/photo-1618725222986-a0e0f7f85f64" />
+        />
       </a>
     </motion.div>
   );
