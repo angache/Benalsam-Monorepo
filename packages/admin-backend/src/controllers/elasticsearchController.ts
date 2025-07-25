@@ -77,6 +77,27 @@ export class ElasticsearchController {
   }
 
   /**
+   * Create index
+   */
+  async createIndex(req: Request, res: Response) {
+    try {
+      const success = await this.elasticsearchService.createIndex();
+      
+      res.json({
+        success,
+        message: success ? 'Index created successfully' : 'Failed to create index'
+      });
+    } catch (error) {
+      logger.error('❌ Failed to create index:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create index',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
    * Get index statistics
    */
   async getIndexStats(req: Request, res: Response) {

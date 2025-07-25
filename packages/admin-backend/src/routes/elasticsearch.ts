@@ -28,6 +28,7 @@ router.post('/queue/retry-failed', (req, res) => elasticsearchController.retryFa
 router.post('/queue/clear', (req, res) => elasticsearchController.clearQueue(req, res));
 
 // Index Management Routes
+router.post('/create-index', (req, res) => elasticsearchController.createIndex(req, res));
 router.post('/reindex', (req, res) => elasticsearchController.reindexAll(req, res));
 
 export default router; 

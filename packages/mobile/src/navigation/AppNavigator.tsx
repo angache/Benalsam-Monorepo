@@ -50,6 +50,7 @@ import FirebaseTestScreen from '../screens/FirebaseTestScreen';
 import FCMTestScreen from '../screens/FCMTestScreen';
 import ModerationScreen from '../screens/ModerationScreen';
 import AnalyticsDashboardScreen from '../screens/AnalyticsDashboardScreen';
+import ElasticsearchTestScreen from '../screens/ElasticsearchTestScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -299,6 +300,19 @@ const AppNavigator = () => {
           },
         }}
       />
+      <Stack.Screen 
+        name="ElasticsearchTest" 
+        component={ElasticsearchTestScreen}
+        options={{
+          headerShown: false,
+        }}
+        listeners={{
+          focus: () => {
+            console.log('🔵 [Navigation] ElasticsearchTest screen focused');
+          },
+        }}
+      />
+      
       <Stack.Screen
         name="CreateListingCategory"
         component={CreateListingCategoryScreen}
@@ -650,6 +664,7 @@ const AppNavigator = () => {
               },
             }}
           />
+
         </>
       )}
     </Stack.Navigator>

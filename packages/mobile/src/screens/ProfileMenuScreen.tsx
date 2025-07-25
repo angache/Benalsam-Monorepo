@@ -56,6 +56,7 @@ const MENU_ITEMS: MenuItem[] = [
   { label: "Gönderdiğim Teklifler", icon: MessageCircle, screen: "SentOffers" },
   { label: "Premium Üyelik", icon: Crown, screen: "Premium" },
   { label: "Ayarlar", icon: Settings, screen: "Settings" },
+  { label: "Elasticsearch Test", icon: Search, screen: "ElasticsearchTest" },
 ];
 
 const ProfileMenuScreen = () => {
