@@ -15,4 +15,7 @@ WORKDIR /app/packages/web
 # Vite'ın tüm interface'leri dinlemesi için
 ENV HOST=0.0.0.0
 
+# Environment değişkenlerini build time'da kopyala
+COPY .env .env
+
 CMD ["pnpm", "run", "dev"]
