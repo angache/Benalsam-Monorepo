@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   StatusBar,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -37,6 +38,7 @@ import { useToggleFavorite } from '../hooks/queries/useFavorites';
 import { ListingWithUser } from '../services/listingService/core';
 import { CategoryWithListings } from '../services/categoryFollowService';
 import { UseQueryResult } from '@tanstack/react-query';
+import { useScrollHeader } from '../hooks/useScrollHeader';
 
 // Legacy imports - aşamalı olarak kaldırılacak
 import { fetchListings, fetchPopularListings, fetchTodaysDeals } from '../services/listingService';
@@ -288,6 +290,7 @@ const HomeScreen = () => {
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
+  const { handleScroll, headerOpacity, headerTranslateY } = useScrollHeader(50);
   
   // React Query hooks with proper typing
   const { data: listings = [], isLoading: listingsLoading, refetch: refetchListings } = useListings() as UseQueryResult<ListingWithUser[], Error>;
@@ -426,14 +429,31 @@ const HomeScreen = () => {
         <View style={[styles.content, { 
           paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0
         }]}>
-          <Header 
-            onThemeToggle={() => {}}
-            isDarkMode={darkMode}
-            onSearchPress={() => navigateToScreen('Search')}
-            onNotificationPress={() => navigateToScreen('Messages')}
-            onCreatePress={() => navigateToScreen('Create')}
-          />
-          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <Animated.View
+            style={{
+              opacity: headerOpacity,
+              transform: [{ translateY: headerTranslateY }],
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1000,
+            }}
+          >
+            <Header 
+              onThemeToggle={() => {}}
+              isDarkMode={darkMode}
+              onSearchPress={() => navigateToScreen('Search')}
+              onNotificationPress={() => navigateToScreen('Messages')}
+              onCreatePress={() => navigateToScreen('Create')}
+            />
+          </Animated.View>
+          <ScrollView 
+            style={styles.scrollView} 
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.primary }]}>Yeni İlanlar</Text>
               {renderSkeletonGrid()}
@@ -457,18 +477,32 @@ const HomeScreen = () => {
       <View style={[styles.content, { 
         paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0
       }]}>
-        <Header 
-          onThemeToggle={() => {}}
-          isDarkMode={darkMode}
-          onSearchPress={() => navigateToScreen('Search')}
-          onNotificationPress={() => navigateToScreen('Messages')}
-          onCreatePress={() => navigateToScreen('Create')}
-        />
+        <Animated.View
+          style={{
+            opacity: headerOpacity,
+            transform: [{ translateY: headerTranslateY }],
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}
+        >
+          <Header 
+            onThemeToggle={() => {}}
+            isDarkMode={darkMode}
+            onSearchPress={() => navigateToScreen('Search')}
+            onNotificationPress={() => navigateToScreen('Messages')}
+            onCreatePress={() => navigateToScreen('Create')}
+          />
+        </Animated.View>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={[styles.scrollContent, {
             paddingBottom: Platform.OS === 'android' ? 60 : 80
           }]}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
