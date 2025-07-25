@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '../stores';
@@ -45,6 +46,9 @@ const ElasticsearchTestScreen = ({ navigation }: any) => {
     true // enabled
   );
 
+  const [searchQuery, setSearchQuery] = useState('iPhone');
+  const [isSearching, setIsSearching] = useState(false);
+
   const runTest = () => {
     Alert.alert(
       'Elasticsearch Test',
@@ -54,6 +58,14 @@ const ElasticsearchTestScreen = ({ navigation }: any) => {
       `Search Error: ${searchError ? '❌ Error' : '✅ Success'}`,
       [{ text: 'OK' }]
     );
+  };
+
+  const performSearch = () => {
+    if (searchQuery.trim()) {
+      setTestQuery(searchQuery);
+      setIsSearching(true);
+      refetchSearch();
+    }
   };
 
   return (
@@ -98,6 +110,33 @@ const ElasticsearchTestScreen = ({ navigation }: any) => {
                 {stats ? '✅ Available' : '❌ Unavailable'}
               </Text>
             )}
+          </View>
+
+          {/* Search Section */}
+          <View style={styles.searchSection}>
+            <Text style={[styles.label, { color: colors.text }]}>Test Search:</Text>
+            <View style={styles.searchRow}>
+              <TextInput
+                style={[styles.searchInput, { 
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                  borderColor: colors.border 
+                }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Arama terimi girin..."
+                placeholderTextColor={colors.textSecondary}
+              />
+              <TouchableOpacity
+                style={[styles.searchButton, { backgroundColor: colors.primary }]}
+                onPress={performSearch}
+                disabled={isSearchLoading}
+              >
+                <Text style={[styles.searchButtonText, { color: colors.white }]}>
+                  {isSearchLoading ? 'Aranıyor...' : 'Ara'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <TouchableOpacity
@@ -279,6 +318,34 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   resultPrice: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  searchSection: {
+    marginTop: 20,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    fontSize: 16,
+  },
+  searchButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  searchButtonText: {
     fontSize: 16,
     fontWeight: '600',
   },

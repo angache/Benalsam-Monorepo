@@ -6,23 +6,32 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Filter, X, ChevronDown, TrendingUp } from "lucide-react-native";
+import {
+  Filter,
+  X,
+  ChevronDown,
+  TrendingUp,
+  ArrowLeft,
+  Grid3X3,
+  List,
+  SlidersHorizontal
+} from "lucide-react-native";
 import { useThemeColors } from "../stores";
 import { useAuthStore } from "../stores";
 import {
-  Header,
   SearchBar,
   ListingCard,
   LoadingSpinner,
   Card,
   Button,
+  FilterBottomSheet,
+  SearchResults,
 } from "../components";
-import CategoryCard from "../components/CategoryCard";
-import CategoryAttributesSelector from "../components/CategoryAttributesSelector";
-import { useSearchActions } from "../hooks/queries/useSearch";
-import { categoriesConfig } from "../config/categories-with-attributes";
+import { supabase } from "../services/supabaseClient";
 
 const QUICK_FILTERS = [
   { label: "Elektronik", category: "Elektronik" },
@@ -42,302 +51,365 @@ const SearchScreen = ({ navigation, route }: any) => {
   const colors = useThemeColors();
   const { user } = useAuthStore();
 
-  // React Query search hooks
-  const {
-    results,
-    isLoading,
-    totalCount,
-    performSearch,
-    performCategorySearch,
-    filters,
-    updateFilter,
-    clearFilters,
-    hasActiveFilters,
-    recentSearches,
-  } = useSearchActions();
-
+  // Basit state management
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showSortOptions, setShowSortOptions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Manuel arama fonksiyonu
+  const performSearch = useCallback(async (query?: string, category?: string) => {
+    console.log('🔍 performSearch - ENTRY POINT');
+    console.log('🔍 performSearch - query:', query);
+    console.log('🔍 performSearch - category:', category);
+    
+    const searchText = query || searchQuery;
+    const searchCategory = category || selectedCategory;
+    
+    console.log('🔍 performSearch - searchText:', searchText);
+    console.log('🔍 performSearch - searchCategory:', searchCategory);
+    
+    if (!searchText.trim() && !searchCategory) {
+      console.log('🔍 performSearch - Empty search, clearing results');
+      setResults([]);
+      setTotalCount(0);
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      let query = supabase.from('listings').select('*');
+      
+      if (searchText.trim()) {
+        query = query.ilike('title', `%${searchText}%`);
+      }
+      
+      if (searchCategory) {
+        query = query.eq('category', searchCategory);
+      }
+      
+      const { data, error } = await query.limit(20);
+      
+      if (error) {
+        console.error('🔍 performSearch - Error:', error);
+        setResults([]);
+        setTotalCount(0);
+      } else {
+        console.log('🔍 performSearch - Results:', data?.length || 0);
+        setResults(data || []);
+        setTotalCount(data?.length || 0);
+      }
+    } catch (error) {
+      console.error('🔍 performSearch - Exception:', error);
+      setResults([]);
+      setTotalCount(0);
+    } finally {
+      setIsLoading(false);
+    }
+    
+    console.log('🔍 performSearch - EXIT POINT');
+  }, [searchQuery, selectedCategory]);
+
+  // Category search
+  const performCategorySearch = useCallback(async (category: string) => {
+    console.log('🔍 performCategorySearch - category:', category);
+    setSelectedCategory(category);
+    setSearchQuery('');
+    await performSearch('', category);
+  }, [performSearch]);
 
   useEffect(() => {
     if (route?.params?.query) {
       const query = route.params.query;
-      updateFilter("searchQuery", query);
+      setSearchQuery(query);
       performSearch(query);
     } else if (route?.params?.category) {
       performCategorySearch(route.params.category);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route?.params?.query, route?.params?.category]);
+  }, [route?.params?.query, route?.params?.category, performSearch, performCategorySearch]);
 
-  // Filtreler ve quick filters için optimize edilmiş render fonksiyonu
-  const renderFiltersSection = useCallback(
-    () => (
-      <View style={styles.filtersContainer}>
-        {/* Quick Filters */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.quickFilters}
-          contentContainerStyle={styles.quickFiltersContent}
-        >
-          {QUICK_FILTERS.map((filter, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.quickFilterChip,
-                {
-                  backgroundColor:
-                    filters.selectedCategory === filter.category
-                      ? colors.primary
-                      : colors.surface,
-                  borderColor:
-                    filters.selectedCategory === filter.category
-                      ? colors.primary
-                      : colors.border,
-                },
-              ]}
-              onPress={() => performCategorySearch(filter.category)}
-            >
-              <Text
-                style={[
-                  styles.quickFilterText,
-                  {
-                    color:
-                      filters.selectedCategory === filter.category
-                        ? colors.background
-                        : colors.text,
-                  },
-                ]}
-              >
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+  // Custom Header Component
+  const renderHeader = () => (
+    <View style={[styles.header, { backgroundColor: colors.background }]}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <ArrowLeft size={24} color={colors.text} />
+      </TouchableOpacity>
 
-        {/* Filter Bar */}
-        <View style={styles.filterBar}>
-          <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: colors.surface }]}
-            onPress={() => setShowFilters(!showFilters)}
-          >
-            <Filter size={16} color={colors.text} />
-            <Text style={[styles.filterButtonText, { color: colors.text }]}>
-              Filtrele
-            </Text>
-            <ChevronDown size={16} color={colors.text} />
-          </TouchableOpacity>
-
-          {hasActiveFilters && (
-            <TouchableOpacity
-              style={[styles.clearButton, { backgroundColor: colors.surface }]}
-              onPress={clearFilters}
-            >
-              <X size={16} color={colors.textSecondary} />
-              <Text
-                style={[
-                  styles.clearButtonText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                Temizle
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Sort Options and Attribute Filters (when filters shown) */}
-        {showFilters && (
-          <Card style={styles.filtersCard}>
-            <Text style={[styles.filtersTitle, { color: colors.text }]}>
-              Sıralama
-            </Text>
-            {SORT_OPTIONS.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.sortOption,
-                  {
-                    backgroundColor:
-                      filters.sortBy === option.value
-                        ? colors.primary + "20"
-                        : "transparent",
-                  },
-                ]}
-                onPress={() => updateFilter("sortBy", option.value)}
-              >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    {
-                      color:
-                        filters.sortBy === option.value
-                          ? colors.primary
-                          : colors.text,
-                    },
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-
-            {/* Attribute Filters */}
-            {filters.selectedCategory && (
-              <>
-                <Text
-                  style={[
-                    styles.filtersTitle,
-                    { color: colors.text, marginTop: 20 },
-                  ]}
-                >
-                  Özellikler
-                </Text>
-                <CategoryAttributesSelector
-                  categoryPath={filters.selectedCategory}
-                  selectedAttributes={filters.attributes || {}}
-                  onAttributesChange={(attributes) =>
-                    updateFilter("attributes", attributes)
-                  }
-                />
-              </>
-            )}
-          </Card>
+      <View style={styles.headerTitleContainer}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Arama
+        </Text>
+        {totalCount > 0 && (
+          <Text style={[styles.resultCount, { color: colors.textSecondary }]}>
+            {totalCount} sonuç
+          </Text>
         )}
       </View>
-    ),
-    [
-      filters,
-      colors,
-      showFilters,
-      hasActiveFilters,
-      performCategorySearch,
-      updateFilter,
-      clearFilters,
-    ]
+
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={() => setShowFilters(true)}
+      >
+        <SlidersHorizontal size={20} color={colors.primary} />
+        {(searchQuery || selectedCategory) && (
+          <View style={[styles.filterIndicator, { backgroundColor: colors.primary }]} />
+        )}
+      </TouchableOpacity>
+    </View>
   );
 
-  const renderRecentSearches = useCallback(
-    () => (
-      <Card style={styles.recentSearchesCard}>
-        <View style={styles.recentSearchesHeader}>
-          <TrendingUp size={20} color={colors.primary} />
-          <Text style={[styles.recentSearchesTitle, { color: colors.text }]}>
-            Son Aramalar
-          </Text>
-        </View>
-        <View style={styles.recentSearchesList}>
-          {recentSearches.map((search, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.recentSearchChip,
-                { backgroundColor: colors.surface },
-              ]}
-              onPress={() => {
-                updateFilter("searchQuery", search);
-                performSearch(search);
-              }}
-            >
-              <Text style={[styles.recentSearchText, { color: colors.text }]}>
-                {search}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Card>
-    ),
-    [recentSearches, colors, updateFilter, performSearch]
-  );
-
-  const renderEmptyState = useCallback(
-    () => (
-      <View style={styles.emptyContainer}>
-        <Text style={[styles.emptyIcon, { color: colors.primary }]}>🔍</Text>
-        <Text style={[styles.emptyTitle, { color: colors.text }]}>
-          {hasActiveFilters ? "Sonuç Bulunamadı" : "Arama Yapın"}
-        </Text>
-        <Text
-          style={[styles.emptyDescription, { color: colors.textSecondary }]}
-        >
-          {hasActiveFilters
-            ? "Farklı anahtar kelimeler deneyin veya filtreleri temizleyin"
-            : "İhtiyacınız olan ürünü arayarak başlayın"}
-        </Text>
-      </View>
-    ),
-    [hasActiveFilters, colors]
-  );
-
-  const renderListItem = useCallback(
-    ({ item }) => {
-      console.log("Render edilen ilan:", item);
-      return (
-        <ListingCard
-          listing={item}
-          onPress={() =>
-            navigation.navigate("ListingDetail", { listingId: item.id })
+  // Enhanced Search Bar Section
+  const renderSearchSection = () => (
+    <View style={[styles.searchSection, { backgroundColor: colors.background }]}>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={(text) => {
+          console.log("🔍 SearchScreen onChangeText - Text:", text);
+          setSearchQuery(text);
+        }}
+        onSearch={() => {
+          console.log("🔍 SearchScreen onSearch - Called");
+          if (searchQuery.trim()) {
+            performSearch(searchQuery);
           }
-          style={styles.listingCard}
-        />
-      );
-    },
-    [navigation]
+        }}
+        onSuggestionSelect={(suggestion) => {
+          console.log("🔍 SearchScreen onSuggestionSelect:", suggestion);
+          setSearchQuery(suggestion.text);
+          performSearch(suggestion.text);
+        }}
+        placeholder="Ne arıyorsunuz?"
+        showSuggestions={true}
+      />
+
+      {/* Quick Filters */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.quickFilters}
+        contentContainerStyle={styles.quickFiltersContent}
+      >
+        {QUICK_FILTERS.map((filter, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.quickFilterChip,
+              {
+                backgroundColor:
+                  selectedCategory === filter.category
+                    ? colors.primary
+                    : colors.surface,
+                borderColor:
+                  selectedCategory === filter.category
+                    ? colors.primary
+                    : colors.border,
+              },
+            ]}
+            onPress={() => performCategorySearch(filter.category)}
+          >
+            <Text
+              style={[
+                styles.quickFilterText,
+                {
+                  color:
+                    selectedCategory === filter.category
+                      ? colors.white
+                      : colors.text,
+                },
+              ]}
+            >
+              {filter.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
   );
 
-  const renderListEmpty = useCallback(
-    () => (
-      <>
-        {!isLoading && !hasActiveFilters && renderRecentSearches()}
-        {!isLoading && renderEmptyState()}
-      </>
-    ),
-    [isLoading, hasActiveFilters, renderRecentSearches, renderEmptyState]
+  // Results Header with Sort and View Options
+  const renderResultsHeader = () => (
+    <View style={[styles.resultsHeader, { backgroundColor: colors.background }]}>
+      <View style={styles.resultsInfo}>
+        <Text style={[styles.resultsTitle, { color: colors.text }]}>
+          Sonuçlar
+        </Text>
+        {totalCount > 0 && (
+          <Text style={[styles.resultsSubtitle, { color: colors.textSecondary }]}>
+            {totalCount} ilan bulundu
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.resultsActions}>
+        {/* Sort Button */}
+        <TouchableOpacity
+          style={styles.sortButton}
+          onPress={() => setShowSortOptions(!showSortOptions)}
+        >
+          <Text style={[styles.sortButtonText, { color: colors.text }]}>
+            Sırala
+          </Text>
+          <ChevronDown
+            size={16}
+            color={colors.text}
+            style={[
+              styles.sortIcon,
+              { transform: [{ rotate: showSortOptions ? '180deg' : '0deg' }] }
+            ]}
+          />
+        </TouchableOpacity>
+
+        {/* View Mode Toggle */}
+        <View style={styles.viewModeContainer}>
+          <TouchableOpacity
+            style={[
+              styles.viewModeButton,
+              viewMode === 'grid' && { backgroundColor: colors.primary }
+            ]}
+            onPress={() => setViewMode('grid')}
+          >
+            <Grid3X3
+              size={16}
+              color={viewMode === 'grid' ? colors.white : colors.text}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.viewModeButton,
+              viewMode === 'list' && { backgroundColor: colors.primary }
+            ]}
+            onPress={() => setViewMode('list')}
+          >
+            <List
+              size={16}
+              color={viewMode === 'list' ? colors.white : colors.text}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 
-  // DEBUG LOG EKLENDİ
-  console.log("SearchScreen results:", results);
+  // Enhanced List Item Renderer
+  const renderListItem = useCallback(({ item }: { item: any }) => (
+    <View style={[
+      styles.listItem,
+      viewMode === 'grid' ? styles.gridItem : styles.listItemFull
+    ]}>
+      <ListingCard
+        listing={item}
+        onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+      />
+    </View>
+  ), [viewMode, navigation]);
+
+  // Empty State
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
+        <TrendingUp size={48} color={colors.textSecondary} />
+      </View>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>
+        {searchQuery ? 'Arama sonucu bulunamadı' : 'Arama yapmaya başlayın'}
+      </Text>
+      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+        {searchQuery
+          ? 'Farklı anahtar kelimeler deneyin veya filtreleri değiştirin'
+          : 'İstediğiniz ürünü bulmak için arama yapın'
+        }
+      </Text>
+    </View>
+  );
+
   console.log("isLoading:", isLoading, "totalCount:", totalCount);
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
+      edges={Platform.OS === 'ios' ? ['top', 'left', 'right'] : ['left', 'right']}
     >
-      <Header />
+      <StatusBar
+        backgroundColor={colors.background}
+        barStyle="dark-content"
+      />
 
-      {/* SearchBar'ı FlatList dışına çıkardık */}
-      <View style={styles.searchSection}>
-        <SearchBar
-          value={filters.searchQuery}
-          onChangeText={(text) => {
-            console.log("🔍 SearchBar onChangeText - Text:", text);
-            updateFilter("searchQuery", text);
-          }}
-          onSearch={() => {
-            console.log("🔍 SearchBar onSearch - Called");
-            performSearch();
-          }}
-          placeholder="Hangi ürünü satın almak istiyorsunuz?"
-        />
-      </View>
+      {/* Custom Header */}
+      {renderHeader()}
 
+      {/* Search Section */}
+      {renderSearchSection()}
+
+      {/* Results Header */}
+      {renderResultsHeader()}
+
+      {/* Results List */}
       <FlatList
         data={results}
         renderItem={renderListItem}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        ListHeaderComponent={renderFiltersSection}
-        ListEmptyComponent={renderListEmpty}
-        contentContainerStyle={styles.listContent}
+        numColumns={viewMode === 'grid' ? 2 : 1}
+        columnWrapperStyle={viewMode === 'grid' ? styles.row : undefined}
+        ListEmptyComponent={renderEmptyState}
+        contentContainerStyle={[
+          styles.listContent,
+          results.length === 0 && styles.emptyListContent
+        ]}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled" // Klavye sorununu çözer
-        removeClippedSubviews={true} // Performance optimizasyonu
-        maxToRenderPerBatch={10} // Performance optimizasyonu
-        windowSize={10} // Performance optimizasyonu
+        keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        key={viewMode} // Force re-render when view mode changes
       />
 
-      {isLoading && <LoadingSpinner text="Aranıyor..." />}
+      {/* Loading Overlay */}
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <LoadingSpinner text="Aranıyor..." />
+        </View>
+      )}
+
+      {/* Sort Options Modal (TODO: Implement) */}
+      {showSortOptions && (
+        <View style={styles.sortModal}>
+          {/* TODO: Implement sort options modal */}
+        </View>
+      )}
+
+      {/* Filter Bottom Sheet */}
+      <FilterBottomSheet
+        visible={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApply={(filters) => {
+          console.log('🔍 Filters applied:', filters);
+          // TODO: Apply filters to search
+          setShowFilters(false);
+        }}
+        onClear={() => {
+          console.log('🔍 Filters cleared');
+          setSearchQuery('');
+          setSelectedCategory('');
+          setResults([]);
+          setTotalCount(0);
+        }}
+        currentFilters={{
+          searchQuery,
+          selectedCategory,
+          priceRange: null,
+          location: '',
+          urgency: '',
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -346,17 +418,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  searchSection: {
-    padding: 16,
-    paddingBottom: 8,
+  
+  // Header Styles
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
   },
-  filtersContainer: {
-    padding: 16,
-    paddingTop: 8,
-    gap: 12,
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  headerTitleContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  resultCount: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  filterButton: {
+    padding: 8,
+    position: 'relative',
+  },
+  filterIndicator: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+
+  // Search Section Styles
+  searchSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   quickFilters: {
-    marginTop: 8,
+    marginTop: 12,
   },
   quickFiltersContent: {
     paddingHorizontal: 0,
@@ -367,119 +475,138 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
+    marginRight: 8,
   },
   quickFilterText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
-  filterBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 6,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  clearButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 4,
-  },
-  clearButtonText: {
-    fontSize: 14,
-  },
-  filtersCard: {
-    marginTop: 8,
-    padding: 16,
-  },
-  filtersTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  sortOption: {
+
+  // Results Header Styles
+  resultsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  sortOptionText: {
+  resultsInfo: {
+    flex: 1,
+  },
+  resultsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  resultsSubtitle: {
     fontSize: 14,
-    fontWeight: "500",
+    marginTop: 2,
   },
-  recentSearchesCard: {
-    margin: 16,
-    padding: 16,
+  resultsActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  recentSearchesHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 12,
-  },
-  recentSearchesTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  recentSearchesList: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  recentSearchChip: {
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.05)',
   },
-  recentSearchText: {
+  sortButtonText: {
     fontSize: 14,
+    fontWeight: '500',
+    marginRight: 4,
   },
-  emptyContainer: {
+  sortIcon: {
+    marginLeft: 4,
+  },
+  viewModeContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 8,
+    padding: 2,
+  },
+  viewModeButton: {
+    padding: 6,
+    borderRadius: 6,
+  },
+
+  // List Styles
+  listContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  emptyListContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 40,
-    minHeight: 300,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptyDescription: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  listingCard: {
-    margin: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   row: {
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
   },
-  listContent: {
-    flexGrow: 1,
+  listItem: {
+    marginBottom: 12,
   },
-  attributesSelector: {
-    marginTop: 16,
+  gridItem: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  listItemFull: {
+    marginHorizontal: 0,
+  },
+
+  // Empty State Styles
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 64,
+  },
+  emptyIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+
+  // Loading Overlay
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Sort Modal
+  sortModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
 });
 

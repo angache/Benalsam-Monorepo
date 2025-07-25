@@ -22,4 +22,6 @@ export { default as TabBarIcon } from './TabBarIcon';
 export { default as LocationSelector } from './LocationSelector';
 export { CategorySuggestionCard } from './CategorySuggestionCard';
 export { default as CategorySelectionModal } from './CategorySelectionModal';
-export { default as CategoryAttributesSelector } from './CategoryAttributesSelector'; 
+export { default as CategoryAttributesSelector } from './CategoryAttributesSelector';
+export { FilterBottomSheet } from './FilterBottomSheet';
+export { SearchResults } from './SearchResults'; 

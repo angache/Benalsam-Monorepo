@@ -73,14 +73,28 @@ export const searchListingsWithElasticsearch = async (
       return await searchListingsWithSupabase(params, currentUserId);
     }
 
-    const result: ElasticsearchSearchResult = await response.json();
+    const responseData = await response.json();
+    console.log('✅ Elasticsearch search response:', responseData);
+    
+    // Admin-backend response formatını kontrol et
+    if (!responseData.success || !responseData.data) {
+      console.error('❌ Invalid Elasticsearch response format:', responseData);
+      return await searchListingsWithSupabase(params, currentUserId);
+    }
+    
+    const result: ElasticsearchSearchResult = responseData.data;
     console.log('✅ Elasticsearch search result:', {
       total: result.total,
-      hits: result.hits.length,
+      hits: result.hits?.length || 0,
       page: result.page,
     });
 
     // Elasticsearch sonuçlarını Supabase'den tam listing verilerine çevir
+    if (!result.hits || result.hits.length === 0) {
+      console.log('⚠️ No hits found in Elasticsearch');
+      return { data: [] };
+    }
+    
     const listingIds = result.hits.map(hit => hit.id);
     const { data: listings, error } = await supabase
       .from('listings')
