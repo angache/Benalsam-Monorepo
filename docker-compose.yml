@@ -36,7 +36,7 @@ services:
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - JWT_SECRET=${JWT_SECRET}
-      - CORS_ORIGIN=http://209.227.228.96:3003,http://209.227.228.96:5173,http://benalsam.com:3003,http://benalsam.com:5173
+      - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173
     ports:
       - "3002:3002"
     depends_on:
@@ -53,11 +53,11 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3003
-      - VITE_API_URL=http://209.227.228.96:3002/api/v1
+      - VITE_API_URL=https://benalsam.com/api/v1
       - VITE_ELASTICSEARCH_URL=http://209.227.228.96:9200
       - VITE_SUPABASE_URL=${SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - CORS_ORIGIN=http://209.227.228.96:3003,http://209.227.228.96:5173,http://benalsam.com:3003,http://benalsam.com:5173
+      - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173
     ports:
       - "3003:3003"
     depends_on:
@@ -73,11 +73,11 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=5173
-      - VITE_API_URL=http://209.227.228.96:3002/api/v1
+      - VITE_API_URL=https://benalsam.com/api/v1
       - VITE_ELASTICSEARCH_URL=http://209.227.228.96:9200
       - VITE_SUPABASE_URL=${SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - CORS_ORIGIN=http://209.227.228.96:3003,http://209.227.228.96:5173,http://benalsam.com:3003,http://benalsam.com:5173
+      - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173
     ports:
       - "5173:5173"
     depends_on:

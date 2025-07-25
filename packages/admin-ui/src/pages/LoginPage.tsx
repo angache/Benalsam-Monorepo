@@ -191,25 +191,7 @@ export const LoginPage: React.FC = () => {
           </Button>
         </form>
 
-        <Box 
-          sx={{ 
-            mt: 4, 
-            p: 3,
-            borderRadius: 2,
-            backgroundColor: 'rgba(102, 126, 234, 0.05)',
-            border: '1px solid rgba(102, 126, 234, 0.1)',
-          }}
-        >
-          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 1 }}>
-            Test Hesabı:
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-            E-posta: admin@benalsam.com
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-            Şifre: admin123456
-          </Typography>
-        </Box>
+
       </Paper>
     </Box>
   );
