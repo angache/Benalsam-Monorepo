@@ -7,15 +7,35 @@ export const useScrollHeader = (threshold: number = 50) => {
   const headerTranslateY = useRef(new Animated.Value(-48)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
   const lastScrollTime = useRef(0);
+  const lastScrollY = useRef(0);
+  const scrollDirection = useRef<'up' | 'down'>('up');
 
   const handleScroll = useCallback((event: any) => {
     const now = Date.now();
     const currentScrollY = event.nativeEvent.contentOffset.y;
-    const shouldShow = currentScrollY > threshold;
-
+    
     // Scroll throttle - 16ms (60fps)
     if (now - lastScrollTime.current < 16) return;
     lastScrollTime.current = now;
+
+    // Scroll yönünü belirle
+    if (currentScrollY > lastScrollY.current) {
+      scrollDirection.current = 'down';
+    } else if (currentScrollY < lastScrollY.current) {
+      scrollDirection.current = 'up';
+    }
+    lastScrollY.current = currentScrollY;
+
+    // Header'ı göster/gizle kararı
+    let shouldShow = false;
+    
+    if (currentScrollY <= threshold) {
+      // En üstteyse header'ı gizle
+      shouldShow = false;
+    } else {
+      // Scroll yönüne göre karar ver
+      shouldShow = scrollDirection.current === 'up';
+    }
 
     // Eğer durum değişmediyse animasyon yapma
     if (shouldShow === isHeaderVisible) return;
@@ -28,7 +48,7 @@ export const useScrollHeader = (threshold: number = 50) => {
     setIsHeaderVisible(shouldShow);
 
     if (shouldShow) {
-      // Header'ı göster - daha hızlı
+      // Header'ı göster
       animationRef.current = Animated.parallel([
         Animated.timing(headerOpacity, {
           toValue: 1,
@@ -42,7 +62,7 @@ export const useScrollHeader = (threshold: number = 50) => {
         }),
       ]);
     } else {
-      // Header'ı gizle - daha hızlı
+      // Header'ı gizle
       animationRef.current = Animated.parallel([
         Animated.timing(headerOpacity, {
           toValue: 0,
