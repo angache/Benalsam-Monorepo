@@ -18,6 +18,7 @@ export default defineConfig({
     allowedHosts: [
       'benalsam.com',
       'www.benalsam.com',
+      'admin.benalsam.com',
       'localhost',
       '127.0.0.1',
       '209.227.228.96'
