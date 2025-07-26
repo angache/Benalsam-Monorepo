@@ -4,6 +4,7 @@ import { Search, Car, Home, Phone, Monitor, Sofa, Clock, TrendingUp, Smartphone,
 import { useThemeColors } from '../stores/themeStore';
 import { supabase } from '../services/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SearchHistory from './SearchHistory';
 
 // Kategori bazlı öneriler
 const CATEGORY_SUGGESTIONS = {
@@ -215,17 +216,11 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Son Aramalar */}
-        {recentSearches.length > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-              🕐 Son Aramalar
-            </Text>
-            {recentSearches.map((suggestion: string, index: number) => 
-              renderSuggestionItem(suggestion, index, 'recent')
-            )}
-          </>
-        )}
+        {/* Arama Geçmişi */}
+        <SearchHistory
+          onHistoryItemPress={onSuggestionPress}
+          visible={true}
+        />
 
         {/* Popüler Aramalar */}
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>

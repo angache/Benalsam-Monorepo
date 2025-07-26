@@ -53,10 +53,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const addToRecentSearches = async (searchText: string) => {
     try {
-      const recent = await AsyncStorage.getItem('recentSearches');
-      const recentSearches = recent ? JSON.parse(recent) : [];
-      const newRecent = [searchText, ...recentSearches.filter((s: string) => s !== searchText)].slice(0, 5);
-      await AsyncStorage.setItem('recentSearches', JSON.stringify(newRecent));
+      // SearchHistory formatında kaydet
+      const newItem = {
+        id: `history-${Date.now()}`,
+        text: searchText,
+        timestamp: Date.now(),
+      };
+
+      const existingHistory = await AsyncStorage.getItem('searchHistory');
+      const history = existingHistory ? JSON.parse(existingHistory) : [];
+      
+      // Aynı aramayı varsa kaldır (duplicate prevention)
+      const filteredHistory = history.filter((item: any) => item.text !== searchText);
+      
+      // Yeni aramayı başa ekle
+      const updatedHistory = [newItem, ...filteredHistory].slice(0, 20); // Max 20 item
+      
+      await AsyncStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
     } catch (error) {
       console.log('Recent search kaydedilemedi:', error);
     }
