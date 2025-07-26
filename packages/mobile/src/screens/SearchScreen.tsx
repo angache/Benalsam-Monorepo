@@ -30,6 +30,7 @@ import {
   Button,
   FilterBottomSheet,
   SearchResults,
+  SortOptions,
 } from "../components";
 import { supabase } from "../services/supabaseClient";
 
@@ -60,12 +61,14 @@ const SearchScreen = ({ navigation, route }: any) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedSort, setSelectedSort] = useState('created_at-desc');
 
   // Manuel arama fonksiyonu
   const performSearch = useCallback(async (query?: string, category?: string) => {
     console.log('🔍 performSearch - ENTRY POINT');
     console.log('🔍 performSearch - query:', query);
     console.log('🔍 performSearch - category:', category);
+    console.log('🔍 performSearch - selectedSort:', selectedSort);
     
     const searchText = query || searchQuery;
     const searchCategory = category || selectedCategory;
@@ -94,6 +97,14 @@ const SearchScreen = ({ navigation, route }: any) => {
         query = query.eq('category', searchCategory);
       }
       
+      // Sıralama uygula
+      const [sortField, sortOrder] = selectedSort.split('-');
+      console.log('🔍 performSearch - Applying sort:', sortField, sortOrder);
+      
+      if (sortField && sortOrder) {
+        query = query.order(sortField, { ascending: sortOrder === 'asc' });
+      }
+      
       const { data, error } = await query.limit(20);
       
       if (error) {
@@ -114,7 +125,7 @@ const SearchScreen = ({ navigation, route }: any) => {
     }
     
     console.log('🔍 performSearch - EXIT POINT');
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, selectedSort]);
 
   // Category search
   const performCategorySearch = useCallback(async (category: string) => {
@@ -379,10 +390,29 @@ const SearchScreen = ({ navigation, route }: any) => {
         </View>
       )}
 
-      {/* Sort Options Modal (TODO: Implement) */}
+      {/* Sort Options Modal */}
       {showSortOptions && (
         <View style={styles.sortModal}>
-          {/* TODO: Implement sort options modal */}
+          <TouchableOpacity 
+            style={styles.sortModalBackdrop}
+            onPress={() => setShowSortOptions(false)}
+            activeOpacity={1}
+          />
+          <View style={styles.sortModalContent}>
+            <SortOptions
+              selectedSort={selectedSort}
+              onSortChange={(sort) => {
+                console.log('🔍 Sort changed to:', sort);
+                setSelectedSort(sort);
+                setShowSortOptions(false);
+                // Sıralama değiştiğinde aramayı yeniden çalıştır
+                setTimeout(() => {
+                  performSearch();
+                }, 0);
+              }}
+              showReset={true}
+            />
+          </View>
         </View>
       )}
 
@@ -606,7 +636,28 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 1000,
+  },
+  sortModalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  sortModalContent: {
+    position: 'absolute',
+    top: '20%',
+    left: 16,
+    right: 16,
+    maxHeight: '60%',
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
 
