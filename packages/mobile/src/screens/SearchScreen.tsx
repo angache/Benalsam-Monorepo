@@ -186,6 +186,7 @@ const SearchScreen = ({ navigation, route }: any) => {
         }}
         placeholder="Ne arıyorsunuz?"
         showSuggestions={true}
+        autoFocus={false}
       />
 
       {/* Quick Filters */}

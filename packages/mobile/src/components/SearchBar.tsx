@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   TextInput, 
@@ -6,6 +6,8 @@ import {
   StyleSheet, 
   ViewStyle,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useThemeColors } from '../stores';
 import { Search, X, Mic } from 'lucide-react-native';
@@ -28,6 +30,7 @@ interface SearchBarProps {
   onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
   suggestions?: SearchSuggestion[];
   showSuggestions?: boolean;
+  autoFocus?: boolean;
   style?: ViewStyle;
 }
 
@@ -40,6 +43,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onSuggestionSelect,
   suggestions = [],
   showSuggestions = true,
+  autoFocus = false,
   style,
 }) => {
   const colors = useThemeColors();
@@ -110,6 +114,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           placeholderTextColor={colors.textSecondary}
           value={value}
+          autoFocus={autoFocus}
           onChangeText={(text) => {
             onChangeText(text);
             if (showSuggestions) {
@@ -165,10 +170,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Suggestions List */}
       {showSuggestionsList && (
-        <View style={styles.suggestionsWrapper}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.suggestionsWrapper}
+        >
           <SimpleSearchSuggestions
             query={value}
             onSuggestionPress={(suggestion) => {
+              // Önce search bar'ı güncelle
+              onChangeText(suggestion);
+              
+              // Sonra suggestion select callback'ini çağır
               onSuggestionSelect?.({
                 id: `selected-${Date.now()}`,
                 text: suggestion,
@@ -180,7 +192,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             }}
             visible={showSuggestionsList}
           />
-        </View>
+        </KeyboardAvoidingView>
       )}
     </View>
   );
@@ -189,13 +201,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    zIndex: 1000,
   },
   suggestionsWrapper: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
     marginTop: 4,
     zIndex: 1001,
   },
