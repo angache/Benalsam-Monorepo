@@ -49,8 +49,11 @@ const SearchScreen = ({ navigation, route }: any) => {
   const colors = useThemeColors();
   const { user } = useAuthStore();
 
+  // Route params'dan query'yi al
+  const initialQuery = route.params?.query || '';
+
   // Basit state management
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -121,6 +124,15 @@ const SearchScreen = ({ navigation, route }: any) => {
       setIsLoading(false);
     }
   }, [searchQuery, selectedCategories, selectedSort]);
+
+  // Sayfa açıldığında veya route params değiştiğinde otomatik arama yap
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      console.log('🔍 Initial query detected:', initialQuery);
+      setSearchQuery(initialQuery);
+      performSearch(initialQuery);
+    }
+  }, [initialQuery]);
 
   // Kategori değerini veritabanı değerine çevir
   const findCategoryValue = (mainCategory: string): string => {

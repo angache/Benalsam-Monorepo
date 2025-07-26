@@ -208,7 +208,7 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
             <View style={styles.detailRow}>
               <Tag size={16} color={colors.primary} />
               <Text style={[styles.detailText, { color: colors.primary }]}>
-                {`${listing.category} > Telefon > Akıllı Telefon`}
+                {listing.category}
               </Text>
             </View>
             

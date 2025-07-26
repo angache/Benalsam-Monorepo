@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Search, Car, Home, Phone, Monitor, Sofa, Clock, TrendingUp, Smartphone, Shirt, Car as CarIcon, Home as HomeIcon } from 'lucide-react-native';
 import { useThemeColors } from '../stores/themeStore';
 import { supabase } from '../services/supabaseClient';
@@ -136,18 +136,19 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
     };
 
     return (
-              <TouchableOpacity
+              <Pressable
           key={`${type}-${index}`}
-          style={[
+          style={({ pressed }) => [
             styles.suggestionItem, 
             { 
               borderBottomColor: colors.border,
-              borderBottomWidth: 1
+              borderBottomWidth: 1,
+              backgroundColor: pressed ? colors.surface : 'transparent',
+              opacity: pressed ? 0.7 : 1,
             }
           ]}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          activeOpacity={0.7}
           onPress={() => {
+            console.log('🔍 SimpleSearchSuggestions - Suggestion pressed:', suggestion);
             onSuggestionPress(suggestion);
           }}
         >
@@ -155,7 +156,7 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
         <Text style={[styles.suggestionText, { color: colors.text }]}>
           {suggestion}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 4,
-    elevation: 3,
+    backgroundColor: 'white',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -263,8 +264,9 @@ const styles = StyleSheet.create({
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 12,
+    minHeight: 50,
   },
   suggestionText: {
     fontSize: 14,

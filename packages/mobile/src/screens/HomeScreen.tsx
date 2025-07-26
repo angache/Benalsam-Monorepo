@@ -529,9 +529,17 @@ const HomeScreen = () => {
           <View style={styles.searchSection}>
             <SearchBar
               value={selectedCategory}
-              onChangeText={setSelectedCategory}
-              onSearch={() => navigateToScreen('Search', { query: selectedCategory })}
+              onChangeText={(text) => {
+                console.log('🔍 HomeScreen onChangeText:', text);
+                setSelectedCategory(text);
+              }}
+              onSearch={() => {
+                if (selectedCategory.trim()) {
+                  navigation.navigate('Search', { query: selectedCategory.trim() });
+                }
+              }}
               placeholder="Ne arıyorsunuz?"
+              showSuggestions={false}
             />
           </View>
 

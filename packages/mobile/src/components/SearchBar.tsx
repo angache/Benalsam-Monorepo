@@ -98,6 +98,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     onSearch?.();
   };
 
+  // Suggestions'ları göster/gizle
+  useEffect(() => {
+    if (showSuggestions && value.length > 0 && isFocused) {
+      setShowSuggestionsList(true);
+    } else {
+      setShowSuggestionsList(false);
+    }
+  }, [value, isFocused, showSuggestions]);
+
   // Eski suggestion item render sistemi kaldırıldı - SearchSuggestions kullanılıyor
 
   // Eski suggestion sistemi kaldırıldı - SearchSuggestions kullanılıyor
@@ -142,8 +151,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           }}
           onBlur={() => {
             setIsFocused(false);
-            // Delay hiding suggestions to allow for touch events
-            setTimeout(() => setShowSuggestionsList(false), 150);
           }}
           onSubmitEditing={handleSearchPress}
           returnKeyType="search"
@@ -183,29 +190,22 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Suggestions List */}
       {showSuggestionsList && (
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.suggestionsWrapper}
-        >
+        <View style={styles.suggestionsWrapper}>
           <SimpleSearchSuggestions
             query={value}
             onSuggestionPress={(suggestion) => {
-              // Önce search bar'ı güncelle
+              console.log('🔍 Suggestion selected:', suggestion);
               onChangeText(suggestion);
-              
-              // Sonra suggestion select callback'ini çağır
+              setShowSuggestionsList(false);
               onSuggestionSelect?.({
                 id: `selected-${Date.now()}`,
                 text: suggestion,
                 type: 'suggestion',
               });
-              
-              setShowSuggestionsList(false);
-              addToRecentSearches(suggestion);
             }}
-            visible={showSuggestionsList}
+            visible={true}
           />
-        </KeyboardAvoidingView>
+        </View>
       )}
     </View>
   );
@@ -217,7 +217,11 @@ const styles = StyleSheet.create({
   },
   suggestionsWrapper: {
     marginTop: 4,
-    zIndex: 1001,
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   },
   searchContainer: {
     flexDirection: 'row',
