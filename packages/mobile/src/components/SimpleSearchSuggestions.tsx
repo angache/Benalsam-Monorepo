@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Search, Car, Home, Phone, Monitor, Sofa, Clock, TrendingUp } from 'lucide-react-native';
+import { Search, Car, Home, Phone, Monitor, Sofa, Clock, TrendingUp, Smartphone, Shirt, Car as CarIcon, Home as HomeIcon } from 'lucide-react-native';
 import { useThemeColors } from '../stores/themeStore';
 import { supabase } from '../services/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Kategori bazlı öneriler
+const CATEGORY_SUGGESTIONS = {
+  'Elektronik': ['telefon', 'bilgisayar', 'tablet', 'laptop', 'kulaklık', 'kamera'],
+  'Moda': ['ayakkabı', 'çanta', 'elbise', 'pantolon', 'gömlek', 'ceket'],
+  'Ev & Yaşam': ['mobilya', 'dekorasyon', 'mutfak', 'banyo', 'bahçe', 'ev aletleri'],
+  'Araç': ['araba', 'motosiklet', 'bisiklet', 'otomobil', 'araç parçası', 'lastik'],
+};
 
 interface SimpleSearchSuggestionsProps {
   query: string;
@@ -90,7 +98,28 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
         suggestion.toLowerCase().includes(query.toLowerCase())
       );
 
-  const renderSuggestionItem = (suggestion: string, index: number, type: 'recent' | 'popular' | 'dynamic' | 'static') => {
+  // Kategori tespit fonksiyonu
+  const detectCategory = (query: string): string | null => {
+    const lowerQuery = query.toLowerCase();
+    
+    // Kategori anahtar kelimeleri
+    const categoryKeywords = {
+      'Elektronik': ['elektronik', 'telefon', 'bilgisayar', 'tablet', 'laptop', 'kulaklık', 'kamera', 'ara'],
+      'Moda': ['moda', 'ayakkabı', 'çanta', 'elbise', 'pantolon', 'gömlek', 'ceket', 'giyim'],
+      'Ev & Yaşam': ['ev', 'yaşam', 'mobilya', 'dekorasyon', 'mutfak', 'banyo', 'bahçe', 'ev aletleri'],
+      'Araç': ['araç', 'araba', 'motosiklet', 'bisiklet', 'otomobil', 'araç parçası', 'lastik'],
+    };
+    
+    for (const [category, keywords] of Object.entries(categoryKeywords)) {
+      if (keywords.some(keyword => lowerQuery.includes(keyword))) {
+        return category;
+      }
+    }
+    
+    return null;
+  };
+
+  const renderSuggestionItem = (suggestion: string, index: number, type: 'recent' | 'popular' | 'dynamic' | 'static' | 'category') => {
     const getIcon = (text: string) => {
       if (text === 'araba') return <Car size={18} color={colors.textSecondary} style={styles.icon} />;
       if (text === 'ev') return <Home size={18} color={colors.textSecondary} style={styles.icon} />;
@@ -101,6 +130,7 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
       // Tip bazlı ikonlar
       if (type === 'recent') return <Clock size={18} color={colors.textSecondary} style={styles.icon} />;
       if (type === 'popular') return <TrendingUp size={18} color={colors.textSecondary} style={styles.icon} />;
+      if (type === 'category') return <Search size={18} color={colors.textSecondary} style={styles.icon} />;
       return <Search size={18} color={colors.textSecondary} style={styles.icon} />;
     };
 
@@ -128,13 +158,15 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
     );
   };
 
-  // Query varsa dinamik öneriler, yoksa kategorize edilmiş öneriler
+  // Query varsa dinamik öneriler + kategori önerileri, yoksa kategorize edilmiş öneriler
   if (query.trim()) {
+    const detectedCategory = detectCategory(query);
+    const categorySuggestions = detectedCategory && detectedCategory in CATEGORY_SUGGESTIONS 
+      ? CATEGORY_SUGGESTIONS[detectedCategory as keyof typeof CATEGORY_SUGGESTIONS] || [] 
+      : [];
+    
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.title, { color: colors.textSecondary }]}>
-          🔍 Arama Sonuçları
-        </Text>
         <ScrollView 
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
@@ -142,8 +174,32 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
           scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
         >
-          {allSuggestions.map((suggestion: string, index: number) => 
-            renderSuggestionItem(suggestion, index, 'dynamic')
+          {/* Dinamik Arama Sonuçları */}
+          {allSuggestions.length > 0 && (
+            <>
+              <Text style={[styles.title, { color: colors.textSecondary }]}>
+                🔍 Arama Sonuçları
+              </Text>
+              {allSuggestions.map((suggestion: string, index: number) => 
+                renderSuggestionItem(suggestion, index, 'dynamic')
+              )}
+            </>
+          )}
+          
+          {/* Kategori Bazlı Öneriler */}
+          {detectedCategory && categorySuggestions.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+                📂 {detectedCategory} Kategorisi
+              </Text>
+              {categorySuggestions
+                .filter((suggestion: string) => suggestion.toLowerCase().includes(query.toLowerCase()))
+                .slice(0, 3)
+                .map((suggestion: string, index: number) => 
+                  renderSuggestionItem(suggestion, index, 'category')
+                )
+              }
+            </>
           )}
         </ScrollView>
       </View>

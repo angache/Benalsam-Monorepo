@@ -8,6 +8,7 @@ import {
   ScrollView,
   StatusBar,
   Platform,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -104,6 +105,11 @@ const SearchScreen = ({ navigation, route }: any) => {
       } else {
         setResults(data || []);
         setTotalCount(data?.length || 0);
+        
+        // Arama sonuçları geldiğinde klavyeyi kapat
+        if (data && data.length > 0) {
+          Keyboard.dismiss();
+        }
       }
     } catch (error) {
       console.error('🔍 Search exception:', error);
@@ -120,6 +126,8 @@ const SearchScreen = ({ navigation, route }: any) => {
     setSelectedCategory(category);
     setSearchQuery('');
     await performSearch('', category);
+    // Kategori seçildiğinde klavyeyi kapat
+    Keyboard.dismiss();
   }, [performSearch]);
 
   useEffect(() => {
@@ -183,6 +191,8 @@ const SearchScreen = ({ navigation, route }: any) => {
         onSuggestionSelect={(suggestion) => {
           setSearchQuery(suggestion.text);
           performSearch(suggestion.text);
+          // Suggestion seçildiğinde klavyeyi kapat
+          Keyboard.dismiss();
         }}
         placeholder="Ne arıyorsunuz?"
         showSuggestions={true}
