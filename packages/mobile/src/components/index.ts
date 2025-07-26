@@ -31,4 +31,5 @@ export { CategoryFilter } from './CategoryFilter';
 export { AttributesFilter } from './AttributesFilter';
 export { SortOptions } from './SortOptions';
 export { default as SearchSuggestions } from './SearchSuggestions';
-export { default as SearchHistory } from './SearchHistory'; 
+export { default as SearchHistory } from './SearchHistory';
+export { default as PopularSearches } from './PopularSearches'; 
