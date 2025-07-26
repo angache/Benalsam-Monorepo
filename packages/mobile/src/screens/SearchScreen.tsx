@@ -32,6 +32,7 @@ import {
   FilterBottomSheet,
   SearchResults,
   SortOptions,
+  ListingListItem,
 } from "../components";
 import { supabase } from "../services/supabaseClient";
 
@@ -64,7 +65,10 @@ const SearchScreen = ({ navigation, route }: any) => {
     const searchText = query || searchQuery;
     const searchCategories = categories || selectedCategories;
     
+    console.log('🔍 performSearch called with:', { query: searchText, categories: searchCategories });
+    
     if (!searchText.trim() && searchCategories.length === 0) {
+      console.log('🔍 No search text and no categories, clearing results');
       setResults([]);
       setTotalCount(0);
       setIsLoading(false);
@@ -282,17 +286,27 @@ const SearchScreen = ({ navigation, route }: any) => {
 
 
   // Enhanced List Item Renderer
-  const renderListItem = useCallback(({ item }: { item: any }) => (
-    <View style={[
-      styles.listItem,
-      viewMode === 'grid' ? styles.gridItem : styles.listItemFull
-    ]}>
-      <ListingCard
-        listing={item}
-        onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
-      />
-    </View>
-  ), [viewMode, navigation]);
+  const renderListItem = useCallback(({ item }: { item: any }) => {
+    if (viewMode === 'grid') {
+      return (
+        <View style={[styles.listItem, styles.gridItem]}>
+          <ListingCard
+            listing={item}
+            onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+          />
+        </View>
+      );
+    } else {
+      return (
+        <View style={[styles.listItem, styles.listItemFull]}>
+          <ListingListItem
+            listing={item}
+            onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+          />
+        </View>
+      );
+    }
+  }, [viewMode, navigation]);
 
   // Empty State
   const renderEmptyState = () => (
@@ -389,29 +403,35 @@ const SearchScreen = ({ navigation, route }: any) => {
               <FilterBottomSheet
           visible={showFilters}
           onClose={() => setShowFilters(false)}
-          onApply={(filters) => {
-            console.log('🔍 Filters applied:', filters);
-            
-            // Kategori filtresini uygula
-            if (filters.category && filters.category.length > 0) {
-              setSelectedCategories(filters.category);
-              performCategorySearch(filters.category);
+                  onApply={(filters) => {
+          console.log('🔍 Filters applied:', filters);
+          console.log('🔍 Current searchQuery:', searchQuery);
+          console.log('🔍 Current selectedCategories:', selectedCategories);
+          
+          // Kategori filtresini uygula
+          if (filters.category && filters.category.length > 0) {
+            console.log('🔍 Applying category filter:', filters.category);
+            setSelectedCategories(filters.category);
+            performCategorySearch(filters.category);
+          } else {
+            // Kategori temizlendiğinde orijinal aramayı geri yükle
+            console.log('🔍 Clearing category filter, restoring original search');
+            setSelectedCategories([]);
+            if (searchQuery.trim()) {
+              console.log('🔍 Restoring search with query:', searchQuery);
+              performSearch(searchQuery, []);
             } else {
-              // Kategori temizlendiğinde orijinal aramayı geri yükle
-              setSelectedCategories([]);
-              if (searchQuery.trim()) {
-                performSearch(searchQuery, []);
-              } else {
-                setResults([]);
-                setTotalCount(0);
-              }
+              console.log('🔍 No search query, clearing results');
+              setResults([]);
+              setTotalCount(0);
             }
-            
-            // Diğer filtreleri uygula (gelecekte eklenecek)
-            // TODO: Apply other filters (price, location, etc.)
-            
-            setShowFilters(false);
-          }}
+          }
+          
+          // Diğer filtreleri uygula (gelecekte eklenecek)
+          // TODO: Apply other filters (price, location, etc.)
+          
+          setShowFilters(false);
+        }}
           onClear={() => {
             console.log('🔍 Filters cleared');
             setSearchQuery('');

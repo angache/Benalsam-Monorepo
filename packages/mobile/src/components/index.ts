@@ -10,6 +10,7 @@ export { withErrorBoundary } from './withErrorBoundary';
 export { ImageWithFallback } from './ImageWithFallback';
 export { ImageUploader } from './ImageUploader';
 export { default as ListingCard } from './ListingCard';
+export { default as ListingListItem } from './ListingListItem';
 export { default as AdCard } from './AdCard';
 export { default as CategoryCard } from './CategoryCard';
 export { Avatar } from './Avatar';
