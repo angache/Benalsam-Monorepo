@@ -120,14 +120,15 @@ const SearchScreen = ({ navigation, route }: any) => {
 
   // Kategori değerini veritabanı değerine çevir
   const findCategoryValue = (mainCategory: string): string => {
+    // Leaf kategorilerle eşleşecek şekilde mapping
     const categoryMap: { [key: string]: string } = {
-      'Moda': 'moda > giyim',
-      'Elektronik': 'elektronik',
-      'Ev Aletleri & Mobilya': 'ev aletleri & mobilya',
-      'Araç & Vasıta': 'araclar', // Veritabanında "araclar" olarak geçiyor
+      'Elektronik': 'Elektronik > Telefon > Akıllı Telefon > Akıllı Telefonlar',
+      'Ev Aletleri & Mobilya': 'Ev Aletleri & Mobilya > Ev Aletleri > Buzdolabı > Buzdolapları',
+      'Araç & Vasıta': 'Araç & Vasıta > Bisiklet > Şehir Bisikleti > Şehir Bisikletleri',
+      'İş Makinesi': 'İş Makinesi > İş Makineleri > Ekskavatör > Ekskavatörler',
+      'Moda': 'Moda > Ayakkabı',
       'Spor & Hobi': 'spor & hobi',
       'Kitap & Müzik': 'kitap & müzik',
-      'İş Makinesi': 'is-makineleri',
       'Bahçe & Tarım': 'bahçe & tarım',
       'Sanat & Koleksiyon': 'sanat & koleksiyon',
       'Oyuncak & Hobi': 'oyuncak & hobi',
