@@ -196,7 +196,10 @@ const SearchScreen = ({ navigation, route }: any) => {
         onSuggestionSelect={(suggestion) => {
           console.log("🔍 SearchScreen onSuggestionSelect:", suggestion);
           setSearchQuery(suggestion.text);
-          performSearch(suggestion.text);
+          // State güncellemesi asenkron olduğu için doğrudan suggestion.text kullan
+          setTimeout(() => {
+            performSearch(suggestion.text);
+          }, 50);
         }}
         placeholder="Ne arıyorsunuz?"
         showSuggestions={true}

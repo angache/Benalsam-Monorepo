@@ -14,6 +14,7 @@ import { useThemeColors } from '../stores';
 import { Search, X, Clock, TrendingUp, Mic } from 'lucide-react-native';
 import { supabase } from '../services/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SimpleSearchSuggestions from './SimpleSearchSuggestions';
 
 interface SearchSuggestion {
   id: string;
@@ -104,34 +105,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  // Dinamik suggestions oluştur
-  const getDynamicSuggestions = (): SearchSuggestion[] => {
-    const allSuggestions: SearchSuggestion[] = [];
-
-    // Recent searches
-    recentSearches.forEach((search, index) => {
-      allSuggestions.push({
-        id: `recent-${index}`,
-        text: search,
-        type: 'history',
-      });
-    });
-
-    // Trending searches
-    allSuggestions.push(...trendingSearches);
-
-    // Custom suggestions (props'tan gelen)
-    allSuggestions.push(...suggestions);
-
-    return allSuggestions;
-  };
-
-  const allSuggestions = getDynamicSuggestions();
-  const filteredSuggestions = value.trim() && showSuggestions 
-    ? allSuggestions.filter(suggestion =>
-        suggestion.text.toLowerCase().includes(value.toLowerCase())
-      )
-    : [];
+  // Debug için log ekle
+  console.log('🔍 SearchBar - showSuggestionsList:', showSuggestionsList);
+  console.log('🔍 SearchBar - value:', value);
+  console.log('🔍 SearchBar - showSuggestions:', showSuggestions);
+  console.log('🔍 SearchBar - onSearch prop exists:', !!onSearch);
+  console.log('🔍 SearchBar - onSuggestionSelect prop exists:', !!onSuggestionSelect);
 
   const handleClear = () => {
     onChangeText('');
@@ -140,17 +119,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     inputRef.current?.focus();
   };
 
-  const handleSuggestionPress = (suggestion: SearchSuggestion) => {
-    onChangeText(suggestion.text);
-    onSuggestionSelect?.(suggestion);
-    setShowSuggestionsList(false);
-    Keyboard.dismiss();
-    
-    // Recent searches'e ekle
-    addToRecentSearches(suggestion.text);
-    
-    onSearch?.();
-  };
+  // Eski suggestion press handler kaldırıldı - SearchSuggestions kullanılıyor
 
   const handleSearchPress = () => {
     setShowSuggestionsList(false);
@@ -164,56 +133,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     onSearch?.();
   };
 
-  const renderSuggestionItem = ({ item }: { item: SearchSuggestion }) => (
-    <TouchableOpacity
-      style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
-      onPress={() => handleSuggestionPress(item)}
-    >
-      <View style={styles.suggestionIcon}>
-        {item.type === 'history' ? (
-          <Clock size={16} color={colors.textSecondary} />
-        ) : item.type === 'trending' ? (
-          <TrendingUp size={16} color={colors.primary} />
-        ) : (
-          <Search size={16} color={colors.textSecondary} />
-        )}
-      </View>
-      
-      <View style={styles.suggestionContent}>
-        <Text style={[styles.suggestionText, { color: colors.text }]}>
-          {item.text}
-        </Text>
-        {item.category && (
-          <Text style={[styles.suggestionCategory, { color: colors.textSecondary }]}>
-            {item.category}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  // Eski suggestion item render sistemi kaldırıldı - SearchSuggestions kullanılıyor
 
-  const renderSuggestionsList = () => (
-    <View 
-      style={[
-        styles.suggestionsContainer,
-        { 
-          backgroundColor: colors.background,
-          borderColor: colors.border,
-        }
-      ]}
-    >
-      <FlatList
-        data={filteredSuggestions}
-        renderItem={renderSuggestionItem}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        style={styles.suggestionsList}
-      />
-    </View>
-  );
+  // Eski suggestion sistemi kaldırıldı - SearchSuggestions kullanılıyor
 
   return (
     <View style={styles.container}>
@@ -243,12 +165,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           onChangeText={(text) => {
             console.log('🔍 SearchBar TextInput onChangeText - Text:', text);
             onChangeText(text);
-            setShowSuggestionsList(Boolean(text.trim() && showSuggestions && filteredSuggestions.length > 0));
+            if (showSuggestions) {
+              setShowSuggestionsList(true);
+            }
           }}
           onFocus={() => {
             setIsFocused(true);
-            if (value.trim() && showSuggestions) {
-              setShowSuggestionsList(Boolean(filteredSuggestions.length > 0));
+            if (showSuggestions) {
+              setShowSuggestionsList(true);
             }
           }}
           onBlur={() => {
@@ -293,7 +217,31 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       </View>
 
       {/* Suggestions List */}
-      {showSuggestionsList && renderSuggestionsList()}
+      {showSuggestionsList && (
+        <View style={styles.suggestionsWrapper}>
+          <SimpleSearchSuggestions
+            onSuggestionPress={(suggestion) => {
+              console.log('🔍 SimpleSearchSuggestions onSuggestionPress:', suggestion);
+              
+              // onSuggestionSelect callback'ini çağır (SearchScreen'de setSearchQuery ve performSearch yapacak)
+              onSuggestionSelect?.({
+                id: `selected-${Date.now()}`,
+                text: suggestion,
+                type: 'suggestion',
+              });
+              
+              // Önerileri kapat
+              setShowSuggestionsList(false);
+              
+              // Arama geçmişine ekle
+              addToRecentSearches(suggestion);
+              
+              console.log('🔍 SearchBar - Suggestion selected, search will be performed by SearchScreen');
+            }}
+            visible={showSuggestionsList}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -302,6 +250,14 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     zIndex: 1000,
+  },
+  suggestionsWrapper: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: 4,
+    zIndex: 1001,
   },
   searchContainer: {
     flexDirection: 'row',
