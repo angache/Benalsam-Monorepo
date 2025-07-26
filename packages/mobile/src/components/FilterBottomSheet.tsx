@@ -18,7 +18,8 @@ import {
   MapPin,
   DollarSign,
   Clock,
-  Star
+  Star,
+  Tag
 } from 'lucide-react-native';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -45,6 +46,7 @@ interface FilterBottomSheetProps {
   onApply: (filters: any) => void;
   onClear: () => void;
   currentFilters?: any;
+  searchResults?: any[]; // Arama sonuçları için
 }
 
 export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
@@ -53,30 +55,243 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   onApply,
   onClear,
   currentFilters = {},
+  searchResults = [],
 }) => {
   const colors = useThemeColors();
-  const [expandedSections, setExpandedSections] = useState<string[]>(['location']);
-  const [selectedFilters, setSelectedFilters] = useState<any>(currentFilters);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['category']);
+  const [selectedFilters, setSelectedFilters] = useState<any>({});
+  
+  // currentFilters değiştiğinde selectedFilters'ı güncelle
+  useEffect(() => {
+    if (currentFilters) {
+      setSelectedFilters(currentFilters);
+    }
+  }, [currentFilters]);
   
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+  // Kategori eşleştirme fonksiyonu
+    const matchCategory = (dbCategory: string): string => {
+    // Küçük harf kontrolü
+    const normalizedCategory = dbCategory.toLowerCase();
+
+    const categoryMap: { [key: string]: string } = {
+      // Elektronik alt kategorileri
+      'elektronik': 'Elektronik',
+      'elektronik > telefon': 'Elektronik',
+      'elektronik > telefon > akıllı telefon': 'Elektronik',
+      'elektronik > telefon > akıllı telefon > akıllı telefonlar': 'Elektronik',
+      'elektronik > telefon > akıllı telefon > katlanabilir telefon': 'Elektronik',
+      'elektronik > telefon > akıllı telefon > gaming telefon': 'Elektronik',
+      'elektronik > telefon > akıllı telefon > iş telefonu': 'Elektronik',
+      'elektronik > telefon > cep telefonu': 'Elektronik',
+      'elektronik > telefon > cep telefonu > klasik tuşlu telefon': 'Elektronik',
+      'elektronik > telefon > cep telefonu > qwerty klavyeli telefon': 'Elektronik',
+      'elektronik > telefon > cep telefonu > yaşlı dostu telefon': 'Elektronik',
+      'elektronik > telefon > cep telefonu > dayanıklı telefon': 'Elektronik',
+      'elektronik > telefon > telefon aksesuarları': 'Elektronik',
+      'elektronik > telefon > telefon bileşenleri': 'Elektronik',
+      'elektronik > bilgisayar': 'Elektronik',
+      'elektronik > bilgisayar > dizüstü bilgisayar': 'Elektronik',
+      'elektronik > bilgisayar > masaüstü bilgisayar': 'Elektronik',
+      'elektronik > bilgisayar > tablet': 'Elektronik',
+      'elektronik > bilgisayar > bilgisayar bileşenleri': 'Elektronik',
+      'elektronik > bilgisayar > bilgisayar aksesuarları': 'Elektronik',
+      'elektronik > bilgisayar > yazıcı & tarayıcı': 'Elektronik',
+      'elektronik > tv & ses': 'Elektronik',
+      'elektronik > tv & ses > televizyon': 'Elektronik',
+      'elektronik > tv & ses > ses sistemleri': 'Elektronik',
+      'elektronik > tv & ses > kulaklık & hoparlör': 'Elektronik',
+      'elektronik > tv & ses > projeksiyon': 'Elektronik',
+      'elektronik > oyun & eğlence': 'Elektronik',
+      'elektronik > oyun & eğlence > oyun konsolu': 'Elektronik',
+      'elektronik > oyun & eğlence > oyun aksesuarları': 'Elektronik',
+      'elektronik > oyun & eğlence > video oyunları': 'Elektronik',
+      'elektronik > oyun & eğlence > masa oyunları': 'Elektronik',
+      'elektronik > fotoğraf & kamera': 'Elektronik',
+      'elektronik > fotoğraf & kamera > dijital kamera': 'Elektronik',
+      'elektronik > fotoğraf & kamera > video kamera': 'Elektronik',
+      'elektronik > fotoğraf & kamera > kamera aksesuarları': 'Elektronik',
+      'elektronik > fotoğraf & kamera > drone': 'Elektronik',
+      'elektronik > giyilebilir teknoloji': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > akıllı saat': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > fitness takip cihazı': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > akıllı bileklik': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > vr gözlük': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > ar gözlük': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > akıllı gözlük': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > akıllı yüzük': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > akıllı kulaklık': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > giyilebilir kamera': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > akıllı kıyafet': 'Elektronik',
+      'elektronik > giyilebilir teknoloji > diğer giyilebilir': 'Elektronik',
+      'elektronik > küçük elektronik': 'Elektronik',
+      'elektronik > küçük elektronik > saat & takı': 'Elektronik',
+      'elektronik > küçük elektronik > hesap makinesi': 'Elektronik',
+      'elektronik > küçük elektronik > elektronik oyunlar': 'Elektronik',
+      'elektronik > diğer': 'Elektronik',
+
+      // Ev Aletleri & Mobilya alt kategorileri
+      'ev aletleri & mobilya': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > çamaşır makinesi & kurutma': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > bulaşık makinesi': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > buzdolabı & dondurucu': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > fırın & ocak': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > mikrodalga & küçük ev aletleri': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > süpürge & temizlik': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > ev aletleri > ısıtma & soğutma': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya > oturma odası mobilyası': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya > yatak odası mobilyası': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya > mutfak mobilyası': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya > çalışma odası mobilyası': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya > çocuk odası mobilyası': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mobilya > bahçe mobilyası': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon > aydınlatma': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon > perde & stor': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon > halı & kilim': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon > tablo & resim': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon > vazo & süs eşyaları': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > dekorasyon > yastık & örtü': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mutfak eşyaları': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mutfak eşyaları > tencere & tava': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mutfak eşyaları > bardak & tabak': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mutfak eşyaları > çatal bıçak takımları': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mutfak eşyaları > mutfak aletleri': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > mutfak eşyaları > saklama kapları': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > bahçe & yapı market': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > bahçe & yapı market > bahçe aletleri': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > bahçe & yapı market > bitki & çiçek': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > bahçe & yapı market > yapı malzemeleri': 'Ev Aletleri & Mobilya',
+      'ev aletleri & mobilya > bahçe & yapı market > el aletleri': 'Ev Aletleri & Mobilya',
+
+      // Araç & Vasıta alt kategorileri
+      'araç & vasıta': 'Araç & Vasıta',
+      'araç & vasıta > otomobil': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > binek araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > suv & jip': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > ticari araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > klasik araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > antika araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > modifiye araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > lüks araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > spor araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > elektrikli araç': 'Araç & Vasıta',
+      'araç & vasıta > otomobil > hibrit araç': 'Araç & Vasıta',
+      'araç & vasıta > motosiklet': 'Araç & Vasıta',
+
+      // Eski kategori isimleri (geriye uyumluluk için)
+      'moda > giyim': 'Moda',
+      'araclar': 'Araç & Vasıta',
+      'spor & hobi': 'Spor & Hobi',
+      'kitap & müzik': 'Kitap & Müzik',
+      'is-makineleri': 'İş Makinesi',
+      'bahçe & tarım': 'Bahçe & Tarım',
+      'sanat & koleksiyon': 'Sanat & Koleksiyon',
+      'oyuncak & hobi': 'Oyuncak & Hobi',
+      'sağlık & güzellik': 'Sağlık & Güzellik',
+      'sağlık & güzellik > güzellik & kozmetik > saç bakımı': 'Sağlık & Güzellik',
+      'eğitim & kurs': 'Eğitim & Kurs',
+      'hizmet': 'Hizmet',
+      'diger': 'Diğer',
+    };
+
+    // Tam eşleşme varsa onu kullan
+    if (categoryMap[normalizedCategory]) {
+      return categoryMap[normalizedCategory];
+    }
+
+    // Ana kategori eşleşmesi ara
+    for (const [dbCat, mainCat] of Object.entries(categoryMap)) {
+      if (normalizedCategory.startsWith(dbCat)) {
+        return mainCat;
+      }
+    }
+
+    // Hiçbir eşleşme bulunamazsa "Diğer"
+    return 'Diğer';
+  };
+
+  // Dinamik kategori sayılarını hesapla - Sadece sonuçlu kategorileri göster
+  const getDynamicCategoryCounts = () => {
+    const categoryCounts: { [key: string]: number } = {};
+    
+    searchResults.forEach(item => {
+      if (item.category) {
+        const mainCategory = matchCategory(item.category);
+        categoryCounts[mainCategory] = (categoryCounts[mainCategory] || 0) + 1;
+      }
+    });
+    
+    // Sadece sonuçlu kategorileri döndür (0 olanları filtrele)
+    const filteredCounts: { [key: string]: number } = {};
+    Object.entries(categoryCounts).forEach(([category, count]) => {
+      if (count > 0) {
+        filteredCounts[category] = count;
+      }
+    });
+    
+    return filteredCounts;
+  };
+
+  // Tüm kategorileri tanımla (veritabanından alınacak)
+    const ALL_CATEGORIES = [
+    'Elektronik',
+    'Ev Aletleri & Mobilya',
+    'Araç & Vasıta',
+    'Moda',
+    'Spor & Hobi',
+    'Kitap & Müzik',
+    'İş Makinesi',
+    'Bahçe & Tarım',
+    'Sanat & Koleksiyon',
+    'Oyuncak & Hobi',
+    'Sağlık & Güzellik',
+    'Eğitim & Kurs',
+    'Hizmet',
+    'Diğer'
+  ];
+
+  // Dinamik kategorileri oluştur - Sadece sonuçlu olanları göster
+  const getDynamicCategories = () => {
+    const dynamicCounts = getDynamicCategoryCounts();
+    
+    // Eğer arama sonucu varsa, sadece sonuçlu kategorileri göster
+    if (searchResults.length > 0) {
+      return ALL_CATEGORIES.filter(category => dynamicCounts[category] > 0);
+    }
+    
+    // Arama sonucu yoksa tüm kategorileri göster
+    return ALL_CATEGORIES;
+  };
+
+  const dynamicCategoryCounts = getDynamicCategoryCounts();
+  
+  // Debug: Kategori sayılarını logla
+  console.log('🔍 FilterBottomSheet - Search Results:', searchResults.length);
+  console.log('🔍 FilterBottomSheet - Raw Categories:', searchResults.map(item => item.category));
+  console.log('🔍 FilterBottomSheet - Category Counts:', dynamicCategoryCounts);
+  console.log('🔍 FilterBottomSheet - Dynamic Categories:', getDynamicCategories());
 
   // Filter sections data
   const filterSections: FilterSection[] = [
     {
       id: 'category',
-      title: 'Kategori',
-      icon: <Star size={20} color={colors.text} />,
-      options: [
-        { id: 'elektronik', label: 'Elektronik', value: 'Elektronik', count: 1250 },
-        { id: 'moda', label: 'Moda', value: 'Moda', count: 2100 },
-        { id: 'ev-yasam', label: 'Ev & Yaşam', value: 'Ev & Yaşam', count: 890 },
-        { id: 'arac', label: 'Araç', value: 'Araç', count: 650 },
-        { id: 'spor', label: 'Spor & Hobi', value: 'Spor & Hobi', count: 450 },
-        { id: 'kitap', label: 'Kitap & Müzik', value: 'Kitap & Müzik', count: 320 },
-        { id: 'is-makinesi', label: 'İş Makinesi', value: 'İş Makinesi', count: 180 },
-        { id: 'diger', label: 'Diğer', value: 'Diğer', count: 280 },
-      ],
+      title: 'Kategoriler',
+      icon: <Tag size={20} color={colors.text} />,
+      options: getDynamicCategories().map(category => {
+        console.log('🔍 Creating option for category:', category, typeof category);
+        return {
+          id: category.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+          label: String(category || ''),
+          value: String(category || ''),
+          count: dynamicCategoryCounts[category] || 0
+        };
+      }),
+      multiSelect: true, // Çoklu seçim
     },
     {
       id: 'location',
@@ -171,21 +386,62 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
     );
   };
 
+  // Kategori seçildiğinde doğru alt kategoriyi bul
+    const findCategoryValue = (mainCategory: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'Elektronik': 'elektronik',
+      'Ev Aletleri & Mobilya': 'ev aletleri & mobilya',
+      'Araç & Vasıta': 'araç & vasıta',
+      'Moda': 'moda > giyim',
+      'Spor & Hobi': 'spor & hobi',
+      'Kitap & Müzik': 'kitap & müzik',
+      'İş Makinesi': 'is-makineleri',
+      'Bahçe & Tarım': 'bahçe & tarım',
+      'Sanat & Koleksiyon': 'sanat & koleksiyon',
+      'Oyuncak & Hobi': 'oyuncak & hobi',
+      'Sağlık & Güzellik': 'sağlık & güzellik',
+      'Eğitim & Kurs': 'eğitim & kurs',
+      'Hizmet': 'hizmet',
+      'Diğer': 'diger'
+    };
+
+    return categoryMap[mainCategory] || mainCategory.toLowerCase();
+  };
+
   const toggleFilter = (sectionId: string, optionId: string, value: string) => {
     setSelectedFilters((prev: any) => {
-      const current = prev[sectionId] || [];
-      const isSelected = current.includes(value);
-      
-      if (isSelected) {
-        return {
-          ...prev,
-          [sectionId]: current.filter((v: string) => v !== value),
-        };
+      // Kategori için çoklu seçim
+      if (sectionId === 'category') {
+        const current = prev[sectionId] || [];
+        const isSelected = current.includes(value);
+        
+        if (isSelected) {
+          return {
+            ...prev,
+            [sectionId]: current.filter((v: string) => v !== value),
+          };
+        } else {
+          return {
+            ...prev,
+            [sectionId]: [...current, value],
+          };
+        }
       } else {
-        return {
-          ...prev,
-          [sectionId]: [...current, value],
-        };
+        // Diğer filtreler için çoklu seçim
+        const current = prev[sectionId] || [];
+        const isSelected = current.includes(value);
+        
+        if (isSelected) {
+          return {
+            ...prev,
+            [sectionId]: current.filter((v: string) => v !== value),
+          };
+        } else {
+          return {
+            ...prev,
+            [sectionId]: [...current, value],
+          };
+        }
       }
     });
   };
@@ -234,21 +490,32 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
           <View style={styles.sectionContent}>
             {section.options.map(option => {
               const isSelected = selectedValues.includes(option.value);
+              const hasResults = (option.count || 0) > 0;
+              const isDisabled = section.id === 'category' && !hasResults;
+              
               return (
                 <TouchableOpacity
                   key={option.id}
                   style={[
                     styles.optionItem,
-                    isSelected && { backgroundColor: colors.primary + '20' }
+                    isSelected && { backgroundColor: colors.primary + '20' },
+                    isDisabled && { opacity: 0.5 }
                   ]}
-                  onPress={() => toggleFilter(section.id, option.id, option.value)}
+                  onPress={() => !isDisabled && toggleFilter(section.id, option.id, option.value)}
+                  disabled={isDisabled}
                 >
                   <View style={styles.optionContent}>
                     <Text style={[
                       styles.optionLabel,
-                      { color: isSelected ? colors.primary : colors.text }
+                      { 
+                        color: isSelected 
+                          ? colors.primary 
+                          : isDisabled 
+                            ? colors.textSecondary 
+                            : colors.text 
+                      }
                     ]}>
-                      {option.label}
+                      {typeof option.label === 'string' ? option.label : String(option.label || '')}
                     </Text>
                     {option.count && (
                       <Text style={[styles.optionCount, { color: colors.textSecondary }]}>
@@ -305,10 +572,38 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               Filtreler
             </Text>
+            {selectedFilters.category && selectedFilters.category.length > 0 && (
+              <View style={[styles.activeFilterBadge, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.activeFilterText, { color: colors.white }]}>
+                  {selectedFilters.category.length} kategori
+                </Text>
+              </View>
+            )}
           </View>
-          <TouchableOpacity onPress={hideBottomSheet} style={styles.closeButton}>
-            <X size={24} color={colors.text} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            {/* Kategori temizleme butonu */}
+            {selectedFilters.category && selectedFilters.category.length > 0 && (
+              <TouchableOpacity 
+                onPress={() => {
+                  console.log("🔍 FilterBottomSheet - Clear category button pressed");
+                  const newFilters = { ...selectedFilters };
+                  delete newFilters.category;
+                  setSelectedFilters(newFilters);
+                  // Kategorileri temizledikten sonra orijinal aramayı geri yükle
+                  onApply(newFilters);
+                }} 
+                style={[styles.clearCategoryButton, { borderColor: colors.border, backgroundColor: colors.background }]}
+              >
+                <X size={16} color={colors.primary} />
+                <Text style={[styles.clearCategoryText, { color: colors.primary }]}>
+                  Kategorileri Temizle
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={hideBottomSheet} style={styles.closeButton}>
+              <X size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Content */}
@@ -394,6 +689,31 @@ const styles = StyleSheet.create({
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  clearCategoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  clearCategoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  activeFilterBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  activeFilterText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   headerTitle: {
     fontSize: 20,

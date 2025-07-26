@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
+  ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../services/supabaseClient';
+import { Clock, TrendingUp, Tag, Search } from 'lucide-react-native';
 import { useThemeColors } from '../stores/themeStore';
-import { Clock, TrendingUp, Grid, Zap, Search } from 'lucide-react-native';
+import { supabase } from '../services/supabaseClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SearchSuggestion {
   id: string;
@@ -38,101 +38,85 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   const colors = useThemeColors();
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  // Son aramaları yükle
-  useEffect(() => {
-    loadRecentSearches();
-  }, []);
-
-  // Arama önerilerini güncelle
   useEffect(() => {
     console.log('🔍 SearchSuggestions useEffect - visible:', visible, 'query:', query);
-    if (visible && query.trim()) {
-      console.log('🔍 SearchSuggestions - Generating suggestions for query:', query);
+    if (visible) {
       generateSuggestions();
-    } else if (visible && !query.trim()) {
-      console.log('🔍 SearchSuggestions - Showing default suggestions');
-      showDefaultSuggestions();
     }
-  }, [query, visible]);
+  }, [visible, query]);
 
-  // Son aramaları AsyncStorage'dan yükle
   const loadRecentSearches = async () => {
     try {
-      const stored = await AsyncStorage.getItem('recentSearches');
-      if (stored) {
-        const searches = JSON.parse(stored);
-        setRecentSearches(searches);
+      const recentSearches = await AsyncStorage.getItem('recentSearches');
+      if (recentSearches) {
+        const searches = JSON.parse(recentSearches);
+        return searches.slice(0, 5).map((search: string, index: number) => ({
+          id: `recent-${index}`,
+          text: search,
+          type: 'recent' as const,
+        }));
       }
     } catch (error) {
-      console.warn('Son aramalar yüklenemedi:', error);
+      console.error('Error loading recent searches:', error);
     }
+    return [];
   };
 
-  // Arama geçmişini temizle
   const clearHistory = async () => {
     try {
       await AsyncStorage.removeItem('recentSearches');
-      setRecentSearches([]);
       onClearHistory?.();
     } catch (error) {
-      console.warn('Arama geçmişi temizlenemedi:', error);
+      console.error('Error clearing history:', error);
     }
   };
 
-  // Varsayılan önerileri göster
   const showDefaultSuggestions = async () => {
     console.log('🔍 SearchSuggestions showDefaultSuggestions - ENTRY');
-    const defaultSuggestions: SearchSuggestion[] = [];
-
-    // Son aramalar
-    if (recentSearches.length > 0) {
-      console.log('🔍 SearchSuggestions - Recent searches found:', recentSearches);
-      recentSearches.slice(0, 5).forEach((search, index) => {
-        defaultSuggestions.push({
-          id: `recent-${index}`,
-          text: search,
-          type: 'recent',
-        });
-      });
-    }
-
-    // Popüler aramalar
+    const recentSearches = await loadRecentSearches();
     const popularSearches = await getPopularSearches();
-    console.log('🔍 SearchSuggestions - Popular searches:', popularSearches);
-    popularSearches.forEach((search, index) => {
-      defaultSuggestions.push({
+    
+    const allSuggestions = [
+      ...recentSearches,
+      ...popularSearches.map((search, index) => ({
         id: `popular-${index}`,
         text: search,
-        type: 'popular',
-      });
-    });
+        type: 'popular' as const,
+      })),
+    ];
 
-    console.log('🔍 SearchSuggestions - Final suggestions:', defaultSuggestions);
-    setSuggestions(defaultSuggestions.slice(0, maxSuggestions));
+    console.log('🔍 SearchSuggestions - Popular searches:', popularSearches);
+    console.log('🔍 SearchSuggestions - Final suggestions:', allSuggestions);
+    
+    setSuggestions(allSuggestions.slice(0, maxSuggestions));
   };
 
-  // Popüler aramaları getir
   const getPopularSearches = async (): Promise<string[]> => {
     try {
-      // Supabase'den popüler aramaları çek
+      // Veritabanından popüler aramaları al
       const { data, error } = await supabase
         .from('listings')
-        .select('title, category')
-        .limit(20);
+        .select('title')
+        .limit(100);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching popular searches:', error);
+        return ['arıyorum', 'aranıyor', 'ikinci', 'iphone', 'pro'];
+      }
 
       // Başlıklardan popüler kelimeleri çıkar
-      const words = data
-        ?.flatMap(item => item.title?.split(' ') || [])
+      const titles = data?.map(item => item.title) || [];
+      const words = titles
+        .join(' ')
+        .toLowerCase()
+        .split(/\s+/)
         .filter(word => word.length > 2)
-        .map(word => word.toLowerCase());
+        .filter(word => !['ile', 've', 'bir', 'bu', 'şu', 'o', 'da', 'de', 'mi', 'mu'].includes(word));
 
       // Kelime frekansını hesapla
       const wordCount: { [key: string]: number } = {};
-      words?.forEach(word => {
+      words.forEach(word => {
         wordCount[word] = (wordCount[word] || 0) + 1;
       });
 
@@ -142,69 +126,37 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
         .slice(0, 5)
         .map(([word]) => word);
     } catch (error) {
-      console.warn('Popüler aramalar yüklenemedi:', error);
-      return ['araba', 'ev', 'telefon', 'bilgisayar', 'mobilya'];
+      console.error('Error in getPopularSearches:', error);
+      return ['arıyorum', 'aranıyor', 'ikinci', 'iphone', 'pro'];
     }
   };
 
-  // Arama önerilerini oluştur
   const generateSuggestions = async () => {
     setLoading(true);
     try {
-      const newSuggestions: SearchSuggestion[] = [];
-
-      // 1. Son aramalardan eşleşenleri bul
-      const matchingRecent = recentSearches
-        .filter(search => 
-          search.toLowerCase().includes(query.toLowerCase())
-        )
-        .slice(0, 3)
-        .map((search, index) => ({
-          id: `recent-match-${index}`,
-          text: search,
-          type: 'recent' as const,
-        }));
-
-      newSuggestions.push(...matchingRecent);
-
-      // 2. Kategori bazlı öneriler
-      const categorySuggestions = await getCategorySuggestions(query);
-      newSuggestions.push(...categorySuggestions);
-
-      // 3. Supabase'den benzer başlıklar
-      const similarTitles = await getSimilarTitles(query);
-      newSuggestions.push(...similarTitles);
-
-      // 4. Popüler aramalardan eşleşenler
-      const popularSearches = await getPopularSearches();
-      const matchingPopular = popularSearches
-        .filter(search => 
-          search.toLowerCase().includes(query.toLowerCase())
-        )
-        .slice(0, 2)
-        .map((search, index) => ({
-          id: `popular-match-${index}`,
-          text: search,
-          type: 'popular' as const,
-        }));
-
-      newSuggestions.push(...matchingPopular);
-
-      // Tekrarları kaldır ve sırala
-      const uniqueSuggestions = newSuggestions.filter(
-        (suggestion, index, self) => 
-          index === self.findIndex(s => s.text === suggestion.text)
-      );
-
-      setSuggestions(uniqueSuggestions.slice(0, maxSuggestions));
+      if (!query.trim()) {
+        console.log('🔍 SearchSuggestions - Showing default suggestions');
+        await showDefaultSuggestions();
+      } else {
+        console.log('🔍 SearchSuggestions - Generating suggestions for query:', query);
+        const categorySuggestions = await getCategorySuggestions(query);
+        const similarTitles = await getSimilarTitles(query);
+        
+        const allSuggestions = [
+          ...categorySuggestions,
+          ...similarTitles,
+        ];
+        
+        setSuggestions(allSuggestions.slice(0, maxSuggestions));
+      }
     } catch (error) {
-      console.warn('Arama önerileri oluşturulamadı:', error);
+      console.error('Error generating suggestions:', error);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Kategori bazlı öneriler
   const getCategorySuggestions = async (query: string): Promise<SearchSuggestion[]> => {
     const suggestions: SearchSuggestion[] = [];
     
@@ -232,10 +184,9 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
       }
     });
 
-    return suggestions.slice(0, 3);
+    return suggestions;
   };
 
-  // Benzer başlıkları getir
   const getSimilarTitles = async (query: string): Promise<SearchSuggestion[]> => {
     try {
       const { data, error } = await supabase
@@ -244,7 +195,10 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
         .ilike('title', `%${query}%`)
         .limit(5);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching similar titles:', error);
+        return [];
+      }
 
       return data?.map((item, index) => ({
         id: `similar-${index}`,
@@ -252,12 +206,11 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
         type: 'trending',
       })) || [];
     } catch (error) {
-      console.warn('Benzer başlıklar yüklenemedi:', error);
+      console.error('Error in getSimilarTitles:', error);
       return [];
     }
   };
 
-  // Öneri türüne göre icon
   const getSuggestionIcon = (type: SearchSuggestion['type']) => {
     switch (type) {
       case 'recent':
@@ -265,31 +218,29 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
       case 'popular':
         return TrendingUp;
       case 'category':
-        return Grid;
+        return Tag;
       case 'trending':
-        return Zap;
+        return Search;
       default:
         return Search;
     }
   };
 
-  // Öneri türüne göre renk
   const getSuggestionColor = (type: SearchSuggestion['type']) => {
     switch (type) {
       case 'recent':
-        return colors.primary;
+        return colors.textSecondary;
       case 'popular':
-        return colors.success;
+        return colors.primary;
       case 'category':
         return colors.warning;
       case 'trending':
-        return colors.error;
+        return colors.success;
       default:
         return colors.text;
     }
   };
 
-  // Öneri türüne göre başlık
   const getSuggestionTitle = (type: SearchSuggestion['type']) => {
     switch (type) {
       case 'recent':
@@ -299,69 +250,20 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
       case 'category':
         return 'Kategori Önerileri';
       case 'trending':
-        return 'Trend Aramalar';
+        return 'Benzer İlanlar';
       default:
         return 'Öneriler';
     }
   };
 
   // Önerileri grupla
-  const groupedSuggestions = useMemo(() => {
-    const groups: { [key: string]: SearchSuggestion[] } = {};
-    
-    suggestions.forEach(suggestion => {
-      if (!groups[suggestion.type]) {
-        groups[suggestion.type] = [];
-      }
-      groups[suggestion.type].push(suggestion);
-    });
-
+  const groupedSuggestions = suggestions.reduce((groups, suggestion) => {
+    if (!groups[suggestion.type]) {
+      groups[suggestion.type] = [];
+    }
+    groups[suggestion.type].push(suggestion);
     return groups;
-  }, [suggestions]);
-
-  // Öneri render
-  const renderSuggestion = ({ item }: { item: SearchSuggestion }) => {
-    const IconComponent = getSuggestionIcon(item.type);
-    return (
-      <TouchableOpacity
-        style={styles.suggestionItem}
-        onPress={() => {
-          console.log('🔍 SearchSuggestions - Suggestion pressed:', item.text);
-          onSuggestionPress(item.text);
-        }}
-      >
-        <IconComponent
-          size={16}
-          color={getSuggestionColor(item.type)}
-          style={styles.suggestionIcon}
-        />
-        <Text style={[styles.suggestionText, { color: colors.text }]}>
-          {item.text}
-        </Text>
-        {item.count && (
-          <Text style={[styles.suggestionCount, { color: colors.textSecondary }]}>
-            {item.count}
-          </Text>
-        )}
-      </TouchableOpacity>
-    );
-  };
-
-  // Grup başlığı render
-  const renderGroupHeader = (type: string, suggestions: SearchSuggestion[]) => (
-    <View style={styles.groupHeader}>
-      <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>
-        {getSuggestionTitle(type as SearchSuggestion['type'])}
-      </Text>
-      {type === 'recent' && suggestions.length > 0 && (
-        <TouchableOpacity onPress={clearHistory}>
-          <Text style={[styles.clearButton, { color: colors.primary }]}>
-            Temizle
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  }, {} as Record<string, SearchSuggestion[]>);
 
   if (!visible) return null;
 
@@ -375,22 +277,54 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={Object.entries(groupedSuggestions)}
-          keyExtractor={([type]) => type}
-          renderItem={({ item: [type, suggestions] }) => (
-            <View style={styles.group}>
-              {renderGroupHeader(type, suggestions)}
-              {suggestions.map(suggestion => (
-                <View key={suggestion.id}>
-                  {renderSuggestion({ item: suggestion })}
-                </View>
-              ))}
-            </View>
-          )}
+        <ScrollView 
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-        />
+        >
+          {Object.entries(groupedSuggestions).map(([type, typeSuggestions]) => (
+            <View key={type} style={styles.group}>
+              <View style={styles.groupHeader}>
+                <Text style={[styles.groupTitle, { color: colors.textSecondary }]}>
+                  {getSuggestionTitle(type as SearchSuggestion['type'])}
+                </Text>
+                {type === 'recent' && typeSuggestions.length > 0 && (
+                  <TouchableOpacity onPress={clearHistory}>
+                    <Text style={[styles.clearButton, { color: colors.primary }]}>
+                      Temizle
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              {typeSuggestions.map(suggestion => {
+                const IconComponent = getSuggestionIcon(suggestion.type);
+                return (
+                  <TouchableOpacity
+                    key={suggestion.id}
+                    style={styles.suggestionItem}
+                    onPress={() => {
+                      console.log('🔍 SearchSuggestions - Suggestion pressed:', suggestion.text);
+                      onSuggestionPress(suggestion.text);
+                    }}
+                  >
+                    <IconComponent
+                      size={16}
+                      color={getSuggestionColor(suggestion.type)}
+                      style={styles.suggestionIcon}
+                    />
+                    <Text style={[styles.suggestionText, { color: colors.text }]}>
+                      {suggestion.text}
+                    </Text>
+                    {suggestion.count && (
+                      <Text style={[styles.suggestionCount, { color: colors.textSecondary }]}>
+                        {suggestion.count}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ))}
+        </ScrollView>
       )}
     </View>
   );
@@ -406,6 +340,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
+  scrollView: {
+    maxHeight: 300,
+  },
   loadingContainer: {
     padding: 20,
     alignItems: 'center',
@@ -415,17 +352,14 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
   },
-  listContainer: {
-    padding: 8,
-  },
   group: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   groupHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 8,
   },
   groupTitle: {
@@ -441,9 +375,8 @@ const styles = StyleSheet.create({
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   suggestionIcon: {
     marginRight: 12,
@@ -451,11 +384,10 @@ const styles = StyleSheet.create({
   suggestionText: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '400',
   },
   suggestionCount: {
     fontSize: 12,
-    fontWeight: '500',
+    marginLeft: 8,
   },
 });
 
