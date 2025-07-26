@@ -27,23 +27,28 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>
-        {query.trim() ? 'Filtrelenmiş Öneriler:' : 'Öneriler:'}
+      <Text style={[styles.title, { color: colors.textSecondary }]}>
+        {query.trim() ? '🔍 Filtrelenmiş Öneriler' : '💡 Öneriler'}
       </Text>
       {filteredSuggestions.map((suggestion, index) => (
         <TouchableOpacity
           key={index}
-          style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
+          style={[
+            styles.suggestionItem, 
+            { 
+              borderBottomColor: colors.border,
+              borderBottomWidth: index === filteredSuggestions.length - 1 ? 0 : 1
+            }
+          ]}
           onPress={() => {
-            console.log('🔍 SimpleSearchSuggestions - Pressed:', suggestion);
             onSuggestionPress(suggestion);
           }}
         >
-          {suggestion === 'araba' && <Car size={16} color={colors.textSecondary} style={styles.icon} />}
-          {suggestion === 'ev' && <Home size={16} color={colors.textSecondary} style={styles.icon} />}
-          {suggestion === 'telefon' && <Phone size={16} color={colors.textSecondary} style={styles.icon} />}
-          {suggestion === 'bilgisayar' && <Monitor size={16} color={colors.textSecondary} style={styles.icon} />}
-          {suggestion === 'mobilya' && <Sofa size={16} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'araba' && <Car size={18} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'ev' && <Home size={18} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'telefon' && <Phone size={18} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'bilgisayar' && <Monitor size={18} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'mobilya' && <Sofa size={18} color={colors.textSecondary} style={styles.icon} />}
           <Text style={[styles.suggestionText, { color: colors.text }]}>
             {suggestion}
           </Text>
@@ -56,7 +61,7 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginTop: 4,
     elevation: 3,
     shadowColor: '#000',
@@ -66,22 +71,21 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 8,
   },
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 8,
-    borderBottomWidth: 1,
   },
   suggestionText: {
     fontSize: 14,
     flex: 1,
   },
   icon: {
-    marginRight: 8,
+    marginRight: 12,
   },
 });
 

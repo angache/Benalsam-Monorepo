@@ -1,18 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
-  Text, 
   TextInput, 
   TouchableOpacity, 
   StyleSheet, 
   ViewStyle,
-  ScrollView,
-  FlatList,
   Keyboard,
 } from 'react-native';
 import { useThemeColors } from '../stores';
-import { Search, X, Clock, TrendingUp, Mic } from 'lucide-react-native';
-import { supabase } from '../services/supabaseClient';
+import { Search, X, Mic } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleSearchSuggestions from './SimpleSearchSuggestions';
 
@@ -49,68 +45,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const colors = useThemeColors();
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestionsList, setShowSuggestionsList] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [trendingSearches, setTrendingSearches] = useState<SearchSuggestion[]>([]);
   const inputRef = useRef<TextInput>(null);
-
-  // Recent searches'i localStorage'dan yükle
-  useEffect(() => {
-    loadRecentSearches();
-    loadTrendingSearches();
-  }, []);
-
-  const loadRecentSearches = async () => {
-    try {
-      // AsyncStorage'dan recent searches'i yükle
-      const recent = await AsyncStorage.getItem('recentSearches');
-      if (recent) {
-        setRecentSearches(JSON.parse(recent));
-      }
-    } catch (error) {
-      console.log('Recent searches yüklenemedi:', error);
-    }
-  };
-
-  const loadTrendingSearches = async () => {
-    try {
-      // Supabase'den trending searches'i al
-      const { data, error } = await supabase
-        .from('listings')
-        .select('title, category')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (!error && data) {
-        // En popüler kategorileri ve başlıkları al
-        const trending = data.map((item, index) => ({
-          id: `trending-${index}`,
-          text: item.title,
-          type: 'trending' as const,
-          category: item.category,
-        }));
-        setTrendingSearches(trending);
-      }
-    } catch (error) {
-      console.log('Trending searches yüklenemedi:', error);
-    }
-  };
 
   const addToRecentSearches = async (searchText: string) => {
     try {
-      const newRecent = [searchText, ...recentSearches.filter(s => s !== searchText)].slice(0, 5);
-      setRecentSearches(newRecent);
+      const recent = await AsyncStorage.getItem('recentSearches');
+      const recentSearches = recent ? JSON.parse(recent) : [];
+      const newRecent = [searchText, ...recentSearches.filter((s: string) => s !== searchText)].slice(0, 5);
       await AsyncStorage.setItem('recentSearches', JSON.stringify(newRecent));
     } catch (error) {
       console.log('Recent search kaydedilemedi:', error);
     }
   };
 
-  // Debug için log ekle
-  console.log('🔍 SearchBar - showSuggestionsList:', showSuggestionsList);
-  console.log('🔍 SearchBar - value:', value);
-  console.log('🔍 SearchBar - showSuggestions:', showSuggestions);
-  console.log('🔍 SearchBar - onSearch prop exists:', !!onSearch);
-  console.log('🔍 SearchBar - onSuggestionSelect prop exists:', !!onSuggestionSelect);
+
 
   const handleClear = () => {
     onChangeText('');
@@ -163,7 +111,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholderTextColor={colors.textSecondary}
           value={value}
           onChangeText={(text) => {
-            console.log('🔍 SearchBar TextInput onChangeText - Text:', text);
             onChangeText(text);
             if (showSuggestions) {
               setShowSuggestionsList(true);
@@ -222,22 +169,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <SimpleSearchSuggestions
             query={value}
             onSuggestionPress={(suggestion) => {
-              console.log('🔍 SimpleSearchSuggestions onSuggestionPress:', suggestion);
-              
-              // onSuggestionSelect callback'ini çağır (SearchScreen'de setSearchQuery ve performSearch yapacak)
               onSuggestionSelect?.({
                 id: `selected-${Date.now()}`,
                 text: suggestion,
                 type: 'suggestion',
               });
               
-              // Önerileri kapat
               setShowSuggestionsList(false);
-              
-              // Arama geçmişine ekle
               addToRecentSearches(suggestion);
-              
-              console.log('🔍 SearchBar - Suggestion selected, search will be performed by SearchScreen');
             }}
             visible={showSuggestionsList}
           />

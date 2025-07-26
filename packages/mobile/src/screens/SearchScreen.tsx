@@ -65,19 +65,10 @@ const SearchScreen = ({ navigation, route }: any) => {
 
   // Manuel arama fonksiyonu
   const performSearch = useCallback(async (query?: string, category?: string) => {
-    console.log('🔍 performSearch - ENTRY POINT');
-    console.log('🔍 performSearch - query:', query);
-    console.log('🔍 performSearch - category:', category);
-    console.log('🔍 performSearch - selectedSort:', selectedSort);
-    
     const searchText = query || searchQuery;
     const searchCategory = category || selectedCategory;
     
-    console.log('🔍 performSearch - searchText:', searchText);
-    console.log('🔍 performSearch - searchCategory:', searchCategory);
-    
     if (!searchText.trim() && !searchCategory) {
-      console.log('🔍 performSearch - Empty search, clearing results');
       setResults([]);
       setTotalCount(0);
       setIsLoading(false);
@@ -90,7 +81,7 @@ const SearchScreen = ({ navigation, route }: any) => {
       let query = supabase.from('listings').select('*');
       
       if (searchText.trim()) {
-        query = query.ilike('title', `%${searchText}%`);
+        query = query.or(`title.ilike.%${searchText}%,description.ilike.%${searchText}%`);
       }
       
       if (searchCategory) {
@@ -99,7 +90,6 @@ const SearchScreen = ({ navigation, route }: any) => {
       
       // Sıralama uygula
       const [sortField, sortOrder] = selectedSort.split('-');
-      console.log('🔍 performSearch - Applying sort:', sortField, sortOrder);
       
       if (sortField && sortOrder) {
         query = query.order(sortField, { ascending: sortOrder === 'asc' });
@@ -108,23 +98,20 @@ const SearchScreen = ({ navigation, route }: any) => {
       const { data, error } = await query.limit(20);
       
       if (error) {
-        console.error('🔍 performSearch - Error:', error);
+        console.error('🔍 Search error:', error);
         setResults([]);
         setTotalCount(0);
       } else {
-        console.log('🔍 performSearch - Results:', data?.length || 0);
         setResults(data || []);
         setTotalCount(data?.length || 0);
       }
     } catch (error) {
-      console.error('🔍 performSearch - Exception:', error);
+      console.error('🔍 Search exception:', error);
       setResults([]);
       setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
-    
-    console.log('🔍 performSearch - EXIT POINT');
   }, [searchQuery, selectedCategory, selectedSort]);
 
   // Category search
@@ -194,12 +181,8 @@ const SearchScreen = ({ navigation, route }: any) => {
           }
         }}
         onSuggestionSelect={(suggestion) => {
-          console.log("🔍 SearchScreen onSuggestionSelect:", suggestion);
           setSearchQuery(suggestion.text);
-          // State güncellemesi asenkron olduğu için doğrudan suggestion.text kullan
-          setTimeout(() => {
-            performSearch(suggestion.text);
-          }, 50);
+          performSearch(suggestion.text);
         }}
         placeholder="Ne arıyorsunuz?"
         showSuggestions={true}
