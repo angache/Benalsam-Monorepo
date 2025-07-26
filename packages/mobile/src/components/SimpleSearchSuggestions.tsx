@@ -1,13 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Search, Car, Home, Phone, Monitor, Sofa } from 'lucide-react-native';
 import { useThemeColors } from '../stores/themeStore';
 
 interface SimpleSearchSuggestionsProps {
+  query: string;
   onSuggestionPress: (text: string) => void;
   visible: boolean;
 }
 
 const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
+  query,
   onSuggestionPress,
   visible,
 }) => {
@@ -15,12 +18,19 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
 
   if (!visible) return null;
 
-  const testSuggestions = ['araba', 'ev', 'telefon', 'bilgisayar'];
+  const allSuggestions = ['araba', 'ev', 'telefon', 'bilgisayar', 'mobilya'];
+  
+  // Query'ye göre filtrele
+  const filteredSuggestions = allSuggestions.filter(suggestion =>
+    suggestion.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Test Önerileri:</Text>
-      {testSuggestions.map((suggestion, index) => (
+      <Text style={[styles.title, { color: colors.text }]}>
+        {query.trim() ? 'Filtrelenmiş Öneriler:' : 'Öneriler:'}
+      </Text>
+      {filteredSuggestions.map((suggestion, index) => (
         <TouchableOpacity
           key={index}
           style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
@@ -29,6 +39,11 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
             onSuggestionPress(suggestion);
           }}
         >
+          {suggestion === 'araba' && <Car size={16} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'ev' && <Home size={16} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'telefon' && <Phone size={16} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'bilgisayar' && <Monitor size={16} color={colors.textSecondary} style={styles.icon} />}
+          {suggestion === 'mobilya' && <Sofa size={16} color={colors.textSecondary} style={styles.icon} />}
           <Text style={[styles.suggestionText, { color: colors.text }]}>
             {suggestion}
           </Text>
@@ -55,12 +70,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
   },
   suggestionText: {
     fontSize: 14,
+    flex: 1,
+  },
+  icon: {
+    marginRight: 8,
   },
 });
 

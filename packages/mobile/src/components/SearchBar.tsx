@@ -220,6 +220,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {showSuggestionsList && (
         <View style={styles.suggestionsWrapper}>
           <SimpleSearchSuggestions
+            query={value}
             onSuggestionPress={(suggestion) => {
               console.log('🔍 SimpleSearchSuggestions onSuggestionPress:', suggestion);
               
