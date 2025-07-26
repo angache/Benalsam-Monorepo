@@ -64,6 +64,21 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   // Filter sections data
   const filterSections: FilterSection[] = [
     {
+      id: 'category',
+      title: 'Kategori',
+      icon: <Star size={20} color={colors.text} />,
+      options: [
+        { id: 'elektronik', label: 'Elektronik', value: 'Elektronik', count: 1250 },
+        { id: 'moda', label: 'Moda', value: 'Moda', count: 2100 },
+        { id: 'ev-yasam', label: 'Ev & Yaşam', value: 'Ev & Yaşam', count: 890 },
+        { id: 'arac', label: 'Araç', value: 'Araç', count: 650 },
+        { id: 'spor', label: 'Spor & Hobi', value: 'Spor & Hobi', count: 450 },
+        { id: 'kitap', label: 'Kitap & Müzik', value: 'Kitap & Müzik', count: 320 },
+        { id: 'is-makinesi', label: 'İş Makinesi', value: 'İş Makinesi', count: 180 },
+        { id: 'diger', label: 'Diğer', value: 'Diğer', count: 280 },
+      ],
+    },
+    {
       id: 'location',
       title: 'Konum',
       icon: <MapPin size={20} color={colors.text} />,
@@ -142,7 +157,9 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
         useNativeDriver: true,
       }),
     ]).start(() => {
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 0);
     });
   };
 

@@ -35,12 +35,7 @@ import {
 } from "../components";
 import { supabase } from "../services/supabaseClient";
 
-const QUICK_FILTERS = [
-  { label: "Elektronik", category: "Elektronik" },
-  { label: "Moda", category: "Moda" },
-  { label: "Ev & Yaşam", category: "Ev & Yaşam" },
-  { label: "Araç", category: "Araç" },
-];
+
 
 const SORT_OPTIONS = [
   { label: "En Yeni", value: "created_at-desc" },
@@ -143,33 +138,87 @@ const SearchScreen = ({ navigation, route }: any) => {
   // Custom Header Component
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: colors.background }]}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <ArrowLeft size={24} color={colors.text} />
-      </TouchableOpacity>
+      <View style={styles.headerTop}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <ArrowLeft size={24} color={colors.text} />
+        </TouchableOpacity>
 
-      <View style={styles.headerTitleContainer}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          Arama
-        </Text>
-        {totalCount > 0 && (
-          <Text style={[styles.resultCount, { color: colors.textSecondary }]}>
-            {totalCount} sonuç
+        <View style={styles.headerTitleContainer}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Arama
           </Text>
-        )}
+          {totalCount > 0 && (
+            <Text style={[styles.resultCount, { color: colors.textSecondary }]}>
+              {totalCount} sonuç
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.headerActions}>
+          {/* Sort Button */}
+          <TouchableOpacity
+            style={styles.headerSortButton}
+            onPress={() => setShowSortOptions(!showSortOptions)}
+          >
+            <Text style={[styles.headerSortButtonText, { color: colors.text }]}>
+              Sırala
+            </Text>
+            <ChevronDown
+              size={14}
+              color={colors.text}
+              style={[
+                styles.headerSortIcon,
+                { transform: [{ rotate: showSortOptions ? '180deg' : '0deg' }] }
+              ]}
+            />
+          </TouchableOpacity>
+
+          {/* View Mode Toggle */}
+          <View style={styles.headerViewModeContainer}>
+            <TouchableOpacity
+              style={[
+                styles.headerViewModeButton,
+                viewMode === 'grid' && { backgroundColor: colors.primary }
+              ]}
+              onPress={() => setViewMode('grid')}
+            >
+              <Grid3X3
+                size={14}
+                color={viewMode === 'grid' ? colors.white : colors.text}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.headerViewModeButton,
+                viewMode === 'list' && { backgroundColor: colors.primary }
+              ]}
+              onPress={() => setViewMode('list')}
+            >
+              <List
+                size={14}
+                color={viewMode === 'list' ? colors.white : colors.text}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Filter Button */}
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilters(true)}
+          >
+            <SlidersHorizontal size={20} color={colors.primary} />
+            {(searchQuery || selectedCategory) && (
+              <View style={[styles.filterIndicator, { backgroundColor: colors.primary }]} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={() => setShowFilters(true)}
-      >
-        <SlidersHorizontal size={20} color={colors.primary} />
-        {(searchQuery || selectedCategory) && (
-          <View style={[styles.filterIndicator, { backgroundColor: colors.primary }]} />
-        )}
-      </TouchableOpacity>
+
     </View>
   );
 
@@ -198,115 +247,10 @@ const SearchScreen = ({ navigation, route }: any) => {
         showSuggestions={true}
         autoFocus={false}
       />
-
-      {/* Quick Filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.quickFilters}
-        contentContainerStyle={styles.quickFiltersContent}
-      >
-        {QUICK_FILTERS.map((filter, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.quickFilterChip,
-              {
-                backgroundColor:
-                  selectedCategory === filter.category
-                    ? colors.primary
-                    : colors.surface,
-                borderColor:
-                  selectedCategory === filter.category
-                    ? colors.primary
-                    : colors.border,
-              },
-            ]}
-            onPress={() => performCategorySearch(filter.category)}
-          >
-            <Text
-              style={[
-                styles.quickFilterText,
-                {
-                  color:
-                    selectedCategory === filter.category
-                      ? colors.white
-                      : colors.text,
-                },
-              ]}
-            >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
     </View>
   );
 
-  // Results Header with Sort and View Options
-  const renderResultsHeader = () => (
-    <View style={[styles.resultsHeader, { backgroundColor: colors.background }]}>
-      <View style={styles.resultsInfo}>
-        <Text style={[styles.resultsTitle, { color: colors.text }]}>
-          Sonuçlar
-        </Text>
-        {totalCount > 0 && (
-          <Text style={[styles.resultsSubtitle, { color: colors.textSecondary }]}>
-            {totalCount} ilan bulundu
-          </Text>
-        )}
-      </View>
 
-      <View style={styles.resultsActions}>
-        {/* Sort Button */}
-        <TouchableOpacity
-          style={styles.sortButton}
-          onPress={() => setShowSortOptions(!showSortOptions)}
-        >
-          <Text style={[styles.sortButtonText, { color: colors.text }]}>
-            Sırala
-          </Text>
-          <ChevronDown
-            size={16}
-            color={colors.text}
-            style={[
-              styles.sortIcon,
-              { transform: [{ rotate: showSortOptions ? '180deg' : '0deg' }] }
-            ]}
-          />
-        </TouchableOpacity>
-
-        {/* View Mode Toggle */}
-        <View style={styles.viewModeContainer}>
-          <TouchableOpacity
-            style={[
-              styles.viewModeButton,
-              viewMode === 'grid' && { backgroundColor: colors.primary }
-            ]}
-            onPress={() => setViewMode('grid')}
-          >
-            <Grid3X3
-              size={16}
-              color={viewMode === 'grid' ? colors.white : colors.text}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.viewModeButton,
-              viewMode === 'list' && { backgroundColor: colors.primary }
-            ]}
-            onPress={() => setViewMode('list')}
-          >
-            <List
-              size={16}
-              color={viewMode === 'list' ? colors.white : colors.text}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
 
   // Enhanced List Item Renderer
   const renderListItem = useCallback(({ item }: { item: any }) => (
@@ -357,8 +301,7 @@ const SearchScreen = ({ navigation, route }: any) => {
       {/* Search Section */}
       {renderSearchSection()}
 
-      {/* Results Header */}
-      {renderResultsHeader()}
+
 
       {/* Results List */}
       <FlatList
@@ -419,7 +362,16 @@ const SearchScreen = ({ navigation, route }: any) => {
         onClose={() => setShowFilters(false)}
         onApply={(filters) => {
           console.log('🔍 Filters applied:', filters);
-          // TODO: Apply filters to search
+          
+          // Kategori filtresini uygula
+          if (filters.category) {
+            setSelectedCategory(filters.category);
+            performCategorySearch(filters.category);
+          }
+          
+          // Diğer filtreleri uygula (gelecekte eklenecek)
+          // TODO: Apply other filters (price, location, etc.)
+          
           setShowFilters(false);
         }}
         onClear={() => {
@@ -431,7 +383,7 @@ const SearchScreen = ({ navigation, route }: any) => {
         }}
         currentFilters={{
           searchQuery,
-          selectedCategory,
+          category: selectedCategory,
           priceRange: null,
           location: '',
           urgency: '',
@@ -448,12 +400,47 @@ const styles = StyleSheet.create({
   
   // Header Styles
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerSortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  headerSortButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginRight: 2,
+  },
+  headerSortIcon: {
+    marginLeft: 2,
+  },
+  headerViewModeContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 6,
+    padding: 2,
+  },
+  headerViewModeButton: {
+    padding: 4,
+    borderRadius: 4,
   },
   backButton: {
     padding: 8,
@@ -490,77 +477,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  quickFilters: {
-    marginTop: 12,
-  },
-  quickFiltersContent: {
-    paddingHorizontal: 0,
-    gap: 8,
-  },
-  quickFilterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  quickFilterText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
 
-  // Results Header Styles
-  resultsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-  },
-  resultsInfo: {
-    flex: 1,
-  },
-  resultsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  resultsSubtitle: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  resultsActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-  },
-  sortButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginRight: 4,
-  },
-  sortIcon: {
-    marginLeft: 4,
-  },
-  viewModeContainer: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 8,
-    padding: 2,
-  },
-  viewModeButton: {
-    padding: 6,
-    borderRadius: 6,
-  },
+
 
   // List Styles
   listContent: {
