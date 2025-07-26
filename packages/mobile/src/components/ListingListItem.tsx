@@ -155,26 +155,27 @@ const ListingListItem: React.FC<ListingListItemProps> = React.memo(({
       flex: 1,
       justifyContent: 'space-between',
     },
-    titleContainer: {
-      flex: 1,
-    },
+
     title: {
       fontSize: 16,
       fontWeight: '600',
       color: colors.text,
-      marginBottom: 4,
+      marginBottom: 8,
       lineHeight: 20,
     },
     price: {
       fontSize: 18,
       fontWeight: '700',
       color: colors.primary,
-      marginBottom: 4,
+      marginBottom: 8,
+      marginTop: 4,
+      alignSelf: 'flex-start',
     },
     bottomRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      marginTop: -8,
     },
     locationContainer: {
       flexDirection: 'row',
@@ -218,6 +219,25 @@ const ListingListItem: React.FC<ListingListItemProps> = React.memo(({
       justifyContent: 'center',
       alignItems: 'center',
     },
+    favoriteButtonRight: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginLeft: 8,
+    },
+    leftInfo: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    timeContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
   }), [colors]);
 
   return (
@@ -259,44 +279,51 @@ const ListingListItem: React.FC<ListingListItemProps> = React.memo(({
               </View>
             )}
 
-            {/* Favorite Button */}
-            <TouchableOpacity
-              style={dynamicStyles.favoriteButton}
-              onPress={onToggleFavorite}
-              disabled={isFavoriteLoading}
-            >
-              <Heart 
-                size={16} 
-                color={cardData.isFavorited ? colors.error : colors.textSecondary}
-                fill={cardData.isFavorited ? colors.error : 'transparent'}
-              />
-            </TouchableOpacity>
+
           </View>
 
           {/* Info Section */}
           <View style={dynamicStyles.infoContainer}>
-            <View style={dynamicStyles.titleContainer}>
-              <Text style={dynamicStyles.title} numberOfLines={2}>
-                {cardData.title}
-              </Text>
-              <Text style={dynamicStyles.price}>
-                {formatPrice(cardData.price)}
-              </Text>
-            </View>
+            {/* Satır 1: Title */}
+            <Text style={dynamicStyles.title} numberOfLines={1}>
+              {cardData.title}
+            </Text>
 
+            {/* Satır 2: Bütçe (sola yaslanmış) */}
+            <Text style={dynamicStyles.price}>
+              {formatPrice(cardData.price)}
+            </Text>
+
+            {/* Satır 3: Şehir, Zaman ve Favori */}
             <View style={dynamicStyles.bottomRow}>
-              <View style={dynamicStyles.locationContainer}>
-                <MapPin size={12} color={colors.textSecondary} />
-                <Text style={dynamicStyles.locationText}>
-                  {cardData.location}
-                </Text>
+              {/* Sol taraf: Şehir ve Zaman */}
+              <View style={dynamicStyles.leftInfo}>
+                <View style={dynamicStyles.locationContainer}>
+                  <MapPin size={12} color={colors.textSecondary} />
+                  <Text style={dynamicStyles.locationText}>
+                    {cardData.location}
+                  </Text>
+                </View>
+                <View style={dynamicStyles.timeContainer}>
+                  <Clock size={12} color={colors.textSecondary} />
+                  <Text style={[dynamicStyles.timeText, { marginLeft: 4 }]}>
+                    {cardData.timeAgo}
+                  </Text>
+                </View>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Clock size={12} color={colors.textSecondary} />
-                <Text style={[dynamicStyles.timeText, { marginLeft: 4 }]}>
-                  {cardData.timeAgo}
-                </Text>
-              </View>
+              
+              {/* Sağ taraf: Favori Butonu */}
+              <TouchableOpacity
+                style={dynamicStyles.favoriteButtonRight}
+                onPress={onToggleFavorite}
+                disabled={isFavoriteLoading}
+              >
+                <Heart 
+                  size={16} 
+                  color={cardData.isFavorited ? colors.error : colors.textSecondary}
+                  fill={cardData.isFavorited ? colors.error : 'transparent'}
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </View>

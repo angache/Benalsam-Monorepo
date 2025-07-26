@@ -55,7 +55,7 @@ const SearchScreen = ({ navigation, route }: any) => {
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedSort, setSelectedSort] = useState('created_at-desc');
@@ -210,33 +210,16 @@ const SearchScreen = ({ navigation, route }: any) => {
           </TouchableOpacity>
 
           {/* View Mode Toggle */}
-          <View style={styles.headerViewModeContainer}>
-            <TouchableOpacity
-              style={[
-                styles.headerViewModeButton,
-                viewMode === 'grid' && { backgroundColor: colors.primary }
-              ]}
-              onPress={() => setViewMode('grid')}
-            >
-              <Grid3X3
-                size={14}
-                color={viewMode === 'grid' ? colors.white : colors.text}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.headerViewModeButton,
-                viewMode === 'list' && { backgroundColor: colors.primary }
-              ]}
-              onPress={() => setViewMode('list')}
-            >
-              <List
-                size={14}
-                color={viewMode === 'list' ? colors.white : colors.text}
-              />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.headerViewModeButton}
+            onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+          >
+            {viewMode === 'grid' ? (
+              <List size={16} color={colors.primary} />
+            ) : (
+              <Grid3X3 size={16} color={colors.primary} />
+            )}
+          </TouchableOpacity>
 
           {/* Filter Button */}
           <TouchableOpacity
