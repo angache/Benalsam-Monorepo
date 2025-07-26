@@ -50,7 +50,7 @@ const SearchScreen = ({ navigation, route }: any) => {
 
   // Basit state management
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -60,11 +60,11 @@ const SearchScreen = ({ navigation, route }: any) => {
   const [selectedSort, setSelectedSort] = useState('created_at-desc');
 
   // Manuel arama fonksiyonu
-  const performSearch = useCallback(async (query?: string, category?: string) => {
+  const performSearch = useCallback(async (query?: string, categories?: string[]) => {
     const searchText = query || searchQuery;
-    const searchCategory = category || selectedCategory;
+    const searchCategories = categories || selectedCategories;
     
-    if (!searchText.trim() && !searchCategory) {
+    if (!searchText.trim() && searchCategories.length === 0) {
       setResults([]);
       setTotalCount(0);
       setIsLoading(false);
@@ -80,8 +80,11 @@ const SearchScreen = ({ navigation, route }: any) => {
         query = query.or(`title.ilike.%${searchText}%,description.ilike.%${searchText}%`);
       }
       
-      if (searchCategory) {
-        query = query.eq('category', searchCategory);
+      if (searchCategories.length > 0) {
+        // Çoklu kategori filtresi
+        const categoryValues = searchCategories.map(cat => findCategoryValue(cat));
+        console.log('🔍 Category filter values:', categoryValues);
+        query = query.in('category', categoryValues);
       }
       
       // Sıralama uygula
@@ -113,17 +116,42 @@ const SearchScreen = ({ navigation, route }: any) => {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, selectedCategory, selectedSort]);
+  }, [searchQuery, selectedCategories, selectedSort]);
+
+  // Kategori değerini veritabanı değerine çevir
+  const findCategoryValue = (mainCategory: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'Moda': 'moda > giyim',
+      'Elektronik': 'elektronik',
+      'Ev Aletleri & Mobilya': 'ev aletleri & mobilya',
+      'Araç & Vasıta': 'araclar', // Veritabanında "araclar" olarak geçiyor
+      'Spor & Hobi': 'spor & hobi',
+      'Kitap & Müzik': 'kitap & müzik',
+      'İş Makinesi': 'is-makineleri',
+      'Bahçe & Tarım': 'bahçe & tarım',
+      'Sanat & Koleksiyon': 'sanat & koleksiyon',
+      'Oyuncak & Hobi': 'oyuncak & hobi',
+      'Sağlık & Güzellik': 'sağlık & güzellik',
+      'Eğitim & Kurs': 'eğitim & kurs',
+      'Hizmet': 'hizmet',
+      'Diğer': 'diger'
+    };
+
+    const result = categoryMap[mainCategory] || mainCategory.toLowerCase();
+    console.log('🔍 findCategoryValue:', mainCategory, '->', result);
+    return result;
+  };
 
   // Category search
-  const performCategorySearch = useCallback(async (category: string) => {
-    console.log('🔍 performCategorySearch - category:', category);
-    setSelectedCategory(category);
-    setSearchQuery('');
-    await performSearch('', category);
+  const performCategorySearch = useCallback(async (categories: string[]) => {
+    console.log('🔍 performCategorySearch - categories:', categories);
+    console.log('🔍 performCategorySearch - searchQuery:', searchQuery);
+    setSelectedCategories(categories);
+    // setSearchQuery(''); // Arama sorgusunu temizleme, sadece kategori filtresi uygula
+    await performSearch(searchQuery, categories);
     // Kategori seçildiğinde klavyeyi kapat
     Keyboard.dismiss();
-  }, [performSearch]);
+  }, [performSearch, searchQuery]);
 
   useEffect(() => {
     if (route?.params?.query) {
@@ -131,7 +159,7 @@ const SearchScreen = ({ navigation, route }: any) => {
       setSearchQuery(query);
       performSearch(query);
     } else if (route?.params?.category) {
-      performCategorySearch(route.params.category);
+      performCategorySearch([route.params.category]);
     }
   }, [route?.params?.query, route?.params?.category, performSearch, performCategorySearch]);
 
@@ -211,7 +239,7 @@ const SearchScreen = ({ navigation, route }: any) => {
             onPress={() => setShowFilters(true)}
           >
             <SlidersHorizontal size={20} color={colors.primary} />
-            {(searchQuery || selectedCategory) && (
+            {selectedCategories.length > 0 && (
               <View style={[styles.filterIndicator, { backgroundColor: colors.primary }]} />
             )}
           </TouchableOpacity>
@@ -357,38 +385,48 @@ const SearchScreen = ({ navigation, route }: any) => {
       )}
 
       {/* Filter Bottom Sheet */}
-      <FilterBottomSheet
-        visible={showFilters}
-        onClose={() => setShowFilters(false)}
-        onApply={(filters) => {
-          console.log('🔍 Filters applied:', filters);
-          
-          // Kategori filtresini uygula
-          if (filters.category) {
-            setSelectedCategory(filters.category);
-            performCategorySearch(filters.category);
-          }
-          
-          // Diğer filtreleri uygula (gelecekte eklenecek)
-          // TODO: Apply other filters (price, location, etc.)
-          
-          setShowFilters(false);
-        }}
-        onClear={() => {
-          console.log('🔍 Filters cleared');
-          setSearchQuery('');
-          setSelectedCategory('');
-          setResults([]);
-          setTotalCount(0);
-        }}
-        currentFilters={{
-          searchQuery,
-          category: selectedCategory,
-          priceRange: null,
-          location: '',
-          urgency: '',
-        }}
-      />
+              <FilterBottomSheet
+          visible={showFilters}
+          onClose={() => setShowFilters(false)}
+          onApply={(filters) => {
+            console.log('🔍 Filters applied:', filters);
+            
+            // Kategori filtresini uygula
+            if (filters.category && filters.category.length > 0) {
+              setSelectedCategories(filters.category);
+              performCategorySearch(filters.category);
+            } else {
+              // Kategori temizlendiğinde orijinal aramayı geri yükle
+              setSelectedCategories([]);
+              if (searchQuery.trim()) {
+                performSearch(searchQuery, []);
+              } else {
+                setResults([]);
+                setTotalCount(0);
+              }
+            }
+            
+            // Diğer filtreleri uygula (gelecekte eklenecek)
+            // TODO: Apply other filters (price, location, etc.)
+            
+            setShowFilters(false);
+          }}
+          onClear={() => {
+            console.log('🔍 Filters cleared');
+            setSearchQuery('');
+            setSelectedCategories([]);
+            setResults([]);
+            setTotalCount(0);
+          }}
+          currentFilters={{
+            searchQuery,
+            category: selectedCategories,
+            priceRange: null,
+            location: '',
+            urgency: '',
+          }}
+          searchResults={results}
+        />
     </SafeAreaView>
   );
 };
