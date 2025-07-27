@@ -43,15 +43,8 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { useScrollHeader } from '../hooks/useScrollHeader';
 
 // Legacy imports - aşamalı olarak kaldırılacak
-import { fetchListings, fetchPopularListings, fetchTodaysDeals } from '../services/listingService';
-import { fetchFollowedCategories, fetchListingsForFollowedCategories } from '../services/categoryFollowService';
 import { categoriesConfig } from '../config/categories-with-attributes';
 import { SearchBar } from '../components/SearchBar';
-import { getListingHistory } from '../services/userActivityService';
-import { fetchMostOfferedListings } from '../services/listingService/fetchers';
-import { supabase  } from '../services/supabaseClient';
-import { ListingWithFavorite } from '../services/categoryFollowService';
-import { formatDate, formatPrice } from '../types';
 
 type RootStackParamList = {
   Search: { query?: string; filter?: string };
