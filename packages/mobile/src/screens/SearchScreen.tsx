@@ -38,6 +38,7 @@ import {
 } from "../components";
 import { supabase } from "../services/supabaseClient";
 import { useDebouncedSearch } from "../hooks/useDebouncedSearch";
+import { useElasticsearchSearch } from "../hooks/useElasticsearchSearch";
 // import SearchAnalytics from "../services/SearchAnalytics";
 import SearchCache from "../services/SearchCache";
 
@@ -63,6 +64,7 @@ const SearchScreen = ({ navigation, route }: any) => {
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -105,7 +107,34 @@ const SearchScreen = ({ navigation, route }: any) => {
   //   },
   // });
 
-  // Manuel arama fonksiyonu (eski sistem)
+  // React Query ile Elasticsearch search
+  const searchParams = {
+    query: searchQuery,
+    filters: {
+      categories: selectedCategories,
+    },
+    sort: {
+      field: selectedSort.split('-')[0],
+      order: selectedSort.split('-')[1] as 'asc' | 'desc',
+    },
+    limit: 20,
+  };
+
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    error: searchError,
+    refetch: refetchSearch,
+  } = useElasticsearchSearch(searchParams, {
+    enabled: !!searchQuery.trim(), // Query varsa otomatik tetikle
+  });
+
+  // React Query search data'yı kullan
+  const displayResults = searchData?.results || results;
+  const displayLoading = searchLoading || isLoading;
+  const displayTotalCount = searchData?.total || totalCount;
+
+  // Manuel arama fonksiyonu (eski sistem - fallback)
   const performSearch = useCallback(async (query?: string, categories?: string[]) => {
     const searchText = query || searchQuery;
     const searchCategories = categories || selectedCategories;
@@ -304,9 +333,9 @@ const SearchScreen = ({ navigation, route }: any) => {
             Arama
           </Text>
           {totalCount > 0 && (
-            <Text style={[styles.resultCount, { color: colors.textSecondary }]}>
-              {totalCount} sonuç
-            </Text>
+                                    <Text style={[styles.resultCount, { color: colors.textSecondary }]}>
+                          {displayTotalCount} sonuç
+                        </Text>
           )}
         </View>
 
@@ -373,7 +402,8 @@ const SearchScreen = ({ navigation, route }: any) => {
             console.log("🔍 SearchScreen onSearch - Enter pressed");
           }
           if (searchQuery.trim()) {
-            performSearch(searchQuery);
+            // React Query ile search
+            refetchSearch();
           }
         }}
         onSuggestionSelect={(suggestion) => {
@@ -488,9 +518,9 @@ const SearchScreen = ({ navigation, route }: any) => {
 
 
       {/* Results List */}
-      <FlatList
-        data={results}
-        renderItem={renderListItem}
+                          <FlatList
+                      data={displayResults}
+                      renderItem={renderListItem}
         keyExtractor={useCallback((item: any) => item.id, [])}
         numColumns={viewMode === 'grid' ? 2 : 1}
         columnWrapperStyle={viewMode === 'grid' ? styles.row : undefined}
@@ -515,7 +545,7 @@ const SearchScreen = ({ navigation, route }: any) => {
       />
 
       {/* Loading Overlay */}
-      {isLoading && (
+                            {displayLoading && (
         <View style={styles.loadingOverlay}>
           <LoadingSpinner text="Aranıyor..." />
         </View>
