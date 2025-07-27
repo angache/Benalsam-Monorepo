@@ -38,6 +38,8 @@ import {
 import { useFollowedCategoryListings } from '../hooks/queries/useCategories';
 import { useToggleFavorite } from '../hooks/queries/useFavorites';
 import { useSmartRecommendations, useTrackView, useSellerRecommendations } from '../hooks/queries/useRecommendations';
+import { useRecentViews } from '../hooks/queries/useRecentViews';
+import { useSimilarListingsByCategory } from '../hooks/queries/useSimilarListings';
 import { ListingWithUser } from '../services/listingService/core';
 import { CategoryWithListings } from '../services/categoryFollowService';
 import { ListingWithFavorite } from '../types';
@@ -215,7 +217,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   statsSection: {
-    marginBottom: 20,
+    marginBottom: 0,
   },
   statsContainer: {
     paddingHorizontal: 8,
@@ -258,6 +260,7 @@ const styles = StyleSheet.create({
     ...margins.b.sm, // marginBottom: 12
   },
   categorySection: {
+    ...margins.t.md, // marginTop: 16
     ...margins.b.lg, // marginBottom: 20
   },
   categoryTitle: {
@@ -561,6 +564,12 @@ const HomeScreen = () => {
   // Seller-Focused Recommendations
   const { data: sellerRecommendations, isLoading: sellerRecommendationsLoading, error: sellerRecommendationsError, refetch: refetchSellerRecommendations } = useSellerRecommendations(6);
 
+  // Recent Views
+  const { data: recentViews, isLoading: recentViewsLoading, error: recentViewsError, refetch: refetchRecentViews } = useRecentViews(6);
+
+  // Similar Listings (kategori bazlı)
+  const { data: similarListings, isLoading: similarListingsLoading, error: similarListingsError, refetch: refetchSimilarListings } = useSimilarListingsByCategory('Elektronik > Telefon > Akıllı Telefon > Akıllı Telefonlar', undefined, 6);
+
   const { data: followedCategories = [], isLoading: followedLoading, error: followedError, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
   const userPrefs = useUserPreferencesContext();
@@ -602,7 +611,9 @@ const HomeScreen = () => {
         refetchMostOffered(),
         refetchFollowed(),
         refetchRecommendations(),
-        refetchSellerRecommendations()
+        refetchSellerRecommendations(),
+        refetchRecentViews(),
+        refetchSimilarListings()
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -611,7 +622,7 @@ const HomeScreen = () => {
     }
   }, [refetchListings, refetchPopular, refetchDeals, refetchMostOffered, refetchFollowed, refetchRecommendations]);
 
-  const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading || recommendationsLoading || sellerRecommendationsLoading;
+  const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading || recommendationsLoading || sellerRecommendationsLoading || recentViewsLoading || similarListingsLoading;
 
   // Individual section loading states
   const isCategoriesLoading = false; // Categories are static for now
@@ -631,6 +642,10 @@ const HomeScreen = () => {
   const isRecommendationsError = !!recommendationsError;
   const isSellerRecommendationsLoading = sellerRecommendationsLoading;
   const isSellerRecommendationsError = !!sellerRecommendationsError;
+  const isRecentViewsLoading = recentViewsLoading;
+  const isRecentViewsError = !!recentViewsError;
+  const isSimilarListingsLoading = similarListingsLoading;
+  const isSimilarListingsError = !!similarListingsError;
 
   // Progressive Disclosure - Limited data for better UX
   const limitedMostOffered = mostOffered.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.MOST_OFFERED);
@@ -640,6 +655,8 @@ const HomeScreen = () => {
   const limitedFollowedCategories = followedCategories.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.FOLLOWED_CATEGORIES);
   const limitedRecommendations = smartRecommendations?.data?.listings || [];
   const limitedSellerRecommendations = sellerRecommendations?.data?.listings || [];
+  const limitedRecentViews = recentViews?.recentViews || [];
+  const limitedSimilarListings = similarListings?.similarListings || [];
   
   // Debug: Smart recommendations durumunu kontrol et
   if (__DEV__) {
@@ -657,6 +674,23 @@ const HomeScreen = () => {
       limitedCount: limitedSellerRecommendations.length,
       isLoading: sellerRecommendationsLoading,
       hasError: !!sellerRecommendationsError,
+    });
+    
+    console.log('👁️ Recent Views Debug:', {
+      hasData: !!recentViews?.recentViews,
+      viewsCount: recentViews?.recentViews?.length || 0,
+      limitedCount: limitedRecentViews.length,
+      isLoading: recentViewsLoading,
+      hasError: !!recentViewsError,
+      filteredListings: limitedRecentViews.map(view => view.listing).filter((listing): listing is ListingWithUser => !!listing).length,
+    });
+    
+    console.log('🔍 Similar Listings Debug:', {
+      hasData: !!similarListings?.similarListings,
+      listingsCount: similarListings?.similarListings?.length || 0,
+      limitedCount: limitedSimilarListings.length,
+      isLoading: similarListingsLoading,
+      hasError: !!similarListingsError,
     });
   }
 
@@ -1187,7 +1221,6 @@ const HomeScreen = () => {
 
           {/* Kategoriler */}
           <View style={styles.categorySection}>
-            {renderSkeletonSectionHeader()}
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {getCurrentCategories().map((category: any) => (
                 <CategoryCard
@@ -1198,6 +1231,93 @@ const HomeScreen = () => {
                 />
               ))}
             </ScrollView>
+          </View>
+
+          {/* Günün Fırsatları - PROMOSYONLU İLANLAR */}
+          <View style={styles.todaysDealsSection}>
+            {isTodaysDealsLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonHorizontalList()}
+              </>
+            ) : isTodaysDealsError ? (
+              <SectionErrorFallback 
+                title="Günün Fırsatları"
+                onRetry={() => refetchDeals()}
+              />
+            ) : limitedTodaysDeals.length > 0 ? (
+              <>
+                <SectionHeader 
+                  title="Günün Fırsatları"
+                  count={limitedTodaysDeals.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={navigateToTodaysDeals}
+                />
+                <FlashList
+                  data={limitedTodaysDeals}
+                  renderItem={renderHorizontalListing}
+                  keyExtractor={keyExtractor}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalListContainer}
+                  estimatedItemSize={200}
+                />
+              </>
+            ) : null}
+          </View>
+
+          {/* Yeni İlanlar - MODERN GRID */}
+          <View style={styles.section}>
+            {isNewListingsLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonGrid()}
+              </>
+            ) : isNewListingsError ? (
+              <SectionErrorFallback 
+                title="Yeni İlanlar"
+                onRetry={() => refetchListings()}
+              />
+            ) : limitedNewListings.length > 0 ? (
+              <>
+                <SectionHeader 
+                  title="Yeni İlanlar"
+                  count={limitedNewListings.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={navigateToAllListings}
+                />
+                <View style={styles.flashListContainer}>
+                  <View style={styles.gridListContainer}>
+                    {limitedNewListings.map((item, index) => {
+                      const numColumns = getNumColumns(preferences.contentTypePreference);
+                      const isFirstInRow = index % numColumns === 0;
+                      const isLastInRow = (index + 1) % numColumns === 0;
+                      
+                      // Dinamik genişlik hesaplama
+                      const cardWidth = (screenWidth - SIDE_PADDING * 2 - spacing.lg * (numColumns - 1)) / numColumns;
+                      
+                      return (
+                        <View 
+                          key={item.id}
+                          style={[
+                            styles.gridItem,
+                            { width: cardWidth },
+                            isFirstInRow && styles.gridItemFirst,
+                            isLastInRow && styles.gridItemLast,
+                          ]}
+                        >
+                          {renderGridListing({ item, index })}
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              </>
+            ) : null}
           </View>
 
           {/* Takip Ettiğiniz Kategoriler */}
@@ -1222,6 +1342,59 @@ const HomeScreen = () => {
                   )}
                 </View>
               ))}
+            </View>
+          )}
+
+          {/* Son Baktıkların Section */}
+          {user && limitedRecentViews.length > 0 && (
+            <View style={styles.section}>
+              {isRecentViewsLoading ? (
+                <>
+                  {renderSkeletonSectionHeader()}
+                  {renderSkeletonHorizontalList()}
+                </>
+              ) : isRecentViewsError ? (
+                <SectionErrorFallback 
+                  title="Son Baktıkların"
+                  onRetry={() => refetchRecentViews()}
+                />
+              ) : (
+                <>
+                  <SectionHeader 
+                    title="Son Baktıkların"
+                    count={limitedRecentViews.length}
+                    showCount={true}
+                    showAction={true}
+                    actionText="Tümünü Gör"
+                    onActionPress={() => navigateToScreen('Search', { query: '', filter: 'recent-views' })}
+                  />
+                  <FlashList
+                    data={limitedRecentViews.map(view => view.listing).filter((listing): listing is ListingWithUser => !!listing)}
+                    renderItem={({ item, index }) => (
+                      <ListingCard
+                        key={`recent-${item.id}-${index}`}
+                        listing={item}
+                        onPress={() => {
+                          // Track view behavior
+                          trackView(item.id, { category: item.category, price: item.budget });
+                          navigation.navigate('ListingDetail', { listingId: item.id });
+                        }}
+                        onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
+                        isFavoriteLoading={selectedListingId === item.id}
+                        isGrid={false} // Horizontal layout için marginRight aktif
+                        style={{ width: 200, marginRight: 12 }}
+                        showCategoryBadges={preferences.showCategoryBadges}
+                        showUrgencyBadges={preferences.showUrgencyBadges}
+                      />
+                    )}
+                    keyExtractor={(item, index) => `recent-${item.id}-${index}`}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalListContainer}
+                    estimatedItemSize={200}
+                  />
+                </>
+              )}
             </View>
           )}
 
@@ -1299,6 +1472,43 @@ const HomeScreen = () => {
             </View>
           )}
 
+          {/* Benzer İlanlar Section */}
+          {limitedSimilarListings.length > 0 && (
+            <View style={styles.section}>
+              {isSimilarListingsLoading ? (
+                <>
+                  {renderSkeletonSectionHeader()}
+                  {renderSkeletonHorizontalList()}
+                </>
+              ) : isSimilarListingsError ? (
+                <SectionErrorFallback 
+                  title="Benzer İlanlar"
+                  onRetry={() => refetchSimilarListings()}
+                />
+              ) : (
+                <>
+                  <SectionHeader 
+                    title="Benzer İlanlar"
+                    count={limitedSimilarListings.length}
+                    showCount={true}
+                    showAction={true}
+                    actionText="Tümünü Gör"
+                    onActionPress={() => navigateToScreen('Search', { query: '', filter: 'similar-listings' })}
+                  />
+                  <FlashList
+                    data={limitedSimilarListings.map(item => item.listing)}
+                    renderItem={renderHorizontalListing}
+                    keyExtractor={(item, index) => `similar-${item.id}-${index}`}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalListContainer}
+                    estimatedItemSize={200}
+                  />
+                </>
+              )}
+            </View>
+          )}
+
           {/* En Çok Teklif Alanlar */}
           <View style={styles.mostOfferedSection}>
             {isMostOfferedLoading ? (
@@ -1365,93 +1575,6 @@ const HomeScreen = () => {
                   contentContainerStyle={styles.horizontalListContainer}
                   estimatedItemSize={200}
                 />
-              </>
-            ) : null}
-          </View>
-
-          {/* Günün Fırsatları */}
-          <View style={styles.todaysDealsSection}>
-            {isTodaysDealsLoading ? (
-              <>
-                {renderSkeletonSectionHeader()}
-                {renderSkeletonHorizontalList()}
-              </>
-            ) : isTodaysDealsError ? (
-              <SectionErrorFallback 
-                title="Günün Fırsatları"
-                onRetry={() => refetchDeals()}
-              />
-            ) : limitedTodaysDeals.length > 0 ? (
-              <>
-                <SectionHeader 
-                  title="Günün Fırsatları"
-                  count={limitedTodaysDeals.length}
-                  showCount={true}
-                  showAction={true}
-                  actionText="Tümünü Gör"
-                  onActionPress={navigateToTodaysDeals}
-                />
-                <FlashList
-                  data={limitedTodaysDeals}
-                  renderItem={renderHorizontalListing}
-                  keyExtractor={keyExtractor}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.horizontalListContainer}
-                  estimatedItemSize={200}
-                />
-              </>
-            ) : null}
-          </View>
-
-          {/* Tüm İlanlar - Modern Grid */}
-          <View style={styles.section}>
-            {isNewListingsLoading ? (
-              <>
-                {renderSkeletonSectionHeader()}
-                {renderSkeletonGrid()}
-              </>
-            ) : isNewListingsError ? (
-              <SectionErrorFallback 
-                title="Yeni İlanlar"
-                onRetry={() => refetchListings()}
-              />
-            ) : limitedNewListings.length > 0 ? (
-              <>
-                <SectionHeader 
-                  title="Yeni İlanlar"
-                  count={limitedNewListings.length}
-                  showCount={true}
-                  showAction={true}
-                  actionText="Tümünü Gör"
-                  onActionPress={navigateToAllListings}
-                />
-                <View style={styles.flashListContainer}>
-                  <View style={styles.gridListContainer}>
-                    {limitedNewListings.map((item, index) => {
-                      const numColumns = getNumColumns(preferences.contentTypePreference);
-                      const isFirstInRow = index % numColumns === 0;
-                      const isLastInRow = (index + 1) % numColumns === 0;
-                      
-                      // Dinamik genişlik hesaplama
-                      const cardWidth = (screenWidth - SIDE_PADDING * 2 - spacing.lg * (numColumns - 1)) / numColumns;
-                      
-                      return (
-                        <View 
-                          key={item.id}
-                          style={[
-                            styles.gridItem,
-                            { width: cardWidth },
-                            isFirstInRow && styles.gridItemFirst,
-                            isLastInRow && styles.gridItemLast,
-                          ]}
-                        >
-                          {renderGridListing({ item, index })}
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
               </>
             ) : null}
           </View>
