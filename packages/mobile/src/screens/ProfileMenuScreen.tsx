@@ -10,7 +10,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useThemeColors } from "../stores";
 import { useAuthStore } from "../stores";
-import { useMyProfile } from "../hooks/queries/useAuth";
+// import { useMyProfile } from "../hooks/queries/useAuth"; // Geçici olarak devre dışı
 import {
   Home,
   Search,
@@ -63,18 +63,11 @@ const ProfileMenuScreen = () => {
   const navigation = useNavigation<any>();
   const colors = useThemeColors();
   const { user, signOut } = useAuthStore();
-  const { data: profile } = useMyProfile();
+  // const { data: profile } = useMyProfile(); // Geçici olarak devre dışı
 
   const getDisplayName = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name} ${profile.last_name}`;
-    } else if (profile?.first_name) {
-      return profile.first_name;
-    } else if (profile?.name) {
-      return profile.name;
-    } else if (user?.username) {
-      return user.username;
-    } else if (user?.email) {
+    // Geçici olarak basit
+    if (user?.email) {
       return user.email;
     } else {
       return 'Kullanıcı';

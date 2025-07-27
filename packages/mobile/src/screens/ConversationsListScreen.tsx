@@ -62,7 +62,7 @@ const ConversationsListScreen = () => {
     const listingTitle = conv.listing?.title || '';
     const lastMessageContent = conv.last_message?.content || '';
     return (
-      otherUser?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ((otherUser as any)?.name || otherUser?.email)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       listingTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lastMessageContent.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -107,7 +107,8 @@ const ConversationsListScreen = () => {
         >
           <View style={styles.conversationLeft}>
             <Avatar 
-              name={otherUser?.name || 'Unknown'} 
+              source={otherUser?.avatar_url}
+              name={(otherUser as any)?.name || otherUser?.email || 'Unknown'} 
               size="lg"
               style={styles.avatar}
             />
@@ -129,7 +130,7 @@ const ConversationsListScreen = () => {
                   fontWeight: unreadCount > 0 ? '600' : '500'
                 }
               ]} numberOfLines={1}>
-                {otherUser?.name || 'Bilinmeyen Kullanıcı'}
+                {(otherUser as any)?.name || otherUser?.email || 'Bilinmeyen Kullanıcı'}
               </Text>
               <View style={styles.timeContainer}>
                 <Clock size={12} color={colors.textSecondary} />

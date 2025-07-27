@@ -19,7 +19,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Button } from '../components/Button';
 import { fetchMyListings } from '../services/listingService';
 import { updateListingStatus, deleteListing } from '../services/listingService/mutations';
-import { withDataErrorBoundary } from '../utils/errorBoundaryHelpers';
+// import { withDataErrorBoundary } from '../utils/errorBoundaryHelpers'; // Geçici olarak devre dışı
 
 const { width: screenWidth } = Dimensions.get('window');
 const SWIPE_THRESHOLD = -screenWidth * 0.4; // 40% of screen width - more deliberate swipe needed
@@ -642,4 +642,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withDataErrorBoundary(MyListingsScreen); 
+export default MyListingsScreen; 
