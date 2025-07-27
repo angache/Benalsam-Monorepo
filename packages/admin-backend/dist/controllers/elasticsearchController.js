@@ -61,6 +61,23 @@ class ElasticsearchController {
             });
         }
     }
+    async createIndex(req, res) {
+        try {
+            const success = await this.elasticsearchService.createIndex();
+            res.json({
+                success,
+                message: success ? 'Index created successfully' : 'Failed to create index'
+            });
+        }
+        catch (error) {
+            logger_1.default.error('❌ Failed to create index:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to create index',
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    }
     async getIndexStats(req, res) {
         try {
             const stats = await this.elasticsearchService.getIndexStats();

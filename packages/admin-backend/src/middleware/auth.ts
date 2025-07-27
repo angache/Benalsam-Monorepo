@@ -237,4 +237,55 @@ export const optionalAuth = async (
   }
 
   next();
+};
+
+// Supabase JWT authentication for mobile app analytics
+export const authenticateSupabaseToken = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    console.log('🔐 Auth header:', authHeader);
+    
+    const token = authHeader && authHeader.split(' ')[1];
+    console.log('🔐 Token exists:', !!token);
+
+    if (!token) {
+      console.log('❌ No token provided');
+      ApiResponseUtil.unauthorized(res, 'Access token required');
+      return;
+    }
+
+    console.log('🔐 Token length:', token.length);
+    console.log('🔐 Token preview:', token.substring(0, 20) + '...');
+
+    // Decode Supabase JWT token (without signature verification for now)
+    const decoded = jwtUtils.verifySupabaseToken(token);
+    console.log('🔐 Token decoded successfully');
+    
+    // Get user from Supabase using the token
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      console.log('❌ Supabase user error:', error);
+      ApiResponseUtil.unauthorized(res, 'Invalid user token');
+      return;
+    }
+
+    console.log('✅ User authenticated:', user.id);
+
+    // Add user info to request
+    req.user = {
+      id: user.id,
+      email: user.email || '',
+      role: 'user'
+    };
+    next();
+  } catch (error) {
+    console.log('❌ Authentication error:', error);
+    logger.error('Supabase authentication error:', error);
+    ApiResponseUtil.unauthorized(res, 'Invalid token');
+  }
 }; 

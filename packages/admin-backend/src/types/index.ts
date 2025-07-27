@@ -71,8 +71,8 @@ export type PlatformPreferences = typeof s_t.PlatformPreferences;
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
-    email: string;
-    role: string;
+    email?: string;
+    role?: string;
   };
   admin?: {
     id: string;

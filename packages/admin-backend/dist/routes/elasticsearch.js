@@ -17,6 +17,7 @@ router.post('/sync/trigger', (req, res) => elasticsearchController.triggerManual
 router.get('/queue/stats', (req, res) => elasticsearchController.getQueueStats(req, res));
 router.post('/queue/retry-failed', (req, res) => elasticsearchController.retryFailedJobs(req, res));
 router.post('/queue/clear', (req, res) => elasticsearchController.clearQueue(req, res));
+router.post('/create-index', (req, res) => elasticsearchController.createIndex(req, res));
 router.post('/reindex', (req, res) => elasticsearchController.reindexAll(req, res));
 exports.default = router;
 //# sourceMappingURL=elasticsearch.js.map

@@ -22,6 +22,27 @@ export const jwtUtils = {
     return jwt.verify(token, jwtConfig.secret) as JwtPayload;
   },
 
+  // Verify Supabase JWT token
+  verifySupabaseToken(token: string): any {
+    try {
+      // Supabase JWT'yi decode et (signature doğrulaması yapmadan)
+      const decoded = jwt.decode(token);
+      if (!decoded || typeof decoded === 'string') {
+        throw new Error('Invalid token format');
+      }
+      
+      // Token'ın geçerlilik süresini kontrol et
+      const now = Math.floor(Date.now() / 1000);
+      if (decoded.exp && decoded.exp < now) {
+        throw new Error('Token expired');
+      }
+      
+      return decoded;
+    } catch (error) {
+      throw new Error('Invalid Supabase token');
+    }
+  },
+
   // Decode JWT token without verification
   decode(token: string): JwtPayload | null {
     try {

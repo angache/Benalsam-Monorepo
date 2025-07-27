@@ -19,6 +19,7 @@ const health_1 = __importDefault(require("./routes/health"));
 const monitoring_1 = __importDefault(require("./routes/monitoring"));
 const elasticsearch_1 = __importDefault(require("./routes/elasticsearch"));
 const admin_management_1 = __importDefault(require("./routes/admin-management"));
+const analytics_1 = __importDefault(require("./routes/analytics"));
 const elasticsearchService_1 = require("./services/elasticsearchService");
 const queueProcessorService_1 = __importDefault(require("./services/queueProcessorService"));
 const auth_2 = require("./middleware/auth");
@@ -91,6 +92,7 @@ app.use('/api/v1/health', health_1.default);
 app.use('/api/v1/monitoring', monitoring_1.default);
 app.use('/api/v1/elasticsearch', elasticsearch_1.default);
 app.use('/api/v1/admin-management', auth_2.authenticateToken, admin_management_1.default);
+app.use('/api/v1/analytics', analytics_1.default);
 app.use(errorHandler_1.errorHandler);
 app.use('*', (req, res) => {
     res.status(404).json({

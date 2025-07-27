@@ -15,6 +15,7 @@ import healthRoutes from './routes/health';
 import monitoringRoutes from './routes/monitoring';
 import elasticsearchRoutes from './routes/elasticsearch';
 import adminManagementRoutes from './routes/admin-management';
+import analyticsRoutes from './routes/analytics';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -117,6 +118,7 @@ app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/monitoring', monitoringRoutes);
 app.use('/api/v1/elasticsearch', elasticsearchRoutes);
 app.use('/api/v1/admin-management', authenticateToken, adminManagementRoutes);
+app.use('/api/v1/analytics', analyticsRoutes); // Analytics aktif edildi
 
 // Global error handler
 app.use(errorHandler);

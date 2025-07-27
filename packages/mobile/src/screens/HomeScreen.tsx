@@ -47,6 +47,7 @@ import { ListingWithFavorite } from '../types';
 import { UseQueryResult } from '@tanstack/react-query';
 import { useScrollHeader } from '../hooks/useScrollHeader';
 import { useUserPreferencesContext } from '../contexts/UserPreferencesContext';
+import analyticsService from '../services/analyticsService';
 
 
 // Legacy imports - aşamalı olarak kaldırılacak
@@ -556,7 +557,10 @@ const HomeScreen = () => {
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const { handleScroll, headerOpacity, headerTranslateY } = useScrollHeader(50);
   
-
+  // Analytics tracking
+  useEffect(() => {
+    analyticsService.trackScreenView('HomeScreen');
+  }, []);
   
   // React Query hooks with proper typing
   const { data: listings = [], isLoading: listingsLoading, error: listingsError, refetch: refetchListings } = useListings() as UseQueryResult<ListingWithUser[], Error>;
@@ -1079,7 +1083,12 @@ const HomeScreen = () => {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          onScroll={handleScroll}
+          onScroll={(event) => {
+            handleScroll(event);
+            // Analytics tracking
+            const scrollY = event.nativeEvent.contentOffset.y;
+            analyticsService.trackScrollDepth(Math.floor(scrollY), 'HomeScreen');
+          }}
           scrollEventThrottle={16}
           refreshControl={
             <RefreshControl

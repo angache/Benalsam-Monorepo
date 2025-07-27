@@ -3,8 +3,8 @@ module.exports = {
     {
       name: 'admin-backend',
       cwd: './packages/admin-backend',
-      script: 'pnpm',
-      args: 'run dev',
+      script: 'npx',
+      args: 'ts-node src/index.ts',
       env: {
         NODE_ENV: 'development',
         PORT: 3002,
