@@ -125,4 +125,22 @@ router.get('/index-stats', authenticateToken, async (req, res) => {
   }
 });
 
+// Get performance metrics
+router.get('/performance-metrics', authenticateToken, async (req, res) => {
+  try {
+    const { days = 7, event_type = 'performance' } = req.query;
+    
+    const metrics = await userBehaviorService.getPerformanceMetrics(Number(days), event_type as string);
+    
+    if (metrics) {
+      res.json({ success: true, data: metrics });
+    } else {
+      res.status(404).json({ success: false, message: 'Performance metrics not found' });
+    }
+  } catch (error) {
+    logger.error('Error getting performance metrics:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 export default router; 

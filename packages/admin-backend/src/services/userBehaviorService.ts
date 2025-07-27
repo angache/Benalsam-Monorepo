@@ -270,6 +270,58 @@ export class UserBehaviorService {
       return null;
     }
   }
+
+  async getPerformanceMetrics(days: number = 7, eventType: string = 'performance'): Promise<any> {
+    try {
+      const fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - days);
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { event_type: eventType } },
+                { range: { timestamp: { gte: fromDate.toISOString() } } }
+              ]
+            }
+          },
+          aggs: {
+            metric_types: {
+              terms: { field: 'event_data.metric_type.keyword' },
+              aggs: {
+                avg_value: { avg: { field: 'event_data.value' } },
+                avg_percentage: { avg: { field: 'event_data.percentage' } },
+                avg_duration: { avg: { field: 'event_data.duration_ms' } },
+                error_count: { sum: { field: 'event_data.count' } }
+              }
+            },
+            device_platforms: {
+              terms: { field: 'device_info.platform.keyword' }
+            },
+            hourly_distribution: {
+              date_histogram: {
+                field: 'timestamp',
+                calendar_interval: 'hour'
+              }
+            }
+          },
+          size: 0
+        }
+      });
+
+      return {
+        metric_types: (response.aggregations?.metric_types as any)?.buckets || [],
+        device_platforms: (response.aggregations?.device_platforms as any)?.buckets || [],
+        hourly_distribution: (response.aggregations?.hourly_distribution as any)?.buckets || [],
+        total_events: (response.hits?.total as any)?.value || 0
+      };
+    } catch (error) {
+      logger.error('❌ Error getting performance metrics:', error);
+      return null;
+    }
+  }
 }
 
 export default new UserBehaviorService(); 

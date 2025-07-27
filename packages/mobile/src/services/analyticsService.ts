@@ -4,7 +4,7 @@ import * as Device from 'expo-device';
 
 export interface UserBehaviorEvent {
   user_id: string;
-  event_type: 'click' | 'scroll' | 'search' | 'favorite' | 'view' | 'share' | 'message' | 'offer';
+  event_type: 'click' | 'scroll' | 'search' | 'favorite' | 'view' | 'share' | 'message' | 'offer' | 'performance';
   event_data: {
     screen_name?: string;
     section_name?: string;
@@ -14,6 +14,19 @@ export interface UserBehaviorEvent {
     scroll_depth?: number;
     time_spent?: number;
     coordinates?: { x: number; y: number };
+    metric_type?: string;
+    value?: number;
+    unit?: string;
+    used_mb?: number;
+    total_mb?: number;
+    percentage?: number;
+    endpoint?: string;
+    duration_ms?: number;
+    average_ms?: number;
+    error_type?: string;
+    context?: string;
+    count?: number;
+    message?: string;
     [key: string]: any;
   };
   timestamp: string;
