@@ -297,9 +297,10 @@ const generateFakeListing = async (user, category) => {
 // Generate fake listings for a user
 const generateUserListings = async (user) => {
   const listings = [];
+  // 100 listing için daha fazla listing per user
   const listingCount = Math.min(
-    Math.floor(user.trust_score / 10) + 1, // Trust score based
-    5 // Max 5 listings per user
+    Math.floor(CONFIG.BATCH_SIZE / 13) + 1, // 13 user var, her birine eşit dağıt
+    20 // Max 20 listings per user
   );
 
   console.log(`📝 Generating ${listingCount} listings for user ${user.name} (trust: ${user.trust_score})`);

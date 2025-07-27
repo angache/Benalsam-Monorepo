@@ -81,50 +81,26 @@ export const fetchPopularListings = async (currentUserId: string | null = null):
 
 export const fetchMostOfferedListings = async (currentUserId: string | null = null) => {
   try {
-    const { data: listingsData, error: listingsError } = await supabase
+    // Gerçek teklif sayısına göre sırala
+    let query = supabase
       .from('listings')
-      .select(`
-        *,
-        offers!offers_listing_id_fkey!inner(listing_id)
-      `)
+      .select('*')
       .eq('status', 'active')
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+      .gt('offers_count', 0) // Sadece teklif alan ilanları
+      .limit(10);
 
-    if (listingsError) {
-      console.error('Error fetching most offered listings:', listingsError);
+    query = addPremiumSorting(query).order('offers_count', { ascending: false, nullsFirst: false });
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching most offered listings:', error);
       return [];
     }
 
-    const listingsWithOfferCounts = listingsData.reduce((acc: any[], listing: any) => {
-      const existingListing = acc.find(l => l.id === listing.id);
-      if (existingListing) {
-        existingListing.actual_offers_count = (existingListing.actual_offers_count || 0) + 1;
-      } else {
-        acc.push({
-          ...listing,
-          actual_offers_count: 1
-        });
-      }
-      return acc;
-    }, []);
-
-    const sortedListings = listingsWithOfferCounts
-      .filter(listing => listing.actual_offers_count > 0)
-      .sort((a, b) => {
-        if (a.is_urgent_premium !== b.is_urgent_premium) {
-          return b.is_urgent_premium ? 1 : -1;
-        }
-        if (a.is_featured !== b.is_featured) {
-          return b.is_featured ? 1 : -1;
-        }
-        if (a.is_showcase !== b.is_showcase) {
-          return b.is_showcase ? 1 : -1;
-        }
-        return b.actual_offers_count - a.actual_offers_count;
-      })
-      .slice(0, 10);
-
-    if (sortedListings.length === 0) {
+    // Eğer teklif alan ilan yoksa, en yeni ilanları göster
+    if (!data || data.length === 0) {
       let fallbackQuery = supabase
         .from('listings')
         .select('*')
@@ -141,10 +117,12 @@ export const fetchMostOfferedListings = async (currentUserId: string | null = nu
         return [];
       }
       
-      return await processFetchedListings(fallbackData, currentUserId);
+      return await processFetchedListings(fallbackData || [], currentUserId);
     }
 
-    return await processFetchedListings(sortedListings, currentUserId);
+    const processedData = await processFetchedListings(data || [], currentUserId);
+
+    return processedData;
   } catch (e) {
     console.error('Unexpected error in fetchMostOfferedListings:', e);
     return [];

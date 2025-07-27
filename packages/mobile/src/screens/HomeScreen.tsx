@@ -19,12 +19,14 @@ import { FlatList } from 'react-native';
 import { TrendingUp, Clock, Star, Users, Bell, Search as SearchIcon } from 'lucide-react-native';
 import { useThemeStore, useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
-import { Header } from '../components';
+import { Header, SectionHeader } from '../components';
 import ListingCard from '../components/ListingCard';
 import CategoryCard from '../components/CategoryCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { spacing, margins, paddings, layout, shadows, borderRadius } from '../utils/spacing';
+import { typography, textPatterns, fontWeight } from '../utils/typography';
 
 // React Query Hooks - YENİ!
 import { 
@@ -88,8 +90,8 @@ const STATS = [
 ];
 
 const { width: screenWidth, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const SIDE_PADDING = 16; // Sol ve sağ kenar mesafesi
-const CARD_GAP = 12; // Kartlar arası mesafe
+const SIDE_PADDING = spacing.md; // 16px - Sol ve sağ kenar mesafesi
+const CARD_GAP = spacing.md; // 16px - Kartlar arası mesafe (8px'den 16px'e çıkarıldı)
 const NUM_COLUMNS = 2;
 
 const styles = StyleSheet.create({
@@ -110,66 +112,56 @@ const styles = StyleSheet.create({
   skeletonCard: {
     width: (screenWidth - SIDE_PADDING * 2 - CARD_GAP) / 2,
     height: 260,
-    borderRadius: 16,
-    marginBottom: 16,
+    borderRadius: borderRadius.md,
+    ...margins.b.md, // marginBottom: 16
     marginHorizontal: CARD_GAP / 2,
     overflow: 'hidden',
   },
   skeletonImage: {
     height: 140,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: borderRadius.md,
+    borderTopRightRadius: borderRadius.md,
   },
   skeletonContent: {
-    padding: 12,
+    ...paddings.all.sm, // padding: 12
   },
   skeletonLine: {
     height: 12,
     borderRadius: 6,
-    marginBottom: 8,
+    ...margins.b.sm, // marginBottom: 8
   },
   welcomeSection: {
-    marginHorizontal: 16,
-    marginVertical: 12,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    ...margins.h.md, // marginHorizontal: 16
+    ...margins.v.sm, // marginVertical: 12
+    ...paddings.all.md, // padding: 16
+    borderRadius: borderRadius.md,
+    ...shadows.md,
   },
   welcomeText: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 4,
+    ...textPatterns.sectionHeader, // fontSize: 20, fontWeight: 'bold', lineHeight: 28
+    ...margins.b.xs, // marginBottom: 4
   },
   welcomeSubtext: {
-    fontSize: 14,
-    lineHeight: 20,
+    ...typography.body2, // fontSize: 14, fontWeight: 'normal', lineHeight: 20
   },
   searchSection: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+    ...margins.h.md, // marginHorizontal: 16
+    ...margins.b.md, // marginBottom: 16
   },
   bannerSection: {
     height: 180,
-    marginBottom: 16,
+    ...margins.b.md, // marginBottom: 16
   },
   bannerContainer: {
-    paddingHorizontal: 8,
+    ...paddings.h.sm, // paddingHorizontal: 8
   },
   bannerCard: {
     width: 280,
     height: 160,
-    marginHorizontal: 8,
-    borderRadius: 16,
+    marginHorizontal: spacing.sm, // 8px
+    borderRadius: borderRadius.md,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
+    ...shadows.lg,
   },
   bannerOverlay: {
     position: 'absolute',
@@ -180,13 +172,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    ...paddings.all.md, // padding: 16
   },
   bannerText: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.h3, // fontSize: 16, fontWeight: 'semibold', lineHeight: 22
     color: 'white',
-    textAlign: 'center',
   },
   statsSection: {
     marginBottom: 20,
@@ -196,52 +186,54 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: 100,
-    padding: 16,
-    marginHorizontal: 8,
-    borderRadius: 16,
+    ...paddings.all.md, // padding: 16
+    marginHorizontal: spacing.sm, // 8px
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadows.sm,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: 8,
-    marginBottom: 4,
+    ...typography.h2, // fontSize: 18, fontWeight: 'semibold', lineHeight: 24
+    fontWeight: fontWeight.extrabold, // Override for stats
+    ...margins.t.sm, // marginTop: 8
+    ...margins.b.xs, // marginBottom: 4
   },
   statLabel: {
-    fontSize: 12,
+    ...typography.caption1, // fontSize: 12, fontWeight: 'normal', lineHeight: 16
     textAlign: 'center',
-    lineHeight: 16,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium, // Override for stats
   },
   section: {
-    marginVertical: 12,
+    ...margins.v.md, // marginVertical: 16 (increased from 12)
+  },
+  mostOfferedSection: {
+    ...margins.v.md, // marginVertical: 16 (normal spacing)
+  },
+  todaysDealsSection: {
+    ...margins.v.md, // marginVertical: 16 (normal spacing)
+  },
+  popularListingsSection: {
+    ...margins.v.md, // marginVertical: 16 (normal spacing)
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginHorizontal: 16,
-    marginBottom: 12,
+    ...textPatterns.sectionHeader, // fontSize: 20, fontWeight: 'bold', lineHeight: 28
+    ...margins.h.md, // marginHorizontal: 16
+    ...margins.b.sm, // marginBottom: 12
   },
   categorySection: {
-    marginBottom: 20,
+    ...margins.b.lg, // marginBottom: 20
   },
   categoryTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginHorizontal: 16,
-    marginBottom: 8,
+    ...textPatterns.cardTitle, // fontSize: 16, fontWeight: 'semibold', lineHeight: 22
+    ...margins.h.md, // marginHorizontal: 16
+    ...margins.b.sm, // marginBottom: 8
   },
   categoryScrollerSection: {
-    marginBottom: 10,
+    ...margins.b.sm, // marginBottom: 10
   },
   horizontalListContainer: {
-    paddingHorizontal: 16,
+    ...paddings.h.md, // paddingHorizontal: 16
   },
   gridListContainer: {
     paddingHorizontal: SIDE_PADDING,
@@ -249,7 +241,7 @@ const styles = StyleSheet.create({
   gridRow: {
     justifyContent: 'space-between',
     paddingHorizontal: 0,
-    gap: CARD_GAP,
+    gap: spacing.md, // 16px gap (CARD_GAP ile aynı)
   },
   flashListContainer: {
     height: Math.ceil(20 / NUM_COLUMNS) * 280, // Approximate height for 20 items
@@ -265,9 +257,42 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  skeletonHorizontalCard: {
+    width: 200,
+    height: 280,
+    borderRadius: borderRadius.md,
+    ...margins.b.md, // marginBottom: 16
+    marginHorizontal: spacing.sm, // 8px
+    overflow: 'hidden',
+  },
+  skeletonHorizontalImage: {
+    height: 160,
+    borderTopLeftRadius: borderRadius.md,
+    borderTopRightRadius: borderRadius.md,
+  },
+  skeletonHorizontalContent: {
+    ...paddings.all.sm, // padding: 12
+  },
+  skeletonSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...margins.h.md, // marginHorizontal: 16
+    ...margins.b.sm, // marginBottom: 12
+  },
+  skeletonTitle: {
+    width: 150,
+    height: 24,
+    borderRadius: 6,
+  },
+  skeletonAction: {
+    width: 80,
+    height: 24,
+    borderRadius: 6,
+  },
 });
 
-// Skeleton loading component
+// Skeleton loading components
 const SkeletonCard = () => {
   const colors = useThemeColors();
   return (
@@ -276,7 +301,32 @@ const SkeletonCard = () => {
       <View style={styles.skeletonContent}>
         <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '80%' }]} />
         <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '60%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '40%' }]} />
       </View>
+    </View>
+  );
+};
+
+const SkeletonHorizontalCard = () => {
+  const colors = useThemeColors();
+  return (
+    <View style={[styles.skeletonHorizontalCard, { backgroundColor: colors.surface }]}>
+      <View style={[styles.skeletonHorizontalImage, { backgroundColor: colors.border }]} />
+      <View style={styles.skeletonHorizontalContent}>
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '90%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '70%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '50%' }]} />
+      </View>
+    </View>
+  );
+};
+
+const SkeletonSectionHeader = () => {
+  const colors = useThemeColors();
+  return (
+    <View style={styles.skeletonSectionHeader}>
+      <View style={[styles.skeletonTitle, { backgroundColor: colors.border }]} />
+      <View style={[styles.skeletonAction, { backgroundColor: colors.border }]} />
     </View>
   );
 };
@@ -297,6 +347,8 @@ const HomeScreen = () => {
   const { data: popularListings = [], isLoading: popularLoading, refetch: refetchPopular } = usePopularListings() as UseQueryResult<ListingWithUser[], Error>;
   const { data: todaysDeals = [], isLoading: dealsLoading, refetch: refetchDeals } = useTodaysDeals() as UseQueryResult<ListingWithUser[], Error>;
   const { data: mostOffered = [], isLoading: mostOfferedLoading, refetch: refetchMostOffered } = useMostOfferedListings() as UseQueryResult<ListingWithUser[], Error>;
+  
+
   const { data: followedCategories = [], isLoading: followedLoading, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
 
@@ -318,6 +370,14 @@ const HomeScreen = () => {
   }, [refetchListings, refetchPopular, refetchDeals, refetchMostOffered, refetchFollowed]);
 
   const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading;
+
+  // Individual section loading states
+  const isCategoriesLoading = false; // Categories are static for now
+  const isMostOfferedLoading = mostOfferedLoading;
+  const isPopularLoading = popularLoading;
+  const isTodaysDealsLoading = dealsLoading;
+  const isNewListingsLoading = listingsLoading;
+  const isFollowedLoading = followedLoading;
 
   const getCurrentCategories = () => {
     if (categoryPath.length === 0) return categoriesConfig;
@@ -379,6 +439,7 @@ const HomeScreen = () => {
       onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
       onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
       isFavoriteLoading={selectedListingId === item.id}
+      isGrid={true} // Grid layout için marginRight devre dışı
     />
   ), [navigation, handleToggleFavorite, selectedListingId]);
 
@@ -389,6 +450,7 @@ const HomeScreen = () => {
       onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
       onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
       isFavoriteLoading={selectedListingId === item.id}
+      isGrid={false} // Horizontal layout için marginRight aktif
       style={{ width: 200, marginRight: 12 }}
     />
   ), [navigation, handleToggleFavorite, selectedListingId]);
@@ -399,6 +461,18 @@ const HomeScreen = () => {
         <SkeletonCard key={index} />
       ))}
     </View>
+  ), []);
+
+  const renderSkeletonHorizontalList = useCallback(() => (
+    <View style={styles.horizontalListContainer}>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <SkeletonHorizontalCard key={index} />
+      ))}
+    </View>
+  ), []);
+
+  const renderSkeletonSectionHeader = useCallback(() => (
+    <SkeletonSectionHeader />
   ), []);
 
   const keyExtractor = useCallback((item: ListingWithUser) => item.id.toString(), []);
@@ -455,7 +529,7 @@ const HomeScreen = () => {
             scrollEventThrottle={16}
           >
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary }]}>Yeni İlanlar</Text>
+              {renderSkeletonSectionHeader()}
               {renderSkeletonGrid()}
             </View>
           </ScrollView>
@@ -575,7 +649,7 @@ const HomeScreen = () => {
 
           {/* Kategoriler */}
           <View style={styles.categorySection}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Kategoriler</Text>
+            {renderSkeletonSectionHeader()}
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {getCurrentCategories().map((category: any) => (
                 <CategoryCard
@@ -591,9 +665,7 @@ const HomeScreen = () => {
           {/* Takip Ettiğiniz Kategoriler */}
           {followedCategories.length > 0 && (
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary }]}>
-                Takip Ettiğiniz Kategoriler
-              </Text>
+              {renderSkeletonSectionHeader()}
               {followedCategories.map((category: CategoryWithListings) => (
                 <View key={category.category_name}>
                   <Text style={[styles.categoryTitle, { color: colors.text }]}>
@@ -615,73 +687,139 @@ const HomeScreen = () => {
             </View>
           )}
 
+          {/* En Çok Teklif Alanlar */}
+          <View style={styles.mostOfferedSection}>
+            {isMostOfferedLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonHorizontalList()}
+              </>
+            ) : mostOffered.length > 0 ? (
+              <>
+                <SectionHeader 
+                  title="En Çok Teklif Alanlar"
+                  count={mostOffered.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={() => {
+                    // TODO: Navigate to most offered listings
+                    console.log('Navigate to most offered listings');
+                  }}
+                />
+                <FlashList
+                  data={mostOffered}
+                  renderItem={renderHorizontalListing}
+                  keyExtractor={keyExtractor}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalListContainer}
+                  estimatedItemSize={200}
+                />
+              </>
+            ) : null}
+          </View>
+
           {/* Popüler İlanlar */}
-          {popularListings.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary }]}>
-                Popüler İlanlar
-              </Text>
-              <FlashList
-                data={popularListings}
-                renderItem={renderHorizontalListing}
-                keyExtractor={keyExtractor}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalListContainer}
-                estimatedItemSize={200}
-              />
-            </View>
-          )}
+          <View style={styles.popularListingsSection}>
+            {isPopularLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonHorizontalList()}
+              </>
+            ) : popularListings.length > 0 ? (
+              <>
+                <SectionHeader 
+                  title="Popüler İlanlar"
+                  count={popularListings.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={() => {
+                    // TODO: Navigate to popular listings
+                    console.log('Navigate to popular listings');
+                  }}
+                />
+                <FlashList
+                  data={popularListings}
+                  renderItem={renderHorizontalListing}
+                  keyExtractor={keyExtractor}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalListContainer}
+                  estimatedItemSize={200}
+                />
+              </>
+            ) : null}
+          </View>
 
           {/* Günün Fırsatları */}
-          {todaysDeals.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary }]}>
-                Günün Fırsatları
-              </Text>
-              <FlashList
-                data={todaysDeals}
-                renderItem={renderHorizontalListing}
-                keyExtractor={keyExtractor}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalListContainer}
-                estimatedItemSize={200}
-              />
-            </View>
-          )}
+          <View style={styles.todaysDealsSection}>
+            {isTodaysDealsLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonHorizontalList()}
+              </>
+            ) : todaysDeals.length > 0 ? (
+              <>
+                <SectionHeader 
+                  title="Günün Fırsatları"
+                  count={todaysDeals.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={() => {
+                    // TODO: Navigate to today's deals
+                    console.log('Navigate to today\'s deals');
+                  }}
+                />
+                <FlashList
+                  data={todaysDeals}
+                  renderItem={renderHorizontalListing}
+                  keyExtractor={keyExtractor}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalListContainer}
+                  estimatedItemSize={200}
+                />
+              </>
+            ) : null}
+          </View>
 
           {/* Tüm İlanlar - Modern Grid */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.primary }]}>Yeni İlanlar</Text>
-            <View style={styles.flashListContainer}>
-              <FlatList
-                data={listings}
-                renderItem={renderGridListing}
-                keyExtractor={keyExtractor}
-                numColumns={NUM_COLUMNS}
-                contentContainerStyle={styles.gridListContainer}
-                columnWrapperStyle={styles.gridRow}
-                scrollEnabled={false}
-              />
-            </View>
+            {isNewListingsLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonGrid()}
+              </>
+            ) : listings.length > 0 ? (
+              <>
+                <SectionHeader 
+                  title="Yeni İlanlar"
+                  count={listings.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={() => {
+                    // TODO: Navigate to all listings
+                    console.log('Navigate to all listings');
+                  }}
+                />
+                <View style={styles.flashListContainer}>
+                  <FlatList
+                    data={listings}
+                    renderItem={renderGridListing}
+                    keyExtractor={keyExtractor}
+                    numColumns={NUM_COLUMNS}
+                    contentContainerStyle={styles.gridListContainer}
+                    columnWrapperStyle={styles.gridRow}
+                    scrollEnabled={false}
+                  />
+                </View>
+              </>
+            ) : null}
           </View>
-
-          {/* En Çok Teklif Alanlar */}
-          {mostOffered.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary }]}>En Çok Teklif Alan İlanlar</Text>
-              <FlashList
-                data={mostOffered}
-                renderItem={renderHorizontalListing}
-                keyExtractor={keyExtractor}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalListContainer}
-                estimatedItemSize={200}
-              />
-            </View>
-          )}
         </ScrollView>
       </View>
     </SafeAreaView>

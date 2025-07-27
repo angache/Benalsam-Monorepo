@@ -27,6 +27,7 @@ interface ListingCardProps {
   style?: any;
   index?: number;
   isFavoriteLoading?: boolean;
+  isGrid?: boolean; // Grid layout için marginRight kontrolü
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -41,6 +42,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   style,
   index = 0,
   isFavoriteLoading = false,
+  isGrid = false,
 }) => {
   const colors = useThemeColors();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -121,6 +123,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       container: {
         width: containerWidth,
         marginBottom: style?.marginBottom !== undefined ? style.marginBottom : 16,
+        marginRight: isGrid ? 0 : 16, // Sadece horizontal layout'ta marginRight
       },
       card: {
         backgroundColor: colors.surface,
@@ -237,7 +240,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         borderRadius: 8,
       },
     });
-  }, [colors, style]);
+  }, [colors, style, isGrid]);
 
   return (
     <Animated.View 
