@@ -15,8 +15,10 @@ interface UserPreferencesContextType {
   
   // Content Preferences
   updateContentTypePreference: (preference: 'grid' | 'list' | 'compact') => Promise<void>;
-  toggleImages: () => Promise<void>;
-  togglePrices: () => Promise<void>;
+  toggleCategoryBadges: () => Promise<void>;
+  toggleUrgencyBadges: () => Promise<void>;
+  toggleUserRatings: () => Promise<void>;
+  toggleDistance: () => Promise<void>;
   
   // Theme Preferences
   setTheme: (theme: 'light' | 'dark' | 'auto') => Promise<void>;

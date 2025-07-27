@@ -37,11 +37,13 @@ import {
 } from '../hooks/queries/useListings';
 import { useFollowedCategoryListings } from '../hooks/queries/useCategories';
 import { useToggleFavorite } from '../hooks/queries/useFavorites';
+import { useSmartRecommendations, useTrackView } from '../hooks/queries/useRecommendations';
 import { ListingWithUser } from '../services/listingService/core';
 import { CategoryWithListings } from '../services/categoryFollowService';
+import { ListingWithFavorite } from '../types';
 import { UseQueryResult } from '@tanstack/react-query';
 import { useScrollHeader } from '../hooks/useScrollHeader';
-import { useUserPreferences } from '../hooks/useUserPreferences';
+import { useUserPreferencesContext } from '../contexts/UserPreferencesContext';
 
 // Legacy imports - aşamalı olarak kaldırılacak
 import { categoriesConfig } from '../config/categories-with-attributes';
@@ -552,10 +554,13 @@ const HomeScreen = () => {
   const { data: todaysDeals = [], isLoading: dealsLoading, error: dealsError, refetch: refetchDeals } = useTodaysDeals() as UseQueryResult<ListingWithUser[], Error>;
   const { data: mostOffered = [], isLoading: mostOfferedLoading, error: mostOfferedError, refetch: refetchMostOffered } = useMostOfferedListings() as UseQueryResult<ListingWithUser[], Error>;
   
+  // Smart Recommendations
+  const { data: smartRecommendations, isLoading: recommendationsLoading, error: recommendationsError, refetch: refetchRecommendations } = useSmartRecommendations(8, 'hybrid');
+  const { trackView } = useTrackView();
 
   const { data: followedCategories = [], isLoading: followedLoading, error: followedError, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
-  const userPrefs = useUserPreferences();
+  const userPrefs = useUserPreferencesContext();
   const { 
     preferences, 
     addFavoriteCategory, 
@@ -574,12 +579,14 @@ const HomeScreen = () => {
 
   // Debug: User preferences durumunu kontrol et (sadece geliştirme için)
   if (__DEV__) {
-    console.log('🔍 User Preferences:', {
+    console.log('🔍 HomeScreen User Preferences:', {
       showWelcomeMessage: preferences?.showWelcomeMessage,
       contentTypePreference: preferences?.contentTypePreference,
       showCategoryBadges: preferences?.showCategoryBadges,
       showUrgencyBadges: preferences?.showUrgencyBadges,
+      numColumns: getNumColumns(preferences?.contentTypePreference || 'grid'),
     });
+    console.log('👤 HomeScreen User ID:', user?.id);
   }
 
   const onRefresh = useCallback(async () => {
@@ -590,16 +597,17 @@ const HomeScreen = () => {
         refetchPopular(),
         refetchDeals(),
         refetchMostOffered(),
-        refetchFollowed()
+        refetchFollowed(),
+        refetchRecommendations()
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [refetchListings, refetchPopular, refetchDeals, refetchMostOffered, refetchFollowed]);
+  }, [refetchListings, refetchPopular, refetchDeals, refetchMostOffered, refetchFollowed, refetchRecommendations]);
 
-  const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading;
+  const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading || recommendationsLoading;
 
   // Individual section loading states
   const isCategoriesLoading = false; // Categories are static for now
@@ -608,6 +616,7 @@ const HomeScreen = () => {
   const isTodaysDealsLoading = dealsLoading;
   const isNewListingsLoading = listingsLoading;
   const isFollowedLoading = followedLoading;
+  const isRecommendationsLoading = recommendationsLoading;
 
   // Individual section error states
   const isMostOfferedError = !!mostOfferedError;
@@ -615,6 +624,7 @@ const HomeScreen = () => {
   const isTodaysDealsError = !!dealsError;
   const isNewListingsError = !!listingsError;
   const isFollowedError = !!followedError;
+  const isRecommendationsError = !!recommendationsError;
 
   // Progressive Disclosure - Limited data for better UX
   const limitedMostOffered = mostOffered.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.MOST_OFFERED);
@@ -622,6 +632,18 @@ const HomeScreen = () => {
   const limitedTodaysDeals = todaysDeals.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.TODAYS_DEALS);
   const limitedNewListings = listings.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.NEW_LISTINGS);
   const limitedFollowedCategories = followedCategories.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.FOLLOWED_CATEGORIES);
+  const limitedRecommendations = smartRecommendations?.data?.listings || [];
+  
+  // Debug: Smart recommendations durumunu kontrol et
+  if (__DEV__) {
+    console.log('🧠 Smart Recommendations Debug:', {
+      hasData: !!smartRecommendations?.data,
+      listingsCount: smartRecommendations?.data?.listings?.length || 0,
+      limitedCount: limitedRecommendations.length,
+      isLoading: recommendationsLoading,
+      hasError: !!recommendationsError,
+    });
+  }
 
   const getCurrentCategories = () => {
     if (categoryPath.length === 0) {
@@ -683,7 +705,11 @@ const HomeScreen = () => {
       key={item.id}
       listing={item}
       index={index}
-      onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+      onPress={() => {
+        // Track view behavior
+        trackView(item.id, { category: item.category, price: item.budget });
+        navigation.navigate('ListingDetail', { listingId: item.id });
+      }}
       onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
       isFavoriteLoading={selectedListingId === item.id}
       isGrid={true} // Grid layout için marginRight devre dışı
@@ -691,13 +717,17 @@ const HomeScreen = () => {
       showUrgencyBadges={preferences.showUrgencyBadges}
       numColumns={getNumColumns(preferences.contentTypePreference)}
     />
-  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges, preferences.contentTypePreference]);
+  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges, preferences.contentTypePreference, trackView]);
 
   const renderHorizontalListing = useCallback(({ item, index }: { item: ListingWithUser; index: number }) => (
     <ListingCard
       key={item.id}
       listing={item}
-      onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+      onPress={() => {
+        // Track view behavior
+        trackView(item.id, { category: item.category, price: item.budget });
+        navigation.navigate('ListingDetail', { listingId: item.id });
+      }}
       onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
       isFavoriteLoading={selectedListingId === item.id}
       isGrid={false} // Horizontal layout için marginRight aktif
@@ -705,7 +735,7 @@ const HomeScreen = () => {
       showCategoryBadges={preferences.showCategoryBadges}
       showUrgencyBadges={preferences.showUrgencyBadges}
     />
-  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges]);
+  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges, trackView]);
 
   const renderSkeletonGrid = useCallback(() => (
     <View style={styles.skeletonGrid}>
@@ -1177,6 +1207,43 @@ const HomeScreen = () => {
                   )}
                 </View>
               ))}
+            </View>
+          )}
+
+          {/* Smart Recommendations Section - Kişiselleştirilmiş İçerik */}
+          {user && (
+            <View style={styles.section}>
+              {isRecommendationsLoading ? (
+                <>
+                  {renderSkeletonSectionHeader()}
+                  {renderSkeletonHorizontalList()}
+                </>
+              ) : isRecommendationsError ? (
+                <SectionErrorFallback 
+                  title="Senin İçin Öneriler"
+                  onRetry={() => refetchRecommendations()}
+                />
+              ) : limitedRecommendations.length > 0 ? (
+                <>
+                  <SectionHeader 
+                    title="Senin İçin Öneriler"
+                    count={limitedRecommendations.length}
+                    showCount={true}
+                    showAction={true}
+                    actionText="Daha Fazla"
+                    onActionPress={() => navigateToScreen('Search', { query: '', filter: 'recommendations' })}
+                  />
+                  <FlashList
+                    data={limitedRecommendations}
+                    renderItem={renderHorizontalListing}
+                    keyExtractor={keyExtractor}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalListContainer}
+                    estimatedItemSize={200}
+                  />
+                </>
+              ) : null}
             </View>
           )}
 

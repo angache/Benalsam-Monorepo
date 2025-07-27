@@ -52,6 +52,7 @@ import {
 } from 'lucide-react-native';
 import { useThemeStore, useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
+import { useUserPreferencesContext } from '../contexts/UserPreferencesContext';
 import { useUserPreferences } from '../hooks/useUserPreferences';
 import { LoadingSpinner, ErrorBoundary, Modal, Button } from '../components';
 import { updateUserProfile, getUserProfile, supabase } from '../services/supabaseService';
@@ -431,7 +432,7 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
     toggleDistance,
     setTheme,
     resetToDefaults
-  } = useUserPreferences();
+  } = useUserPreferencesContext();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -1152,8 +1153,10 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
       onToggle: async (value: boolean) => {
         const newPreference = value ? 'compact' : 'grid';
         console.log('🔧 SettingsScreen: Content type changing to:', newPreference);
+        console.log('🔧 SettingsScreen: Current preferences before:', preferences);
         await updateContentTypePreference(newPreference);
         console.log('🔧 SettingsScreen: Content type changed to:', newPreference);
+        console.log('🔧 SettingsScreen: Current preferences after:', preferences);
       },
     },
     {

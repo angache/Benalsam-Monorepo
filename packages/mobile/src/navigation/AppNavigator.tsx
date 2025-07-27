@@ -8,6 +8,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import * as NavigationBar from 'expo-navigation-bar';
 import { RootStackParamList } from '../types/navigation';
 import InventoryHeaderToggle from '../components/InventoryHeaderToggle';
+import { UserPreferencesProvider } from '../contexts/UserPreferencesContext';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -230,12 +231,13 @@ const AppNavigator = () => {
   }, [user]);
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-      initialRouteName="MainTabs"
-    >
+    <UserPreferencesProvider>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        initialRouteName="MainTabs"
+      >
       {/* Public Routes - Her zaman erişilebilir */}
       <Stack.Screen 
         name="MainTabs" 
@@ -667,7 +669,8 @@ const AppNavigator = () => {
 
         </>
       )}
-    </Stack.Navigator>
+      </Stack.Navigator>
+    </UserPreferencesProvider>
   );
 };
 

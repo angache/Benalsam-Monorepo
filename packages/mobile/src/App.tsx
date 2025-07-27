@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { useFonts } from 'expo-font';
 import { fcmTokenService } from './services/fcmTokenService';
+import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -28,8 +29,10 @@ export default function App() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* Simple placeholder for testing */}
-    </View>
+    <UserPreferencesProvider>
+      <View style={{ flex: 1 }}>
+        {/* Simple placeholder for testing */}
+      </View>
+    </UserPreferencesProvider>
   );
 } 
