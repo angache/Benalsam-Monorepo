@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { FlatList } from 'react-native';
-import { TrendingUp, Clock, Star, Users, Bell, Search as SearchIcon } from 'lucide-react-native';
+import { TrendingUp, Clock, Star, Users, Bell, Search as SearchIcon, Plus, Filter, Heart, Mail, Phone, MapPin, Instagram, Facebook, Twitter, ExternalLink, Shield, FileText, HelpCircle } from 'lucide-react-native';
 import { useThemeStore, useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
 import { Header, SectionHeader } from '../components';
@@ -54,7 +54,7 @@ import { ListingWithFavorite } from '../services/categoryFollowService';
 import { formatDate, formatPrice } from '../types';
 
 type RootStackParamList = {
-  Search: { query?: string };
+  Search: { query?: string; filter?: string };
   Messages: undefined;
   Create: undefined;
   Login: undefined;
@@ -94,6 +94,15 @@ const SIDE_PADDING = spacing.md; // 16px - Sol ve sağ kenar mesafesi
 const CARD_GAP = spacing.md; // 16px - Kartlar arası mesafe (8px'den 16px'e çıkarıldı)
 const NUM_COLUMNS = 2;
 
+// Progressive Disclosure - Her section'da gösterilecek maksimum item sayısı
+const PROGRESSIVE_DISCLOSURE_LIMITS = {
+  MOST_OFFERED: 10, // En çok teklif alanlar (5'ten 10'a)
+  POPULAR: 10, // Popüler ilanlar (5'ten 10'a)
+  TODAYS_DEALS: 6, // Günün fırsatları (3'ten 6'ya)
+  NEW_LISTINGS: 12, // Yeni ilanlar (8'den 12'ye)
+  FOLLOWED_CATEGORIES: 5, // Takip edilen kategoriler (3'ten 5'e)
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -106,8 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
-    paddingBottom: Platform.OS === 'android' ? 0 : 20,
+    paddingBottom: Platform.OS === 'android' ? 20 : 40,
   },
   skeletonCard: {
     width: (screenWidth - SIDE_PADDING * 2 - CARD_GAP) / 2,
@@ -178,6 +186,18 @@ const styles = StyleSheet.create({
     ...typography.h3, // fontSize: 16, fontWeight: 'semibold', lineHeight: 22
     color: 'white',
   },
+  bannerActionButton: {
+    backgroundColor: 'white',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  bannerActionText: {
+    color: 'black',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
   statsSection: {
     marginBottom: 20,
   },
@@ -244,7 +264,6 @@ const styles = StyleSheet.create({
     gap: spacing.md, // 16px gap (CARD_GAP ile aynı)
   },
   flashListContainer: {
-    height: Math.ceil(20 / NUM_COLUMNS) * 280, // Approximate height for 20 items
     paddingHorizontal: 0,
   },
   skeletonGrid: {
@@ -290,6 +309,115 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 6,
   },
+  errorContainer: {
+    ...paddings.all.md,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...margins.v.sm,
+    ...margins.h.md,
+    ...shadows.sm,
+  },
+  errorIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 10,
+    ...paddings.all.sm,
+  },
+  errorMessage: {
+    ...typography.body2,
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  retryButton: {
+    ...paddings.all.md,
+    borderRadius: borderRadius.md,
+  },
+  retryButtonText: {
+    ...typography.button1,
+  },
+  sectionErrorContainer: {
+    ...margins.v.sm,
+  },
+  // Modern Footer Styles
+  modernFooter: {
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  footerContent: {
+    marginBottom: 24,
+  },
+  footerBrand: {
+    marginBottom: 20,
+  },
+  footerLogo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  footerDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  footerLinks: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  footerLegal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  footerSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'semibold',
+    marginBottom: 12,
+  },
+  footerLink: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  footerBottom: {
+    flexDirection: 'column',
+    marginBottom: 16,
+  },
+  socialLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  socialButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contactInfo: {
+    alignItems: 'center',
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  contactText: {
+    fontSize: 12,
+    marginLeft: 8,
+  },
+  footerCopyright: {
+    alignItems: 'center',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  copyrightText: {
+    fontSize: 12,
+  },
 });
 
 // Skeleton loading components
@@ -331,6 +459,60 @@ const SkeletonSectionHeader = () => {
   );
 };
 
+// Error fallback components
+const ErrorFallback = ({ 
+  message = 'Bir hata oluştu', 
+  onRetry, 
+  showRetry = true 
+}: { 
+  message?: string; 
+  onRetry?: () => void; 
+  showRetry?: boolean;
+}) => {
+  const colors = useThemeColors();
+  return (
+    <View style={[styles.errorContainer, { backgroundColor: colors.surface }]}>
+      <View style={[styles.errorIcon, { backgroundColor: colors.error }]} />
+      <Text style={[styles.errorMessage, { color: colors.textSecondary }]}>
+        {message}
+      </Text>
+      {showRetry && onRetry && (
+        <TouchableOpacity 
+          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+          onPress={onRetry}
+        >
+          <Text style={[styles.retryButtonText, { color: colors.white }]}>
+            Tekrar Dene
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+const SectionErrorFallback = ({ 
+  title, 
+  onRetry 
+}: { 
+  title: string; 
+  onRetry: () => void;
+}) => {
+  const colors = useThemeColors();
+  return (
+    <View style={styles.sectionErrorContainer}>
+      <SectionHeader 
+        title={title}
+        showAction={false}
+      />
+      <ErrorFallback 
+        message={`${title} yüklenirken bir hata oluştu`}
+        onRetry={onRetry}
+        showRetry={true}
+      />
+    </View>
+  );
+};
+
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProps>();
   const { user } = useAuthStore();
@@ -343,13 +525,13 @@ const HomeScreen = () => {
   const { handleScroll, headerOpacity, headerTranslateY } = useScrollHeader(50);
   
   // React Query hooks with proper typing
-  const { data: listings = [], isLoading: listingsLoading, refetch: refetchListings } = useListings() as UseQueryResult<ListingWithUser[], Error>;
-  const { data: popularListings = [], isLoading: popularLoading, refetch: refetchPopular } = usePopularListings() as UseQueryResult<ListingWithUser[], Error>;
-  const { data: todaysDeals = [], isLoading: dealsLoading, refetch: refetchDeals } = useTodaysDeals() as UseQueryResult<ListingWithUser[], Error>;
-  const { data: mostOffered = [], isLoading: mostOfferedLoading, refetch: refetchMostOffered } = useMostOfferedListings() as UseQueryResult<ListingWithUser[], Error>;
+  const { data: listings = [], isLoading: listingsLoading, error: listingsError, refetch: refetchListings } = useListings() as UseQueryResult<ListingWithUser[], Error>;
+  const { data: popularListings = [], isLoading: popularLoading, error: popularError, refetch: refetchPopular } = usePopularListings() as UseQueryResult<ListingWithUser[], Error>;
+  const { data: todaysDeals = [], isLoading: dealsLoading, error: dealsError, refetch: refetchDeals } = useTodaysDeals() as UseQueryResult<ListingWithUser[], Error>;
+  const { data: mostOffered = [], isLoading: mostOfferedLoading, error: mostOfferedError, refetch: refetchMostOffered } = useMostOfferedListings() as UseQueryResult<ListingWithUser[], Error>;
   
 
-  const { data: followedCategories = [], isLoading: followedLoading, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
+  const { data: followedCategories = [], isLoading: followedLoading, error: followedError, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
 
   const onRefresh = useCallback(async () => {
@@ -378,6 +560,20 @@ const HomeScreen = () => {
   const isTodaysDealsLoading = dealsLoading;
   const isNewListingsLoading = listingsLoading;
   const isFollowedLoading = followedLoading;
+
+  // Individual section error states
+  const isMostOfferedError = !!mostOfferedError;
+  const isPopularError = !!popularError;
+  const isTodaysDealsError = !!dealsError;
+  const isNewListingsError = !!listingsError;
+  const isFollowedError = !!followedError;
+
+  // Progressive Disclosure - Limited data for better UX
+  const limitedMostOffered = mostOffered.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.MOST_OFFERED);
+  const limitedPopularListings = popularListings.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.POPULAR);
+  const limitedTodaysDeals = todaysDeals.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.TODAYS_DEALS);
+  const limitedNewListings = listings.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.NEW_LISTINGS);
+  const limitedFollowedCategories = followedCategories.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.FOLLOWED_CATEGORIES);
 
   const getCurrentCategories = () => {
     if (categoryPath.length === 0) return categoriesConfig;
@@ -487,7 +683,175 @@ const HomeScreen = () => {
     navigation.navigate(screen, params);
   };
 
+  // Progressive Disclosure Navigation Functions
+  const navigateToMostOffered = () => {
+    navigation.navigate('Search', { 
+      query: 'en çok teklif alan',
+      filter: 'most_offered'
+    });
+  };
+
+  const navigateToPopular = () => {
+    navigation.navigate('Search', { 
+      query: 'popüler',
+      filter: 'popular'
+    });
+  };
+
+  const navigateToTodaysDeals = () => {
+    navigation.navigate('Search', { 
+      query: 'günün fırsatları',
+      filter: 'todays_deals'
+    });
+  };
+
+  const navigateToAllListings = () => {
+    navigation.navigate('Search', { 
+      query: '',
+      filter: 'all'
+    });
+  };
+
   const darkMode = isDarkMode();
+
+  // Modern Footer Component
+  const ModernFooter = () => {
+    const colors = useThemeColors();
+    
+    const handleFooterLink = (type: string) => {
+      switch (type) {
+        case 'about':
+          console.log('Navigate to About page');
+          break;
+        case 'contact':
+          console.log('Navigate to Contact page');
+          break;
+        case 'help':
+          console.log('Navigate to Help page');
+          break;
+        case 'privacy':
+          console.log('Navigate to Privacy Policy');
+          break;
+        case 'terms':
+          console.log('Navigate to Terms of Service');
+          break;
+        case 'instagram':
+          console.log('Open Instagram');
+          break;
+        case 'facebook':
+          console.log('Open Facebook');
+          break;
+        case 'twitter':
+          console.log('Open Twitter');
+          break;
+        default:
+          break;
+      }
+    };
+
+    return (
+      <View style={[styles.modernFooter, { backgroundColor: colors.surface }]}>
+        {/* Ana Footer İçeriği */}
+        <View style={styles.footerContent}>
+          {/* Logo ve Açıklama */}
+          <View style={styles.footerBrand}>
+            <Text style={[styles.footerLogo, { color: colors.primary }]}>
+              BenAlsam
+            </Text>
+            <Text style={[styles.footerDescription, { color: colors.textSecondary }]}>
+              Güvenli alışveriş platformu. İhtiyacınız olan ürünleri kolayca bulun ve satın.
+            </Text>
+          </View>
+
+          {/* Hızlı Linkler */}
+          <View style={styles.footerLinks}>
+            <View>
+              <Text style={[styles.footerSectionTitle, { color: colors.text }]}>
+                Hızlı Erişim
+              </Text>
+              <TouchableOpacity onPress={() => handleFooterLink('about')}>
+                <Text style={[styles.footerLink, { color: colors.textSecondary }]}>
+                  Hakkımızda
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleFooterLink('contact')}>
+                <Text style={[styles.footerLink, { color: colors.textSecondary }]}>
+                  İletişim
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleFooterLink('help')}>
+                <Text style={[styles.footerLink, { color: colors.textSecondary }]}>
+                  Yardım
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View>
+              <Text style={[styles.footerSectionTitle, { color: colors.text }]}>
+                Yasal
+              </Text>
+              <TouchableOpacity onPress={() => handleFooterLink('privacy')}>
+                <Text style={[styles.footerLink, { color: colors.textSecondary }]}>
+                  Gizlilik Politikası
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleFooterLink('terms')}>
+                <Text style={[styles.footerLink, { color: colors.textSecondary }]}>
+                  Kullanım Şartları
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Sosyal Medya ve İletişim */}
+        <View style={styles.footerBottom}>
+          <View style={styles.socialLinks}>
+            <TouchableOpacity 
+              style={[styles.socialButton, { backgroundColor: colors.border }]}
+              onPress={() => handleFooterLink('instagram')}
+            >
+              <Instagram size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.socialButton, { backgroundColor: colors.border }]}
+              onPress={() => handleFooterLink('facebook')}
+            >
+              <Facebook size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.socialButton, { backgroundColor: colors.border }]}
+              onPress={() => handleFooterLink('twitter')}
+            >
+              <Twitter size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.contactInfo}>
+            <View style={styles.contactItem}>
+              <Mail size={16} color={colors.textSecondary} />
+              <Text style={[styles.contactText, { color: colors.textSecondary }]}>
+                info@benalsam.com
+              </Text>
+            </View>
+            <View style={styles.contactItem}>
+              <Phone size={16} color={colors.textSecondary} />
+              <Text style={[styles.contactText, { color: colors.textSecondary }]}>
+                +90 212 555 0123
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Copyright */}
+        <View style={styles.footerCopyright}>
+          <Text style={[styles.copyrightText, { color: colors.textSecondary }]}>
+            © 2024 BenAlsam. Tüm hakları saklıdır.
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -572,9 +936,7 @@ const HomeScreen = () => {
         </Animated.View>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={[styles.scrollContent, {
-            paddingBottom: Platform.OS === 'android' ? 60 : 80
-          }]}
+          contentContainerStyle={styles.scrollContent}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           refreshControl={
@@ -621,10 +983,50 @@ const HomeScreen = () => {
           <View style={styles.bannerSection}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bannerContainer}>
               {BANNERS.map((banner, index) => (
-                <TouchableOpacity key={index} style={styles.bannerCard}>
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.bannerCard}
+                  onPress={() => {
+                    switch (banner.action) {
+                      case 'explore':
+                        navigateToScreen('Search', { query: '' });
+                        break;
+                      case 'latest':
+                        navigateToAllListings();
+                        break;
+                      case 'safety':
+                        // TODO: Navigate to safety guide
+                        console.log('Navigate to safety guide');
+                        break;
+                      default:
+                        navigateToScreen('Search', { query: banner.text });
+                    }
+                  }}
+                >
                   <Image source={{ uri: banner.image }} style={styles.bannerImage} />
                   <View style={styles.bannerOverlay}>
                     <Text style={styles.bannerText}>{banner.text}</Text>
+                    <TouchableOpacity 
+                      style={styles.bannerActionButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        switch (banner.action) {
+                          case 'explore':
+                            navigateToScreen('Search', { query: '' });
+                            break;
+                          case 'latest':
+                            navigateToAllListings();
+                            break;
+                          case 'safety':
+                            console.log('Navigate to safety guide');
+                            break;
+                          default:
+                            navigateToScreen('Search', { query: banner.text });
+                        }
+                      }}
+                    >
+                      <Text style={styles.bannerActionText}>Keşfet</Text>
+                    </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -637,11 +1039,35 @@ const HomeScreen = () => {
               {STATS.map((stat, index) => {
                 const IconComponent = stat.icon;
                 return (
-                  <View key={index} style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                  <TouchableOpacity 
+                    key={index} 
+                    style={[styles.statCard, { backgroundColor: colors.surface }]}
+                    onPress={() => {
+                      switch (stat.label) {
+                        case 'Aktif Kullanıcı':
+                          // TODO: Navigate to user directory
+                          console.log('Navigate to user directory');
+                          break;
+                        case 'Alım İlanı':
+                          navigateToScreen('Search', { query: 'alınık' });
+                          break;
+                        case 'Memnuniyet':
+                          // TODO: Navigate to reviews
+                          console.log('Navigate to reviews');
+                          break;
+                        case 'Destek':
+                          // TODO: Navigate to support
+                          console.log('Navigate to support');
+                          break;
+                        default:
+                          navigateToScreen('Search', { query: stat.label });
+                      }
+                    }}
+                  >
                     <IconComponent size={24} color={colors.primary} />
                     <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
                     <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{stat.label}</Text>
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </ScrollView>
@@ -666,7 +1092,7 @@ const HomeScreen = () => {
           {followedCategories.length > 0 && (
             <View style={styles.section}>
               {renderSkeletonSectionHeader()}
-              {followedCategories.map((category: CategoryWithListings) => (
+              {limitedFollowedCategories.map((category: CategoryWithListings) => (
                 <View key={category.category_name}>
                   <Text style={[styles.categoryTitle, { color: colors.text }]}>
                     {category.category_name}
@@ -694,21 +1120,23 @@ const HomeScreen = () => {
                 {renderSkeletonSectionHeader()}
                 {renderSkeletonHorizontalList()}
               </>
-            ) : mostOffered.length > 0 ? (
+            ) : isMostOfferedError ? (
+              <SectionErrorFallback 
+                title="En Çok Teklif Alanlar"
+                onRetry={() => refetchMostOffered()}
+              />
+            ) : limitedMostOffered.length > 0 ? (
               <>
                 <SectionHeader 
                   title="En Çok Teklif Alanlar"
-                  count={mostOffered.length}
+                  count={limitedMostOffered.length}
                   showCount={true}
                   showAction={true}
                   actionText="Tümünü Gör"
-                  onActionPress={() => {
-                    // TODO: Navigate to most offered listings
-                    console.log('Navigate to most offered listings');
-                  }}
+                  onActionPress={navigateToMostOffered}
                 />
                 <FlashList
-                  data={mostOffered}
+                  data={limitedMostOffered}
                   renderItem={renderHorizontalListing}
                   keyExtractor={keyExtractor}
                   horizontal
@@ -727,21 +1155,23 @@ const HomeScreen = () => {
                 {renderSkeletonSectionHeader()}
                 {renderSkeletonHorizontalList()}
               </>
-            ) : popularListings.length > 0 ? (
+            ) : isPopularError ? (
+              <SectionErrorFallback 
+                title="Popüler İlanlar"
+                onRetry={() => refetchPopular()}
+              />
+            ) : limitedPopularListings.length > 0 ? (
               <>
                 <SectionHeader 
                   title="Popüler İlanlar"
-                  count={popularListings.length}
+                  count={limitedPopularListings.length}
                   showCount={true}
                   showAction={true}
                   actionText="Tümünü Gör"
-                  onActionPress={() => {
-                    // TODO: Navigate to popular listings
-                    console.log('Navigate to popular listings');
-                  }}
+                  onActionPress={navigateToPopular}
                 />
                 <FlashList
-                  data={popularListings}
+                  data={limitedPopularListings}
                   renderItem={renderHorizontalListing}
                   keyExtractor={keyExtractor}
                   horizontal
@@ -760,21 +1190,23 @@ const HomeScreen = () => {
                 {renderSkeletonSectionHeader()}
                 {renderSkeletonHorizontalList()}
               </>
-            ) : todaysDeals.length > 0 ? (
+            ) : isTodaysDealsError ? (
+              <SectionErrorFallback 
+                title="Günün Fırsatları"
+                onRetry={() => refetchDeals()}
+              />
+            ) : limitedTodaysDeals.length > 0 ? (
               <>
                 <SectionHeader 
                   title="Günün Fırsatları"
-                  count={todaysDeals.length}
+                  count={limitedTodaysDeals.length}
                   showCount={true}
                   showAction={true}
                   actionText="Tümünü Gör"
-                  onActionPress={() => {
-                    // TODO: Navigate to today's deals
-                    console.log('Navigate to today\'s deals');
-                  }}
+                  onActionPress={navigateToTodaysDeals}
                 />
                 <FlashList
-                  data={todaysDeals}
+                  data={limitedTodaysDeals}
                   renderItem={renderHorizontalListing}
                   keyExtractor={keyExtractor}
                   horizontal
@@ -793,22 +1225,24 @@ const HomeScreen = () => {
                 {renderSkeletonSectionHeader()}
                 {renderSkeletonGrid()}
               </>
-            ) : listings.length > 0 ? (
+            ) : isNewListingsError ? (
+              <SectionErrorFallback 
+                title="Yeni İlanlar"
+                onRetry={() => refetchListings()}
+              />
+            ) : limitedNewListings.length > 0 ? (
               <>
                 <SectionHeader 
                   title="Yeni İlanlar"
-                  count={listings.length}
+                  count={limitedNewListings.length}
                   showCount={true}
                   showAction={true}
                   actionText="Tümünü Gör"
-                  onActionPress={() => {
-                    // TODO: Navigate to all listings
-                    console.log('Navigate to all listings');
-                  }}
+                  onActionPress={navigateToAllListings}
                 />
                 <View style={styles.flashListContainer}>
                   <FlatList
-                    data={listings}
+                    data={limitedNewListings}
                     renderItem={renderGridListing}
                     keyExtractor={keyExtractor}
                     numColumns={NUM_COLUMNS}
@@ -820,6 +1254,9 @@ const HomeScreen = () => {
               </>
             ) : null}
           </View>
+          
+          {/* Footer - Modern Design */}
+          <ModernFooter />
         </ScrollView>
       </View>
     </SafeAreaView>
