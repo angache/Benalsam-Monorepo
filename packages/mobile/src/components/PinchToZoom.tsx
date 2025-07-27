@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Image,
@@ -17,6 +17,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   runOnJS,
+  withSpring,
 } from 'react-native-reanimated';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -40,80 +41,160 @@ const PinchToZoom: React.FC<PinchToZoomProps> = ({
 }) => {
   const colors = useThemeColors();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(1);
   
-  // Animated values
+  // Animated values with safe defaults
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const savedScale = useSharedValue(1);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
 
-  const resetZoom = () => {
+  // Safe update functions
+  const updateZoom = useCallback((newZoom: number) => {
+    const clampedZoom = Math.max(1, Math.min(maxScale, newZoom));
+    setCurrentZoom(clampedZoom);
+    scale.value = clampedZoom;
+  }, [maxScale]);
+
+  const resetZoom = useCallback(() => {
     haptic.medium();
-    scale.value = 1;
-    translateX.value = 0;
-    translateY.value = 0;
-  };
+    setCurrentZoom(1);
+    scale.value = withSpring(1);
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+    savedScale.value = 1;
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
+  }, []);
 
-  const zoomIn = () => {
+  const zoomIn = useCallback(() => {
     haptic.light();
-    scale.value = Math.min(scale.value * 1.5, maxScale);
-  };
+    const newZoom = Math.min(currentZoom * 1.5, maxScale);
+    updateZoom(newZoom);
+  }, [currentZoom, maxScale, updateZoom]);
 
-  const zoomOut = () => {
+  const zoomOut = useCallback(() => {
     haptic.light();
-    scale.value = Math.max(scale.value / 1.5, minScale);
-  };
+    const newZoom = Math.max(currentZoom / 1.5, 1);
+    updateZoom(newZoom);
+  }, [currentZoom, updateZoom]);
 
-  const openModal = () => {
+  const openModal = useCallback(() => {
     haptic.light();
     setIsModalVisible(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     haptic.light();
     setIsModalVisible(false);
     resetZoom();
-  };
+  }, [resetZoom]);
 
-  // Pinch gesture
+  // Calculate boundaries safely
+  const getBoundaries = useCallback((currentScale: number) => {
+    const imageWidth = screenWidth * currentScale;
+    const imageHeight = screenHeight * currentScale;
+    const maxTranslateX = Math.max(0, (imageWidth - screenWidth) / 2);
+    const maxTranslateY = Math.max(0, (imageHeight - screenHeight) / 2);
+    return { maxTranslateX, maxTranslateY };
+  }, []);
+
+  // Pinch gesture with safety checks
   const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      savedScale.value = scale.value;
+    })
     .onUpdate((event) => {
-      scale.value = Math.min(Math.max(event.scale, minScale), maxScale);
+      try {
+        const newScale = Math.max(1, Math.min(maxScale, savedScale.value * event.scale));
+        scale.value = newScale;
+        runOnJS(updateZoom)(newScale);
+      } catch (error) {
+        console.warn('Pinch gesture error:', error);
+      }
     })
     .onEnd(() => {
-      if (scale.value < 1) {
-        scale.value = 1;
-        translateX.value = 0;
-        translateY.value = 0;
+      try {
+        if (scale.value < 1) {
+          scale.value = withSpring(1);
+          translateX.value = withSpring(0);
+          translateY.value = withSpring(0);
+          savedScale.value = 1;
+          savedTranslateX.value = 0;
+          savedTranslateY.value = 0;
+          runOnJS(updateZoom)(1);
+        } else {
+          savedScale.value = scale.value;
+        }
+      } catch (error) {
+        console.warn('Pinch gesture end error:', error);
       }
     });
 
-  // Pan gesture
+  // Pan gesture with boundary control
   const panGesture = Gesture.Pan()
+    .onStart(() => {
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
+    })
     .onUpdate((event) => {
-      if (scale.value > 1) {
-        translateX.value = event.translationX;
-        translateY.value = event.translationY;
+      try {
+        if (scale.value > 1) {
+          // Simplified boundary calculation
+          const maxTranslateX = (scale.value - 1) * screenWidth / 2;
+          const maxTranslateY = (scale.value - 1) * screenHeight / 2;
+          
+          const newTranslateX = savedTranslateX.value + event.translationX;
+          const newTranslateY = savedTranslateY.value + event.translationY;
+          
+          translateX.value = Math.max(-maxTranslateX, Math.min(maxTranslateX, newTranslateX));
+          translateY.value = Math.max(-maxTranslateY, Math.min(maxTranslateY, newTranslateY));
+        }
+      } catch (error) {
+        console.warn('Pan gesture error:', error);
       }
     })
     .onEnd(() => {
-      if (scale.value <= 1) {
-        translateX.value = 0;
-        translateY.value = 0;
+      try {
+        if (scale.value <= 1) {
+          translateX.value = withSpring(0);
+          translateY.value = withSpring(0);
+          savedTranslateX.value = 0;
+          savedTranslateY.value = 0;
+        } else {
+          savedTranslateX.value = translateX.value;
+          savedTranslateY.value = translateY.value;
+        }
+      } catch (error) {
+        console.warn('Pan gesture end error:', error);
       }
     });
 
-  // Combined gestures
-  const combinedGesture = Gesture.Simultaneous(pinchGesture, panGesture);
+  // Use Race instead of Simultaneous for better performance
+  const combinedGesture = Gesture.Race(pinchGesture, panGesture);
 
-  // Animated styles
+  // Animated styles with safety
   const animatedImageStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scale.value },
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-      ],
-    };
+    try {
+      return {
+        transform: [
+          { scale: scale.value },
+          { translateX: translateX.value },
+          { translateY: translateY.value },
+        ],
+      };
+    } catch (error) {
+      console.warn('Animated style error:', error);
+      return {
+        transform: [
+          { scale: 1 },
+          { translateX: 0 },
+          { translateY: 0 },
+        ],
+      };
+    }
   });
 
   const renderZoomedImage = () => (
@@ -131,29 +212,9 @@ const PinchToZoom: React.FC<PinchToZoomProps> = ({
         </TouchableOpacity>
         
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={zoomOut}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <ZoomOut size={20} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={resetZoom}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={[styles.zoomText, { color: colors.text }]}>
-              {Math.round(scale.value * 100)}%
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={zoomIn}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <ZoomIn size={20} color={colors.text} />
-          </TouchableOpacity>
+          <Text style={[styles.zoomText, { color: colors.text }]}>
+            {Math.round(currentZoom * 100)}%
+          </Text>
         </View>
       </View>
 
@@ -209,6 +270,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   modalHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
