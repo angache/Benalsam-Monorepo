@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -80,48 +80,6 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
-  // Card animations
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const pressAnim = useRef(new Animated.Value(1)).current;
-  
-  // Mount animation - staggered based on index
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 300,
-          delay: index * 50,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          delay: index * 50,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [index]);
-  
-  // Press animation
-  const handlePressIn = useCallback(() => {
-    Animated.spring(pressAnim, {
-      toValue: 0.95,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-  
-  const handlePressOut = useCallback(() => {
-    Animated.spring(pressAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
   // Memoized data processing
   const cardData = useMemo(() => {
     const isUrgent = listing.urgency === 'high' || listing.urgency === 'Acil';
@@ -134,6 +92,8 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       return parts[0] || '-'; // First part is usually the city
     };
     
+    const imageUrl = listing.main_image_url || listing.main_image || listing.image_url || null;
+    
     return {
       id: listing.id,
       title: listing.title || 'Başlık yok',
@@ -142,12 +102,13 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       timeAgo,
       isUrgent,
       category: listing.category || 'Genel',
-      imageUrl: listing.main_image_url || listing.main_image || listing.image_url || null,
+      imageUrl,
       isFavorited: !!listing.is_favorited,
     };
   }, [listing]);
 
   // Animations
+  const scaleAnim = useMemo(() => new Animated.Value(1), []);
   const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   // Long press actions
@@ -188,10 +149,31 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
     onLongPress: handleLongPress,
     onPress: onPress,
   }, {
-    duration: 500,
+    duration: 750, // 500ms'den 750ms'ye çıkarıldı
     hapticFeedback: true,
     hapticType: 'medium',
   });
+
+
+
+  // Animation handlers
+  const handlePressIn = useCallback(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  }, [scaleAnim]);
+
+  const handlePressOut = useCallback(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  }, [scaleAnim]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoaded(true);
@@ -342,22 +324,22 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   }, [colors, style, isGrid, numColumns]);
 
   return (
-    <Animated.View
+    <Animated.View 
       style={[
-        dynamicStyles.container,
-        style,
-        {
-          transform: [
-            { scale: Animated.multiply(scaleAnim, pressAnim) }
-          ],
-          opacity: opacityAnim,
-        }
+        dynamicStyles.container, 
+        { transform: [{ scale: scaleAnim }] }
       ]}
     >
       <Pressable
-        {...longPressHandlers}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        onPressIn={() => {
+          longPressHandlers.onPressIn();
+          handlePressIn();
+        }}
+        onPressOut={() => {
+          longPressHandlers.onPressOut();
+          handlePressOut();
+        }}
+        onPress={longPressHandlers.onPress}
         style={[
           dynamicStyles.card,
           isFavoriteLoading && { opacity: 0.7 }
@@ -368,10 +350,11 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         <View style={dynamicStyles.imageContainer}>
           {cardData.imageUrl ? (
             <>
-              <Image
-                source={{ uri: cardData.imageUrl }}
+              <ImageWithFallback
+                uri={cardData.imageUrl}
                 style={dynamicStyles.image}
-                onLoad={handleImageLoad}
+                priority={index < 6 ? 'high' : 'normal'} // İlk 6 kart için high priority
+                cachePolicy="memory-disk"
               />
               <Animated.View 
                 style={[

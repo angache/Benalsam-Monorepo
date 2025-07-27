@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import {
   View,
   Text,
@@ -447,46 +447,21 @@ const styles = StyleSheet.create({
   copyrightText: {
     fontSize: 12,
   },
+  footerSkeleton: {
+    height: 150, // Approximate height for skeleton
+  },
 });
 
 // Skeleton loading components
 const SkeletonCard = () => {
   const colors = useThemeColors();
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-  
-  useEffect(() => {
-    const shimmerLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: false,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: false,
-        }),
-      ])
-    );
-    
-    shimmerLoop.start();
-    
-    return () => shimmerLoop.stop();
-  }, []);
-  
-  const shimmerOpacity = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-  
   return (
     <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]}>
-      <Animated.View style={[styles.skeletonImage, { backgroundColor: colors.border, opacity: shimmerOpacity }]} />
+      <View style={[styles.skeletonImage, { backgroundColor: colors.border }]} />
       <View style={styles.skeletonContent}>
-        <Animated.View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '80%', opacity: shimmerOpacity }]} />
-        <Animated.View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '60%', opacity: shimmerOpacity }]} />
-        <Animated.View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '40%', opacity: shimmerOpacity }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '80%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '60%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '40%' }]} />
       </View>
     </View>
   );
@@ -494,41 +469,13 @@ const SkeletonCard = () => {
 
 const SkeletonHorizontalCard = () => {
   const colors = useThemeColors();
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-  
-  useEffect(() => {
-    const shimmerLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: false,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: false,
-        }),
-      ])
-    );
-    
-    shimmerLoop.start();
-    
-    return () => shimmerLoop.stop();
-  }, []);
-  
-  const shimmerOpacity = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-  
   return (
     <View style={[styles.skeletonHorizontalCard, { backgroundColor: colors.surface }]}>
-      <Animated.View style={[styles.skeletonHorizontalImage, { backgroundColor: colors.border, opacity: shimmerOpacity }]} />
+      <View style={[styles.skeletonHorizontalImage, { backgroundColor: colors.border }]} />
       <View style={styles.skeletonHorizontalContent}>
-        <Animated.View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '90%', opacity: shimmerOpacity }]} />
-        <Animated.View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '70%', opacity: shimmerOpacity }]} />
-        <Animated.View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '50%', opacity: shimmerOpacity }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '90%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '70%' }]} />
+        <View style={[styles.skeletonLine, { backgroundColor: colors.border, width: '50%' }]} />
       </View>
     </View>
   );
@@ -609,45 +556,6 @@ const HomeScreen = () => {
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const { handleScroll, headerOpacity, headerTranslateY } = useScrollHeader(50);
   
-  // Section animations - sadece opacity
-  const sectionAnimations = useRef({
-    welcome: new Animated.Value(0),
-    search: new Animated.Value(0),
-    banner: new Animated.Value(0),
-    stats: new Animated.Value(0),
-    categories: new Animated.Value(0),
-    todaysDeals: new Animated.Value(0),
-    newListings: new Animated.Value(0),
-    followedCategories: new Animated.Value(0),
-    recentViews: new Animated.Value(0),
-    smartRecommendations: new Animated.Value(0),
-    sellerRecommendations: new Animated.Value(0),
-    similarListings: new Animated.Value(0),
-    mostOffered: new Animated.Value(0),
-    popularListings: new Animated.Value(0),
-  }).current;
-
-  // Animate sections on mount - basit ve güvenli
-  useEffect(() => {
-    console.log('🎬 HomeScreen - Section animations starting...');
-    const timer = setTimeout(() => {
-      console.log('🎬 HomeScreen - Starting animations with delay');
-      Object.values(sectionAnimations).forEach((anim, index) => {
-        console.log(`🎬 HomeScreen - Animating section ${index}`);
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 400,
-          delay: index * 50, // Kısa delay
-          useNativeDriver: true,
-        }).start(() => {
-          console.log(`🎬 HomeScreen - Section ${index} animation completed`);
-        });
-      });
-    }, 200);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
 
   
   // React Query hooks with proper typing
@@ -1185,253 +1093,239 @@ const HomeScreen = () => {
         >
           {/* Hoşgeldin Mesajı */}
           {user && preferences.showWelcomeMessage && (
-            <Animated.View style={{ opacity: sectionAnimations.welcome }}>
-              <View style={[styles.welcomeSection, { backgroundColor: colors.surface }]}>
-                <Text style={[styles.welcomeText, { color: colors.text }]}>
-                  Merhaba {user.username || user.email?.split('@')[0]}! 👋
+            <View style={[styles.welcomeSection, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.welcomeText, { color: colors.text }]}>
+                Merhaba {user.username || user.email?.split('@')[0]}! 👋
+              </Text>
+              <Text style={[styles.welcomeSubtext, { color: colors.textSecondary }]}>
+                İhtiyacınız olan ürünleri keşfedin ve satın alın!
+              </Text>
+              <TouchableOpacity 
+                style={styles.welcomeCloseButton}
+                onPress={hideWelcomeMessage}
+              >
+                <Text style={[styles.welcomeCloseText, { color: colors.textSecondary }]}>
+                  Kapat
                 </Text>
-                <Text style={[styles.welcomeSubtext, { color: colors.textSecondary }]}>
-                  İhtiyacınız olan ürünleri keşfedin ve satın alın!
-                </Text>
-                <TouchableOpacity 
-                  style={styles.welcomeCloseButton}
-                  onPress={hideWelcomeMessage}
-                >
-                  <Text style={[styles.welcomeCloseText, { color: colors.textSecondary }]}>
-                    Kapat
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
+              </TouchableOpacity>
+            </View>
           )}
 
           {/* Arama Çubuğu */}
-          <Animated.View style={{ opacity: sectionAnimations.search }}>
-            <View style={styles.searchSection}>
-              <SearchBar
-                value={selectedCategory}
-                onChangeText={(text) => {
-                  console.log('🔍 HomeScreen onChangeText:', text);
-                  setSelectedCategory(text);
-                }}
-                onSearch={() => {
-                  if (selectedCategory.trim()) {
-                    const searchTerm = selectedCategory.trim();
-                    addRecentSearch(searchTerm);
-                    addSearchHistory(searchTerm);
-                    navigation.navigate('Search', { query: searchTerm });
-                  }
-                }}
-                placeholder="Ne arıyorsunuz?"
-                showSuggestions={false}
-              />
-            </View>
-          </Animated.View>
+          <View style={styles.searchSection}>
+            <SearchBar
+              value={selectedCategory}
+              onChangeText={(text) => {
+                console.log('🔍 HomeScreen onChangeText:', text);
+                setSelectedCategory(text);
+              }}
+              onSearch={() => {
+                if (selectedCategory.trim()) {
+                  const searchTerm = selectedCategory.trim();
+                  addRecentSearch(searchTerm);
+                  addSearchHistory(searchTerm);
+                  navigation.navigate('Search', { query: searchTerm });
+                }
+              }}
+              placeholder="Ne arıyorsunuz?"
+              showSuggestions={false}
+            />
+          </View>
 
           {/* Banner Section */}
-          <Animated.View style={{ opacity: sectionAnimations.banner }}>
-            <View style={styles.bannerSection}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bannerContainer}>
-                {BANNERS.map((banner, index) => (
-                  <TouchableOpacity 
-                    key={index} 
-                    style={styles.bannerCard}
-                    onPress={() => {
-                      switch (banner.action) {
-                        case 'explore':
-                          navigateToScreen('Search', { query: '' });
-                          break;
-                        case 'latest':
-                          navigateToAllListings();
-                          break;
-                        case 'safety':
-                          // TODO: Navigate to safety guide
-                          console.log('Navigate to safety guide');
-                          break;
-                        default:
-                          navigateToScreen('Search', { query: banner.text });
-                      }
-                    }}
-                  >
-                    <Image source={{ uri: banner.image }} style={styles.bannerImage} />
-                    <View style={styles.bannerOverlay}>
-                      <Text style={styles.bannerText}>{banner.text}</Text>
-                      <TouchableOpacity 
-                        style={styles.bannerActionButton}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          switch (banner.action) {
-                            case 'explore':
-                              navigateToScreen('Search', { query: '' });
-                              break;
-                            case 'latest':
-                              navigateToAllListings();
-                              break;
-                            case 'safety':
-                              console.log('Navigate to safety guide');
-                              break;
-                            default:
-                              navigateToScreen('Search', { query: banner.text });
-                          }
-                        }}
-                      >
-                        <Text style={styles.bannerActionText}>Keşfet</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </Animated.View>
-
-          {/* Stats Section */}
-          <Animated.View style={{ opacity: sectionAnimations.stats }}>
-            <View style={styles.statsSection}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsContainer}>
-                {STATS.map((stat, index) => {
-                  const IconComponent = stat.icon;
-                  return (
+          <View style={styles.bannerSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bannerContainer}>
+              {BANNERS.map((banner, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.bannerCard}
+                  onPress={() => {
+                    switch (banner.action) {
+                      case 'explore':
+                        navigateToScreen('Search', { query: '' });
+                        break;
+                      case 'latest':
+                        navigateToAllListings();
+                        break;
+                      case 'safety':
+                        // TODO: Navigate to safety guide
+                        console.log('Navigate to safety guide');
+                        break;
+                      default:
+                        navigateToScreen('Search', { query: banner.text });
+                    }
+                  }}
+                >
+                  <Image source={{ uri: banner.image }} style={styles.bannerImage} />
+                  <View style={styles.bannerOverlay}>
+                    <Text style={styles.bannerText}>{banner.text}</Text>
                     <TouchableOpacity 
-                      key={index} 
-                      style={[styles.statCard, { backgroundColor: colors.surface }]}
-                      onPress={() => {
-                        switch (stat.label) {
-                          case 'Aktif Kullanıcı':
-                            // TODO: Navigate to user directory
-                            console.log('Navigate to user directory');
+                      style={styles.bannerActionButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        switch (banner.action) {
+                          case 'explore':
+                            navigateToScreen('Search', { query: '' });
                             break;
-                          case 'Alım İlanı':
-                            navigateToScreen('Search', { query: 'alınık' });
+                          case 'latest':
+                            navigateToAllListings();
                             break;
-                          case 'Memnuniyet':
-                            // TODO: Navigate to reviews
-                            console.log('Navigate to reviews');
-                            break;
-                          case 'Destek':
-                            // TODO: Navigate to support
-                            console.log('Navigate to support');
+                          case 'safety':
+                            console.log('Navigate to safety guide');
                             break;
                           default:
-                            navigateToScreen('Search', { query: stat.label });
+                            navigateToScreen('Search', { query: banner.text });
                         }
                       }}
                     >
-                      <IconComponent size={24} color={colors.primary} />
-                      <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
-                      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{stat.label}</Text>
+                      <Text style={styles.bannerActionText}>Keşfet</Text>
                     </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          </Animated.View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Stats Section */}
+          <View style={styles.statsSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsContainer}>
+              {STATS.map((stat, index) => {
+                const IconComponent = stat.icon;
+                return (
+                  <TouchableOpacity 
+                    key={index} 
+                    style={[styles.statCard, { backgroundColor: colors.surface }]}
+                    onPress={() => {
+                      switch (stat.label) {
+                        case 'Aktif Kullanıcı':
+                          // TODO: Navigate to user directory
+                          console.log('Navigate to user directory');
+                          break;
+                        case 'Alım İlanı':
+                          navigateToScreen('Search', { query: 'alınık' });
+                          break;
+                        case 'Memnuniyet':
+                          // TODO: Navigate to reviews
+                          console.log('Navigate to reviews');
+                          break;
+                        case 'Destek':
+                          // TODO: Navigate to support
+                          console.log('Navigate to support');
+                          break;
+                        default:
+                          navigateToScreen('Search', { query: stat.label });
+                      }
+                    }}
+                  >
+                    <IconComponent size={24} color={colors.primary} />
+                    <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{stat.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
 
           {/* Kategoriler */}
-          <Animated.View style={{ opacity: sectionAnimations.categories }}>
-            <View style={styles.categorySection}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {getCurrentCategories().map((category: any) => (
-                  <CategoryCard
-                    key={category.name}
-                    title={category.name}
-                    onPress={() => handleSubCategoryPress(category)}
-                    icon={category.icon}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          </Animated.View>
+          <View style={styles.categorySection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {getCurrentCategories().map((category: any) => (
+                <CategoryCard
+                  key={category.name}
+                  title={category.name}
+                  onPress={() => handleSubCategoryPress(category)}
+                  icon={category.icon}
+                />
+              ))}
+            </ScrollView>
+          </View>
 
           {/* Günün Fırsatları - PROMOSYONLU İLANLAR */}
-          <Animated.View style={{ opacity: sectionAnimations.todaysDeals }}>
-            <View style={styles.todaysDealsSection}>
-              {isTodaysDealsLoading ? (
-                <>
-                  {renderSkeletonSectionHeader()}
-                  {renderSkeletonHorizontalList()}
-                </>
-              ) : isTodaysDealsError ? (
-                <SectionErrorFallback 
+          <View style={styles.todaysDealsSection}>
+            {isTodaysDealsLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonHorizontalList()}
+              </>
+            ) : isTodaysDealsError ? (
+              <SectionErrorFallback 
+                title="Günün Fırsatları"
+                onRetry={() => refetchDeals()}
+              />
+            ) : limitedTodaysDeals.length > 0 ? (
+              <>
+                <SectionHeader 
                   title="Günün Fırsatları"
-                  onRetry={() => refetchDeals()}
+                  count={limitedTodaysDeals.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={navigateToTodaysDeals}
                 />
-              ) : limitedTodaysDeals.length > 0 ? (
-                <>
-                  <SectionHeader 
-                    title="Günün Fırsatları"
-                    count={limitedTodaysDeals.length}
-                    showCount={true}
-                    showAction={true}
-                    actionText="Tümünü Gör"
-                    onActionPress={navigateToTodaysDeals}
-                  />
-                  <FlashList
-                    data={limitedTodaysDeals}
-                    renderItem={renderHorizontalListing}
-                    keyExtractor={keyExtractor}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.horizontalListContainer}
-                    estimatedItemSize={200}
-                  />
-                </>
-              ) : null}
-            </View>
-          </Animated.View>
+                <FlashList
+                  data={limitedTodaysDeals}
+                  renderItem={renderHorizontalListing}
+                  keyExtractor={keyExtractor}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalListContainer}
+                  estimatedItemSize={200}
+                />
+              </>
+            ) : null}
+          </View>
 
           {/* Yeni İlanlar - MODERN GRID */}
-          <Animated.View style={{ opacity: sectionAnimations.newListings }}>
-            <View style={styles.section}>
-              {isNewListingsLoading ? (
-                <>
-                  {renderSkeletonSectionHeader()}
-                  {renderSkeletonGrid()}
-                </>
-              ) : isNewListingsError ? (
-                <SectionErrorFallback 
+          <View style={styles.section}>
+            {isNewListingsLoading ? (
+              <>
+                {renderSkeletonSectionHeader()}
+                {renderSkeletonGrid()}
+              </>
+            ) : isNewListingsError ? (
+              <SectionErrorFallback 
+                title="Yeni İlanlar"
+                onRetry={() => refetchListings()}
+              />
+            ) : limitedNewListings.length > 0 ? (
+              <>
+                <SectionHeader 
                   title="Yeni İlanlar"
-                  onRetry={() => refetchListings()}
+                  count={limitedNewListings.length}
+                  showCount={true}
+                  showAction={true}
+                  actionText="Tümünü Gör"
+                  onActionPress={navigateToAllListings}
                 />
-              ) : limitedNewListings.length > 0 ? (
-                <>
-                  <SectionHeader 
-                    title="Yeni İlanlar"
-                    count={limitedNewListings.length}
-                    showCount={true}
-                    showAction={true}
-                    actionText="Tümünü Gör"
-                    onActionPress={navigateToAllListings}
-                  />
-                  <View style={styles.flashListContainer}>
-                    <View style={styles.gridListContainer}>
-                      {limitedNewListings.map((item, index) => {
-                        const numColumns = getNumColumns(preferences.contentTypePreference);
-                        const isFirstInRow = index % numColumns === 0;
-                        const isLastInRow = (index + 1) % numColumns === 0;
-                        
-                        // Dinamik genişlik hesaplama
-                        const cardWidth = (screenWidth - SIDE_PADDING * 2 - spacing.lg * (numColumns - 1)) / numColumns;
-                        
-                        return (
-                          <View 
-                            key={item.id}
-                            style={[
-                              styles.gridItem,
-                              { width: cardWidth },
-                              isFirstInRow && styles.gridItemFirst,
-                              isLastInRow && styles.gridItemLast,
-                            ]}
-                          >
-                            {renderGridListing({ item, index })}
-                          </View>
-                        );
-                      })}
-                    </View>
+                <View style={styles.flashListContainer}>
+                  <View style={styles.gridListContainer}>
+                    {limitedNewListings.map((item, index) => {
+                      const numColumns = getNumColumns(preferences.contentTypePreference);
+                      const isFirstInRow = index % numColumns === 0;
+                      const isLastInRow = (index + 1) % numColumns === 0;
+                      
+                      // Dinamik genişlik hesaplama
+                      const cardWidth = (screenWidth - SIDE_PADDING * 2 - spacing.lg * (numColumns - 1)) / numColumns;
+                      
+                      return (
+                        <View 
+                          key={item.id}
+                          style={[
+                            styles.gridItem,
+                            { width: cardWidth },
+                            isFirstInRow && styles.gridItemFirst,
+                            isLastInRow && styles.gridItemLast,
+                          ]}
+                        >
+                          {renderGridListing({ item, index })}
+                        </View>
+                      );
+                    })}
                   </View>
-                </>
-              ) : null}
-            </View>
-          </Animated.View>
+                </View>
+              </>
+            ) : null}
+          </View>
 
           {/* Takip Ettiğiniz Kategoriler */}
           {followedCategories.length > 0 && (
@@ -1483,24 +1377,8 @@ const HomeScreen = () => {
                   />
                   <FlashList
                     data={limitedRecentViews.map(view => view.listing).filter((listing): listing is ListingWithUser => !!listing)}
-                    renderItem={({ item, index }) => (
-                      <ListingCard
-                        key={`recent-${item.id}-${index}`}
-                        listing={item}
-                        onPress={() => {
-                          // Track view behavior
-                          trackView(item.id, { category: item.category, price: item.budget });
-                          navigation.navigate('ListingDetail', { listingId: item.id });
-                        }}
-                        onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
-                        isFavoriteLoading={selectedListingId === item.id}
-                        isGrid={false} // Horizontal layout için marginRight aktif
-                        style={{ width: 200, marginRight: 12 }}
-                        showCategoryBadges={preferences.showCategoryBadges}
-                        showUrgencyBadges={preferences.showUrgencyBadges}
-                      />
-                    )}
-                    keyExtractor={(item, index) => `recent-${item.id}-${index}`}
+                    renderItem={renderHorizontalListing}
+                    keyExtractor={keyExtractor}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalListContainer}
@@ -1692,7 +1570,7 @@ const HomeScreen = () => {
             ) : null}
           </View>
           
-          {/* Footer - Modern Design */}
+          {/* Modern Footer */}
           <ModernFooter />
         </ScrollView>
       </View>

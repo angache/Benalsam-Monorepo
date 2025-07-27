@@ -1,31 +1,58 @@
-import React, { useState } from 'react';
-import { Image, View, Text, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { Image as ImageIcon } from 'lucide-react-native';
 
 interface ImageWithFallbackProps {
   uri: string;
   style?: any;
   fallbackText?: string;
+  priority?: 'low' | 'normal' | 'high';
+  cachePolicy?: 'memory' | 'memory-disk' | 'disk' | 'none';
 }
 
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ 
   uri, 
   style, 
-  fallbackText = 'Görsel yüklenemedi' 
+  fallbackText = 'Görsel yüklenemedi',
+  priority = 'normal',
+  cachePolicy = 'memory-disk'
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleError = () => {
+  // Memory management - cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup function for memory management
+      setHasError(false);
+      setIsLoading(false);
+    };
+  }, []);
+
+  // Reset state when URI changes
+  useEffect(() => {
+    setHasError(false);
+    setIsLoading(true);
+  }, [uri]);
+
+  const handleError = useCallback(() => {
     console.log('🚨 Image failed to load:', uri);
     setHasError(true);
     setIsLoading(false);
-  };
+  }, [uri]);
 
-  const handleLoad = () => {
+  const handleLoad = useCallback(() => {
+    console.log('✅ Image loaded successfully (cache hit):', uri);
     setIsLoading(false);
     setHasError(false);
-  };
+  }, [uri]);
+
+  const handleLoadStart = useCallback(() => {
+    console.log('🔄 Image loading started:', uri);
+    setIsLoading(true);
+    setHasError(false);
+  }, [uri]);
 
   if (hasError) {
     return (
@@ -43,10 +70,14 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
     <View style={style}>
       <Image
         source={{ uri }}
-        style={[style, isLoading && styles.loading]}
+        style={style}
+        contentFit="cover"
+        transition={200}
+        cachePolicy={cachePolicy}
+        priority={priority}
         onError={handleError}
         onLoad={handleLoad}
-        resizeMode="cover"
+        onLoadStart={handleLoadStart}
       />
       {isLoading && (
         <View style={[styles.loadingOverlay, style]}>
@@ -82,9 +113,14 @@ const styles = StyleSheet.create({
   },
   loadingOverlay: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    zIndex: 1,
   },
   loadingText: {
     fontSize: 12,

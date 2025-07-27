@@ -65,7 +65,7 @@ export const useLongPress = (
   }, [endLongPress]);
 
   const handlePress = useCallback(() => {
-    // Only trigger normal press if long press wasn't triggered
+    // Sadece long press tetiklenmediyse normal press'i çalıştır
     if (!hasTriggeredLongPress.current) {
       callbacks.onPress?.();
     }
