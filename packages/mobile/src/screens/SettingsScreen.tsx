@@ -52,7 +52,8 @@ import {
 } from 'lucide-react-native';
 import { useThemeStore, useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
-import { Card, Button, Avatar, Modal, LoadingSpinner, ErrorBoundary } from '../components';
+import { useUserPreferences } from '../hooks/useUserPreferences';
+import { LoadingSpinner, ErrorBoundary, Modal, Button } from '../components';
 import { updateUserProfile, getUserProfile, supabase } from '../services/supabaseService';
 import type { 
   District, 
@@ -421,6 +422,16 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
   const colors = useThemeColors();
   const isDark = isDarkMode();
   const { user, signOut } = useAuthStore();
+  const { 
+    preferences, 
+    updateContentTypePreference,
+    toggleCategoryBadges,
+    toggleUrgencyBadges,
+    toggleUserRatings,
+    toggleDistance,
+    setTheme,
+    resetToDefaults
+  } = useUserPreferences();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -1130,6 +1141,59 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
     ] : []),
   ];
 
+  // User Preferences Settings
+  const userPreferencesSettings: ToggleItem[] = [
+    {
+      id: 'content-type',
+      title: 'İçerik Düzeni',
+      subtitle: preferences?.contentTypePreference === 'compact' ? 'Kompakt' : 
+                preferences?.contentTypePreference === 'list' ? 'Liste' : 'Grid',
+      value: preferences?.contentTypePreference === 'compact',
+      onToggle: async (value: boolean) => {
+        const newPreference = value ? 'compact' : 'grid';
+        console.log('🔧 SettingsScreen: Content type changing to:', newPreference);
+        await updateContentTypePreference(newPreference);
+        console.log('🔧 SettingsScreen: Content type changed to:', newPreference);
+      },
+    },
+    {
+      id: 'category-badges',
+      title: 'Kategori Rozetleri',
+      subtitle: 'İlan kartlarında kategori etiketlerini göster',
+      value: preferences?.showCategoryBadges || false,
+      onToggle: async (value: boolean) => {
+        await toggleCategoryBadges();
+      },
+    },
+    {
+      id: 'urgency-badges',
+      title: 'Acil Rozetleri',
+      subtitle: 'İlan kartlarında acil etiketlerini göster',
+      value: preferences?.showUrgencyBadges || false,
+      onToggle: async (value: boolean) => {
+        await toggleUrgencyBadges();
+      },
+    },
+    {
+      id: 'user-ratings',
+      title: 'Kullanıcı Puanları',
+      subtitle: 'İlan kartlarında kullanıcı değerlendirmelerini göster',
+      value: preferences?.showUserRatings || false,
+      onToggle: async (value: boolean) => {
+        await toggleUserRatings();
+      },
+    },
+    {
+      id: 'distance',
+      title: 'Mesafe Bilgisi',
+      subtitle: 'İlan kartlarında mesafe bilgisini göster',
+      value: preferences?.showDistance || false,
+      onToggle: async (value: boolean) => {
+        await toggleDistance();
+      },
+    },
+  ];
+
   const supportSettings: SettingItem[] = [
     {
       id: 'help',
@@ -1199,6 +1263,37 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
             <LoadingSpinner size="small" style={{ marginLeft: 8 }} />
           )}
         </TouchableOpacity>
+        {showDivider && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
+      </React.Fragment>
+    );
+  };
+
+  const renderToggleItem = (item: ToggleItem, showDivider: boolean) => {
+    return (
+      <React.Fragment key={item.id}>
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Text style={[styles.settingTitle, { 
+              color: colors.text,
+              opacity: isUpdating ? 0.5 : 1,
+            }]}>
+              {item.title}
+            </Text>
+            <Text style={[styles.settingSubtitle, { 
+              color: colors.textSecondary,
+              opacity: isUpdating ? 0.5 : 1,
+            }]}>
+              {item.subtitle}
+            </Text>
+          </View>
+          <Switch
+            value={item.value}
+            onValueChange={item.onToggle}
+            disabled={isUpdating}
+            trackColor={{ false: colors.border, true: colors.primary + '40' }}
+            thumbColor={item.value ? colors.primary : colors.textSecondary}
+          />
+        </View>
         {showDivider && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
       </React.Fragment>
     );
@@ -1346,6 +1441,15 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
             {appSettings.map((item, index) => (
               <React.Fragment key={item.id}>
                 {renderSettingItem(item, index < appSettings.length - 1)}
+              </React.Fragment>
+            ))}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Görünüm Tercihleri</Text>
+            {userPreferencesSettings.map((item, index) => (
+              <React.Fragment key={item.id}>
+                {renderToggleItem(item, index < userPreferencesSettings.length - 1)}
               </React.Fragment>
             ))}
           </View>

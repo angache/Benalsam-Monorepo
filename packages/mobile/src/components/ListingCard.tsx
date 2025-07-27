@@ -30,12 +30,17 @@ interface ListingCardProps {
   isGrid?: boolean; // Grid layout için marginRight kontrolü
   showCategoryBadges?: boolean;
   showUrgencyBadges?: boolean;
+  numColumns?: number; // Grid sütun sayısı
 }
 
 const { width: screenWidth } = Dimensions.get('window');
 const SIDE_PADDING = 16; // Sol ve sağ kenar mesafesi
-const CARD_GAP = 12; // Kartlar arası mesafe
-const CARD_WIDTH = (screenWidth - SIDE_PADDING * 2 - CARD_GAP) / 2;
+const CARD_GAP = 16; // Kartlar arası mesafe (12'den 16'ya artırıldı)
+
+// Dinamik kart genişliği hesaplama fonksiyonu
+const getCardWidth = (numColumns: number) => {
+  return (screenWidth - SIDE_PADDING * 2 - CARD_GAP * (numColumns - 1)) / numColumns;
+};
 
 const ListingCard: React.FC<ListingCardProps> = React.memo(({
   listing,
@@ -47,6 +52,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   isGrid = false,
   showCategoryBadges = true,
   showUrgencyBadges = true,
+  numColumns = 2,
 }) => {
   const colors = useThemeColors();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -121,7 +127,8 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   }, []);
 
   const dynamicStyles = useMemo(() => {
-    const containerWidth = style?.width === '100%' ? screenWidth - 32 : CARD_WIDTH;
+    const containerWidth = style?.width === '100%' ? screenWidth - 32 : getCardWidth(numColumns);
+    const isCompact = numColumns >= 3;
     
     return StyleSheet.create({
       container: {
@@ -131,18 +138,18 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       },
       card: {
         backgroundColor: colors.surface,
-        borderRadius: 16,
+        borderRadius: isCompact ? 12 : 16,
         overflow: 'hidden',
         shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: isCompact ? 2 : 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 8,
+        shadowRadius: isCompact ? 8 : 12,
+        elevation: isCompact ? 4 : 8,
         borderWidth: 1,
         borderColor: `${colors.border}20`,
       },
       imageContainer: {
-        height: 140,
+        height: isCompact ? 120 : 140,
         position: 'relative',
         backgroundColor: colors.gray[100],
       },
@@ -160,28 +167,28 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       },
       urgentBadge: {
         position: 'absolute',
-        top: 8,
-        left: 8,
+        top: isCompact ? 6 : 8,
+        left: isCompact ? 6 : 8,
         backgroundColor: colors.error,
-        borderRadius: 12,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        borderRadius: isCompact ? 8 : 12,
+        paddingHorizontal: isCompact ? 6 : 8,
+        paddingVertical: isCompact ? 3 : 4,
         flexDirection: 'row',
         alignItems: 'center',
       },
       badgeText: {
         color: colors.white,
-        fontSize: 11,
+        fontSize: isCompact ? 9 : 11,
         fontWeight: '700',
-        marginLeft: 4,
+        marginLeft: isCompact ? 2 : 4,
       },
       favoriteButton: {
         position: 'absolute',
-        top: 8,
-        right: 8,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        top: isCompact ? 6 : 8,
+        right: isCompact ? 6 : 8,
+        width: isCompact ? 28 : 32,
+        height: isCompact ? 28 : 32,
+        borderRadius: isCompact ? 14 : 16,
         backgroundColor: 'transparent',
         alignItems: 'center',
         justifyContent: 'center',
@@ -192,27 +199,27 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         elevation: 2,
       },
       content: {
-        padding: 12,
+        padding: isCompact ? 8 : 12,
       },
       header: {
-        marginBottom: 8,
+        marginBottom: isCompact ? 4 : 8,
       },
       title: {
-        fontSize: 16,
+        fontSize: isCompact ? 14 : 16,
         fontWeight: '700',
         color: colors.text,
-        lineHeight: 20,
-        marginBottom: 4,
-        height: 40, // 2 satır için sabit yükseklik (20px * 2)
+        lineHeight: isCompact ? 18 : 20,
+        marginBottom: isCompact ? 2 : 4,
+        height: isCompact ? 32 : 40, // Compact'ta 1 satır, normal'de 2 satır
       },
       price: {
-        fontSize: 18,
+        fontSize: isCompact ? 16 : 18,
         fontWeight: '800',
         color: colors.primary,
-        marginBottom: 2,
+        marginBottom: isCompact ? 0 : 2,
       },
       priceLabel: {
-        fontSize: 11,
+        fontSize: isCompact ? 9 : 11,
         color: colors.textSecondary,
         fontWeight: '500',
       },
@@ -220,7 +227,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginTop: 8,
+        marginTop: isCompact ? 0 : 8,
       },
       metadataItem: {
         flexDirection: 'row',
@@ -228,9 +235,9 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         flex: 1,
       },
       metadataText: {
-        fontSize: 11,
+        fontSize: isCompact ? 9 : 11,
         color: colors.textSecondary,
-        marginLeft: 4,
+        marginLeft: isCompact ? 2 : 4,
         fontWeight: '500',
       },
       loadingIndicator: {
@@ -244,7 +251,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         borderRadius: 8,
       },
     });
-  }, [colors, style, isGrid]);
+  }, [colors, style, isGrid, numColumns]);
 
   return (
     <Animated.View 
@@ -319,30 +326,32 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
         {/* Content Section */}
         <View style={dynamicStyles.content}>
           <View style={dynamicStyles.header}>
-            <Text style={dynamicStyles.title} numberOfLines={2}>
+            <Text style={dynamicStyles.title} numberOfLines={numColumns >= 3 ? 1 : 2}>
               {cardData.title}
             </Text>
             <Text style={dynamicStyles.price}>
               ₺{formatPrice(cardData.price)}
-              <Text style={dynamicStyles.priceLabel}> bütçe</Text>
+              {numColumns < 3 && <Text style={dynamicStyles.priceLabel}> bütçe</Text>}
             </Text>
           </View>
 
-          {/* Metadata */}
-          <View style={dynamicStyles.metadata}>
-            <View style={dynamicStyles.metadataItem}>
-              <MapPin size={12} color={colors.textSecondary} />
-              <Text style={dynamicStyles.metadataText} numberOfLines={1}>
-                {cardData.location}
-              </Text>
+          {/* Metadata - Compact modda gizle */}
+          {numColumns < 3 && (
+            <View style={dynamicStyles.metadata}>
+              <View style={dynamicStyles.metadataItem}>
+                <MapPin size={12} color={colors.textSecondary} />
+                <Text style={dynamicStyles.metadataText} numberOfLines={1}>
+                  {cardData.location}
+                </Text>
+              </View>
+              <View style={dynamicStyles.metadataItem}>
+                <Clock size={12} color={colors.textSecondary} />
+                <Text style={dynamicStyles.metadataText}>
+                  {cardData.timeAgo}
+                </Text>
+              </View>
             </View>
-            <View style={dynamicStyles.metadataItem}>
-              <Clock size={12} color={colors.textSecondary} />
-              <Text style={dynamicStyles.metadataText}>
-                {cardData.timeAgo}
-              </Text>
-            </View>
-          </View>
+          )}
 
         </View>
       </Pressable>

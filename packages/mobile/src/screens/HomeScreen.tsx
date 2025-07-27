@@ -85,7 +85,7 @@ const STATS = [
 
 const { width: screenWidth, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SIDE_PADDING = spacing.md; // 16px - Sol ve sağ kenar mesafesi
-const CARD_GAP = spacing.md; // 16px - Kartlar arası mesafe (8px'den 16px'e çıkarıldı)
+const CARD_GAP = spacing.lg; // 24px - Kartlar arası mesafe (16px'den 24px'e artırıldı)
 const getNumColumns = (contentTypePreference: string) => {
   switch (contentTypePreference) {
     case 'compact':
@@ -271,11 +271,19 @@ const styles = StyleSheet.create({
   },
   gridListContainer: {
     paddingHorizontal: SIDE_PADDING,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
   },
-  gridRow: {
-    justifyContent: 'space-between',
-    paddingHorizontal: 0,
-    gap: spacing.md, // 16px gap (CARD_GAP ile aynı)
+  gridItem: {
+    marginBottom: spacing.lg, // 24px alt boşluk
+    marginRight: spacing.lg, // 24px sağ boşluk
+  },
+  gridItemFirst: {
+    marginLeft: 0,
+  },
+  gridItemLast: {
+    marginRight: 0,
   },
   flashListContainer: {
     paddingHorizontal: 0,
@@ -547,6 +555,7 @@ const HomeScreen = () => {
 
   const { data: followedCategories = [], isLoading: followedLoading, error: followedError, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
+  const userPrefs = useUserPreferences();
   const { 
     preferences, 
     addFavoriteCategory, 
@@ -561,34 +570,17 @@ const HomeScreen = () => {
     addRecentSearch,
     addSearchHistory,
     hideWelcomeMessage
-  } = useUserPreferences();
+  } = userPrefs;
 
-  // 🧪 TEST: User preferences'ı değiştir (sonra kaldırılacak)
-  useEffect(() => {
-    // Test için preferences'ı değiştir
-    const testPreferences = async () => {
-      // Kategori rozetlerini gizle
-      if (preferences.showCategoryBadges) {
-        await toggleCategoryBadges();
-      }
-      // Acil rozetlerini gizle
-      if (preferences.showUrgencyBadges) {
-        await toggleUrgencyBadges();
-      }
-      // Hoşgeldin mesajını gizle
-      if (preferences.showWelcomeMessage) {
-        await hideWelcomeMessage();
-      }
-      // Compact layout'a geç
-      if (preferences.contentTypePreference !== 'compact') {
-        await updateContentTypePreference('compact');
-      }
-    };
-    
-    // 3 saniye sonra test et
-    const timer = setTimeout(testPreferences, 3000);
-    return () => clearTimeout(timer);
-  }, [preferences, toggleCategoryBadges, toggleUrgencyBadges, hideWelcomeMessage, updateContentTypePreference]);
+  // Debug: User preferences durumunu kontrol et (sadece geliştirme için)
+  if (__DEV__) {
+    console.log('🔍 User Preferences:', {
+      showWelcomeMessage: preferences?.showWelcomeMessage,
+      contentTypePreference: preferences?.contentTypePreference,
+      showCategoryBadges: preferences?.showCategoryBadges,
+      showUrgencyBadges: preferences?.showUrgencyBadges,
+    });
+  }
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -697,8 +689,9 @@ const HomeScreen = () => {
       isGrid={true} // Grid layout için marginRight devre dışı
       showCategoryBadges={preferences.showCategoryBadges}
       showUrgencyBadges={preferences.showUrgencyBadges}
+      numColumns={getNumColumns(preferences.contentTypePreference)}
     />
-  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges]);
+  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges, preferences.contentTypePreference]);
 
   const renderHorizontalListing = useCallback(({ item, index }: { item: ListingWithUser; index: number }) => (
     <ListingCard
@@ -1315,16 +1308,30 @@ const HomeScreen = () => {
                   onActionPress={navigateToAllListings}
                 />
                 <View style={styles.flashListContainer}>
-                  <FlatList
-                    data={limitedNewListings}
-                    renderItem={renderGridListing}
-                    keyExtractor={keyExtractor}
-                    numColumns={getNumColumns(preferences.contentTypePreference)}
-                    contentContainerStyle={styles.gridListContainer}
-                    columnWrapperStyle={styles.gridRow}
-                    scrollEnabled={false}
-                    key={`grid-${preferences.contentTypePreference}`} // Force re-render when layout changes
-                  />
+                  <View style={styles.gridListContainer}>
+                    {limitedNewListings.map((item, index) => {
+                      const numColumns = getNumColumns(preferences.contentTypePreference);
+                      const isFirstInRow = index % numColumns === 0;
+                      const isLastInRow = (index + 1) % numColumns === 0;
+                      
+                      // Dinamik genişlik hesaplama
+                      const cardWidth = (screenWidth - SIDE_PADDING * 2 - spacing.lg * (numColumns - 1)) / numColumns;
+                      
+                      return (
+                        <View 
+                          key={item.id}
+                          style={[
+                            styles.gridItem,
+                            { width: cardWidth },
+                            isFirstInRow && styles.gridItemFirst,
+                            isLastInRow && styles.gridItemLast,
+                          ]}
+                        >
+                          {renderGridListing({ item, index })}
+                        </View>
+                      );
+                    })}
+                  </View>
                 </View>
               </>
             ) : null}
