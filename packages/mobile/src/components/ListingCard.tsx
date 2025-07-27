@@ -7,7 +7,8 @@ import {
   StyleSheet, 
   Animated,
   Pressable,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColors } from '../stores';
@@ -17,8 +18,13 @@ import {
   Heart, 
   MapPin, 
   Clock, 
-  Zap
+  Zap,
+  Share2,
+  Bookmark,
+  Flag
 } from 'lucide-react-native';
+import { useLongPress } from '../hooks/useLongPress';
+import { haptic } from '../utils/hapticFeedback';
 
 interface ListingCardProps {
   listing: any;
@@ -42,6 +48,22 @@ const getCardWidth = (numColumns: number) => {
   return (screenWidth - SIDE_PADDING * 2 - CARD_GAP * (numColumns - 1)) / numColumns;
 };
 
+// Helper function
+const getTimeAgo = (dateString: string) => {
+  if (!dateString) return 'Bilinmiyor';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInHours / 24);
+  
+  if (diffInHours < 1) return 'Az önce';
+  if (diffInHours < 24) return `${diffInHours}s önce`;
+  if (diffInDays < 7) return `${diffInDays}g önce`;
+  return `${Math.floor(diffInDays / 7)}h önce`;
+};
+
 const ListingCard: React.FC<ListingCardProps> = React.memo(({
   listing,
   onPress,
@@ -58,10 +80,6 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
-  // Animations
-  const scaleAnim = useMemo(() => new Animated.Value(1), []);
-  const fadeAnim = useMemo(() => new Animated.Value(0), []);
-
   // Memoized data processing
   const cardData = useMemo(() => {
     const isUrgent = listing.urgency === 'high' || listing.urgency === 'Acil';
@@ -86,6 +104,55 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       isFavorited: !!listing.is_favorited,
     };
   }, [listing]);
+
+  // Animations
+  const scaleAnim = useMemo(() => new Animated.Value(1), []);
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
+
+  // Long press actions
+  const handleLongPress = useCallback(() => {
+    haptic.medium();
+    Alert.alert(
+      'İlan Seçenekleri',
+      'Bu ilan için ne yapmak istiyorsunuz?',
+      [
+        { text: 'İptal', style: 'cancel' },
+        { 
+          text: 'Paylaş', 
+          onPress: () => {
+            haptic.light();
+            console.log('Share listing:', cardData.id);
+          }
+        },
+        { 
+          text: 'Kaydet', 
+          onPress: () => {
+            haptic.success();
+            onToggleFavorite?.();
+          }
+        },
+        { 
+          text: 'Rapor Et', 
+          style: 'destructive',
+          onPress: () => {
+            haptic.warning();
+            console.log('Report listing:', cardData.id);
+          }
+        },
+      ]
+    );
+  }, [cardData.id, onToggleFavorite]);
+
+  const { handlers: longPressHandlers } = useLongPress({
+    onLongPress: handleLongPress,
+    onPress: onPress,
+  }, {
+    duration: 500,
+    hapticFeedback: true,
+    hapticType: 'medium',
+  });
+
+
 
   // Animation handlers
   const handlePressIn = useCallback(() => {
@@ -117,8 +184,9 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
 
   const handleFavoritePress = useCallback((e: any) => {
     e.stopPropagation();
+    haptic.selection();
     onToggleFavorite?.();
-  }, [onToggleFavorite]);
+  }, [cardData.id, onToggleFavorite]);
 
   const formatPrice = useCallback((price: number) => {
     if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M`;
@@ -261,9 +329,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
       ]}
     >
       <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        {...longPressHandlers}
         style={[
           dynamicStyles.card,
           isFavoriteLoading && { opacity: 0.7 }
@@ -358,22 +424,6 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
     </Animated.View>
   );
 });
-
-// Helper function
-const getTimeAgo = (dateString: string) => {
-  if (!dateString) return 'Bilinmiyor';
-  
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInMs = now.getTime() - date.getTime();
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const diffInDays = Math.floor(diffInHours / 24);
-  
-  if (diffInHours < 1) return 'Az önce';
-  if (diffInHours < 24) return `${diffInHours}s önce`;
-  if (diffInDays < 7) return `${diffInDays}g önce`;
-  return `${Math.floor(diffInDays / 7)}h önce`;
-};
 
 ListingCard.displayName = 'ListingCard';
 

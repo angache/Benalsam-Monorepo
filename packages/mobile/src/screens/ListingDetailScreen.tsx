@@ -26,6 +26,7 @@ import { useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Avatar } from '../components/Avatar';
+import PinchToZoom from '../components/PinchToZoom';
 import { useListing } from '../hooks/queries/useListings';
 import { useToggleFavorite } from '../hooks/queries/useFavorites';
 import { ListingWithUser } from '../services/listingService/core';
@@ -179,10 +180,9 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
       <ScrollView style={styles.content}>
         {/* Image */}
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: listing?.main_image_url }}
+          <PinchToZoom
+            source={{ uri: listing?.main_image_url || '' }}
             style={styles.image}
-            resizeMode="cover"
           />
           <View style={[styles.badge, { backgroundColor: colors.surface }]}>
             <Text style={[styles.badgeText, { color: colors.text }]}>normal</Text>

@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { FlatList } from 'react-native';
+import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
 import { TrendingUp, Clock, Star, Users, Bell, Search as SearchIcon, Plus, Filter, Heart, Mail, Phone, MapPin, Instagram, Facebook, Twitter, ExternalLink, Shield, FileText, HelpCircle } from 'lucide-react-native';
 import { useThemeStore, useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
@@ -46,6 +47,7 @@ import { ListingWithFavorite } from '../types';
 import { UseQueryResult } from '@tanstack/react-query';
 import { useScrollHeader } from '../hooks/useScrollHeader';
 import { useUserPreferencesContext } from '../contexts/UserPreferencesContext';
+
 
 // Legacy imports - aşamalı olarak kaldırılacak
 import { categoriesConfig } from '../config/categories-with-attributes';
@@ -550,6 +552,8 @@ const HomeScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const { handleScroll, headerOpacity, headerTranslateY } = useScrollHeader(50);
+  
+
   
   // React Query hooks with proper typing
   const { data: listings = [], isLoading: listingsLoading, error: listingsError, refetch: refetchListings } = useListings() as UseQueryResult<ListingWithUser[], Error>;

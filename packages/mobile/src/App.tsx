@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { useFonts } from 'expo-font';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { fcmTokenService } from './services/fcmTokenService';
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
+import HomeScreen from './screens/HomeScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -29,10 +35,19 @@ export default function App() {
   }
 
   return (
-    <UserPreferencesProvider>
-      <View style={{ flex: 1 }}>
-        {/* Simple placeholder for testing */}
-      </View>
-    </UserPreferencesProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <UserPreferencesProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="Home" component={HomeScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </UserPreferencesProvider>
+    </GestureHandlerRootView>
   );
 } 
