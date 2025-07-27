@@ -14,7 +14,7 @@ import { useAuthStore } from '../../stores';
  */
 export const useSmartRecommendations = (
   limit = 10,
-  algorithm: 'hybrid' | 'collaborative' | 'content' | 'popularity' = 'hybrid'
+  algorithm: 'hybrid' | 'collaborative' | 'content' | 'popularity' | 'seller' = 'hybrid'
 ) => {
   const { user } = useAuthStore();
   
@@ -149,4 +149,22 @@ export const useTrackContact = () => {
     },
     isLoading: trackBehavior.isPending,
   };
+};
+
+/**
+ * Seller-focused recommendations hook
+ * Kullanıcının envanterine göre öneriler
+ */
+export const useSellerRecommendations = (limit = 8) => {
+  const { user } = useAuthStore();
+  
+  return useQuery({
+    queryKey: ['seller-recommendations', user?.id, limit],
+    queryFn: () => getSmartRecommendations(user?.id || '', limit, 'seller'),
+    enabled: !!user?.id,
+    staleTime: 10 * 60 * 1000, // 10 dakika
+    gcTime: 20 * 60 * 1000, // 20 dakika
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
 }; 

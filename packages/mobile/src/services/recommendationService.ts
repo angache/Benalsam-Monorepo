@@ -31,7 +31,7 @@ export interface RecommendationScore {
   listingId: string;
   score: number;
   reason: string;
-  algorithm: 'collaborative' | 'content' | 'popularity' | 'recent';
+  algorithm: 'collaborative' | 'content' | 'popularity' | 'recent' | 'seller';
 }
 
 export interface RecommendationResult {
@@ -337,14 +337,14 @@ const analyzeListingFeatures = async (listingId: string): Promise<ListingFeature
 export const getSmartRecommendations = async (
   userId: string,
   limit = 10,
-  algorithm: 'hybrid' | 'collaborative' | 'content' | 'popularity' = 'hybrid'
+  algorithm: 'hybrid' | 'collaborative' | 'content' | 'popularity' | 'seller' = 'hybrid'
 ): Promise<ApiResponse<RecommendationResult>> => {
   try {
     if (!userId) {
       throw new ValidationError('User ID is required');
     }
 
-    console.log('🧠 Getting smart recommendations for user:', userId);
+    console.log('🧠 Getting smart recommendations for user:', userId, 'with algorithm:', algorithm);
 
     // Kullanıcı tercihlerini analiz et
     const { data: preferences } = await analyzeUserPreferences(userId);
@@ -373,6 +373,13 @@ export const getSmartRecommendations = async (
       const contentRecs = await getContentBasedRecommendations(preferences, userId);
       console.log('🧠 Content-based recommendations:', contentRecs.length);
       recommendations.push(...contentRecs);
+    }
+
+    // Seller-focused filtering (kullanıcının envanterine göre)
+    if (algorithm === 'seller' || (algorithm === 'hybrid' && recommendations.length < limit)) {
+      const sellerRecs = await getSellerFocusedRecommendations(userId);
+      console.log('🧠 Seller-focused recommendations:', sellerRecs.length);
+      recommendations.push(...sellerRecs);
     }
 
     // Popularity-based filtering (fallback)
@@ -546,6 +553,157 @@ const getContentBasedRecommendations = async (
     return recommendations;
   } catch (error) {
     console.error('Error in getContentBasedRecommendations:', error);
+    return [];
+  }
+};
+
+/**
+ * Seller-focused filtering önerileri
+ * Kullanıcının envanterindeki ürünlerin kategorilerine göre öneriler
+ */
+const getSellerFocusedRecommendations = async (
+  userId: string
+): Promise<RecommendationScore[]> => {
+  try {
+    const recommendations: RecommendationScore[] = [];
+    
+    console.log('🧠 Seller-focused: Analyzing user inventory for:', userId);
+
+    // 1. Kullanıcının envanterini çek
+    const { data: userInventory, error: inventoryError } = await supabase
+      .from('listings')
+      .select('id, category, budget')
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    if (inventoryError) {
+      console.log('🧠 Seller-focused: Inventory error:', inventoryError);
+      return [];
+    }
+
+    if (!userInventory || userInventory.length === 0) {
+      console.log('🧠 Seller-focused: No inventory found');
+      return [];
+    }
+
+    console.log('🧠 Seller-focused: User inventory items:', userInventory.length);
+
+    // 2. Envanter kategorilerini analiz et
+    const categoryCounts = userInventory.reduce((acc, item) => {
+      if (item.category) {
+        acc[item.category] = (acc[item.category] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const sellerCategories = Object.keys(categoryCounts);
+    console.log('🧠 Seller-focused: Seller categories:', sellerCategories);
+
+    // 3. Bu kategorilerde alış yapan kullanıcıları bul
+    const { data: buyerBehaviors, error: buyerError } = await supabase
+      .from('user_behaviors')
+      .select('user_id, listing_id, action, category, created_at')
+      .in('category', sellerCategories)
+      .in('action', ['view', 'favorite', 'offer', 'contact'])
+      .neq('user_id', userId) // Kendisi hariç
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Son 30 gün
+
+    if (buyerError) {
+      console.log('🧠 Seller-focused: Buyer behaviors error:', buyerError);
+      return [];
+    }
+
+    if (!buyerBehaviors || buyerBehaviors.length === 0) {
+      console.log('🧠 Seller-focused: No buyer behaviors found, using fallback strategy');
+      
+      // Fallback: Envanter kategorilerindeki popüler ilanları öner
+      const { data: fallbackListings, error: fallbackError } = await supabase
+        .from('listings')
+        .select('id, category, budget, views_count, favorites_count')
+        .eq('status', 'active')
+        .in('category', sellerCategories)
+        .order('views_count', { ascending: false })
+        .order('favorites_count', { ascending: false })
+        .limit(10);
+
+      if (fallbackError) {
+        console.log('🧠 Seller-focused: Fallback error:', fallbackError);
+        return [];
+      }
+
+      if (fallbackListings && fallbackListings.length > 0) {
+        console.log('🧠 Seller-focused: Fallback listings found:', fallbackListings.length);
+        fallbackListings.forEach((listing, index) => {
+          const score = 0.8 - (index * 0.05); // Yüksek skor, sırayla azalır
+          recommendations.push({
+            listingId: listing.id,
+            score: Math.max(score, 0.4),
+            reason: 'Envanterinizle ilgili kategorilerde popüler',
+            algorithm: 'seller',
+          });
+        });
+        return recommendations;
+      }
+      
+      return [];
+    }
+
+    console.log('🧠 Seller-focused: Buyer behaviors found:', buyerBehaviors.length);
+
+    // 4. Aktif alıcıları tespit et
+    const buyerActivity = buyerBehaviors.reduce((acc, behavior) => {
+      if (!acc[behavior.user_id]) {
+        acc[behavior.user_id] = {
+          actions: 0,
+          categories: new Set(),
+          lastAction: behavior.created_at,
+        };
+      }
+      acc[behavior.user_id].actions++;
+      acc[behavior.user_id].categories.add(behavior.category);
+      return acc;
+    }, {} as Record<string, { actions: number; categories: Set<string>; lastAction: string }>);
+
+    // 5. En aktif alıcıları seç
+    const activeBuyers = Object.entries(buyerActivity)
+      .filter(([, activity]) => activity.actions >= 2) // En az 2 aksiyon
+      .sort(([, a], [, b]) => b.actions - a.actions)
+      .slice(0, 10) // En aktif 10 alıcı
+      .map(([buyerId]) => buyerId);
+
+    console.log('🧠 Seller-focused: Active buyers found:', activeBuyers.length);
+
+    // 6. Bu alıcıların son davranışlarından ilanları öner
+    const { data: recommendedListings, error: listingsError } = await supabase
+      .from('listings')
+      .select('id, category, budget, views_count, favorites_count')
+      .eq('status', 'active')
+      .in('category', sellerCategories)
+      .order('views_count', { ascending: false })
+      .order('favorites_count', { ascending: false })
+      .limit(15);
+
+    if (listingsError) {
+      console.log('🧠 Seller-focused: Listings error:', listingsError);
+      return [];
+    }
+
+    if (recommendedListings) {
+      recommendedListings.forEach((listing, index) => {
+        const score = 0.9 - (index * 0.05); // Yüksek skor, sırayla azalır
+        recommendations.push({
+          listingId: listing.id,
+          score: Math.max(score, 0.3),
+          reason: 'Envanterinizle ilgili kategorilerde popüler',
+          algorithm: 'seller',
+        });
+      });
+    }
+
+    console.log('🧠 Seller-focused: Generated recommendations:', recommendations.length);
+    return recommendations;
+  } catch (error) {
+    console.error('Error in getSellerFocusedRecommendations:', error);
     return [];
   }
 };

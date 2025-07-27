@@ -37,7 +37,7 @@ import {
 } from '../hooks/queries/useListings';
 import { useFollowedCategoryListings } from '../hooks/queries/useCategories';
 import { useToggleFavorite } from '../hooks/queries/useFavorites';
-import { useSmartRecommendations, useTrackView } from '../hooks/queries/useRecommendations';
+import { useSmartRecommendations, useTrackView, useSellerRecommendations } from '../hooks/queries/useRecommendations';
 import { ListingWithUser } from '../services/listingService/core';
 import { CategoryWithListings } from '../services/categoryFollowService';
 import { ListingWithFavorite } from '../types';
@@ -557,6 +557,9 @@ const HomeScreen = () => {
   // Smart Recommendations
   const { data: smartRecommendations, isLoading: recommendationsLoading, error: recommendationsError, refetch: refetchRecommendations } = useSmartRecommendations(8, 'hybrid');
   const { trackView } = useTrackView();
+  
+  // Seller-Focused Recommendations
+  const { data: sellerRecommendations, isLoading: sellerRecommendationsLoading, error: sellerRecommendationsError, refetch: refetchSellerRecommendations } = useSellerRecommendations(6);
 
   const { data: followedCategories = [], isLoading: followedLoading, error: followedError, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
@@ -598,7 +601,8 @@ const HomeScreen = () => {
         refetchDeals(),
         refetchMostOffered(),
         refetchFollowed(),
-        refetchRecommendations()
+        refetchRecommendations(),
+        refetchSellerRecommendations()
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -607,7 +611,7 @@ const HomeScreen = () => {
     }
   }, [refetchListings, refetchPopular, refetchDeals, refetchMostOffered, refetchFollowed, refetchRecommendations]);
 
-  const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading || recommendationsLoading;
+  const isLoading = listingsLoading || popularLoading || dealsLoading || mostOfferedLoading || followedLoading || recommendationsLoading || sellerRecommendationsLoading;
 
   // Individual section loading states
   const isCategoriesLoading = false; // Categories are static for now
@@ -625,6 +629,8 @@ const HomeScreen = () => {
   const isNewListingsError = !!listingsError;
   const isFollowedError = !!followedError;
   const isRecommendationsError = !!recommendationsError;
+  const isSellerRecommendationsLoading = sellerRecommendationsLoading;
+  const isSellerRecommendationsError = !!sellerRecommendationsError;
 
   // Progressive Disclosure - Limited data for better UX
   const limitedMostOffered = mostOffered.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.MOST_OFFERED);
@@ -633,6 +639,7 @@ const HomeScreen = () => {
   const limitedNewListings = listings.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.NEW_LISTINGS);
   const limitedFollowedCategories = followedCategories.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.FOLLOWED_CATEGORIES);
   const limitedRecommendations = smartRecommendations?.data?.listings || [];
+  const limitedSellerRecommendations = sellerRecommendations?.data?.listings || [];
   
   // Debug: Smart recommendations durumunu kontrol et
   if (__DEV__) {
@@ -642,6 +649,14 @@ const HomeScreen = () => {
       limitedCount: limitedRecommendations.length,
       isLoading: recommendationsLoading,
       hasError: !!recommendationsError,
+    });
+    
+    console.log('🏪 Seller Recommendations Debug:', {
+      hasData: !!sellerRecommendations?.data,
+      listingsCount: sellerRecommendations?.data?.listings?.length || 0,
+      limitedCount: limitedSellerRecommendations.length,
+      isLoading: sellerRecommendationsLoading,
+      hasError: !!sellerRecommendationsError,
     });
   }
 
@@ -1244,6 +1259,43 @@ const HomeScreen = () => {
                   />
                 </>
               ) : null}
+            </View>
+          )}
+
+          {/* Seller-Focused Recommendations Section - Envanter Bazlı */}
+          {user && limitedSellerRecommendations.length > 0 && (
+            <View style={styles.section}>
+              {isSellerRecommendationsLoading ? (
+                <>
+                  {renderSkeletonSectionHeader()}
+                  {renderSkeletonHorizontalList()}
+                </>
+              ) : isSellerRecommendationsError ? (
+                <SectionErrorFallback 
+                  title="Envanter Önerileri"
+                  onRetry={() => refetchSellerRecommendations()}
+                />
+              ) : (
+                <>
+                  <SectionHeader 
+                    title="Envanter Önerileri"
+                    count={limitedSellerRecommendations.length}
+                    showCount={true}
+                    showAction={true}
+                    actionText="Daha Fazla"
+                    onActionPress={() => navigateToScreen('Search', { query: '', filter: 'seller-recommendations' })}
+                  />
+                  <FlashList
+                    data={limitedSellerRecommendations}
+                    renderItem={renderHorizontalListing}
+                    keyExtractor={keyExtractor}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalListContainer}
+                    estimatedItemSize={200}
+                  />
+                </>
+              )}
             </View>
           )}
 

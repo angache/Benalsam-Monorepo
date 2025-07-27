@@ -7,6 +7,8 @@ import {
   getInventoryItemById,
   fetchUserInventory
 } from '../../services/inventoryService';
+import { supabase } from '../../services/supabaseClient';
+import { ListingWithUser } from '../../services/listingService/core';
 import { useAuthStore } from '../../stores';
 
 // ===========================
@@ -45,24 +47,67 @@ export const useMyInventoryItems = () => {
 };
 
 /**
- * Kullanıcının envanterini getirir (alias)
+ * Kullanıcının envanterini (satış ilanlarını) çeker
  */
-export const useUserInventory = (userId?: string) => {
+export const useUserInventory = () => {
+  const { user } = useAuthStore();
+  
   return useQuery({
-    queryKey: inventoryKeys.userInventory(userId),
-    queryFn: () => fetchUserInventory(userId!),
-    enabled: !!userId,
-    staleTime: 2 * 60 * 1000, // 2 dakika
-    gcTime: 5 * 60 * 1000, // 5 dakika
+    queryKey: ['user-inventory', user?.id],
+    queryFn: async (): Promise<ListingWithUser[]> => {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles:profiles!listings_user_id_fkey(
+            id, name, avatar_url, rating, trust_score
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch user inventory: ${error.message}`);
+      }
+
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5 dakika
+    gcTime: 10 * 60 * 1000, // 10 dakika
   });
 };
 
 /**
- * Mevcut kullanıcının envanterini getirir (alias)
+ * Kullanıcının envanter kategorilerini analiz eder
  */
-export const useMyInventory = () => {
-  const { user } = useAuthStore();
-  return useUserInventory(user?.id);
+export const useInventoryCategories = () => {
+  const { data: inventory = [] } = useUserInventory();
+  
+  // Kategorileri analiz et
+  const categoryAnalysis = inventory.reduce((acc, listing) => {
+    if (listing.category) {
+      acc[listing.category] = (acc[listing.category] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Kategorileri sayıya göre sırala
+  const sortedCategories = Object.entries(categoryAnalysis)
+    .sort(([, a], [, b]) => b - a)
+    .map(([category]) => category);
+
+  return {
+    categories: sortedCategories,
+    categoryCounts: categoryAnalysis,
+    totalItems: inventory.length,
+    hasInventory: inventory.length > 0,
+  };
 };
 
 /**

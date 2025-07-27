@@ -10,4 +10,5 @@ export { default as VirtualizedResults } from './VirtualizedResults';
 export { default as SectionHeader } from './SectionHeader';
 export { ErrorBoundary } from './ErrorBoundary';
 export { default as Modal } from './Modal';
-export { Button } from './Button'; 
+export { Button } from './Button';
+export { Card } from './Card'; 
