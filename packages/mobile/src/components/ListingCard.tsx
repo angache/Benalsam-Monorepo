@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -80,6 +80,48 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
+  // Card animations
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const pressAnim = useRef(new Animated.Value(1)).current;
+  
+  // Mount animation - staggered based on index
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 300,
+          delay: index * 50,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          delay: index * 50,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [index]);
+  
+  // Press animation
+  const handlePressIn = useCallback(() => {
+    Animated.spring(pressAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  
+  const handlePressOut = useCallback(() => {
+    Animated.spring(pressAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   // Memoized data processing
   const cardData = useMemo(() => {
     const isUrgent = listing.urgency === 'high' || listing.urgency === 'Acil';
@@ -106,7 +148,6 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   }, [listing]);
 
   // Animations
-  const scaleAnim = useMemo(() => new Animated.Value(1), []);
   const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
   // Long press actions
@@ -151,27 +192,6 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
     hapticFeedback: true,
     hapticType: 'medium',
   });
-
-
-
-  // Animation handlers
-  const handlePressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.96,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 10,
-    }).start();
-  }, [scaleAnim]);
-
-  const handlePressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 10,
-    }).start();
-  }, [scaleAnim]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoaded(true);
@@ -322,14 +342,22 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   }, [colors, style, isGrid, numColumns]);
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
-        dynamicStyles.container, 
-        { transform: [{ scale: scaleAnim }] }
+        dynamicStyles.container,
+        style,
+        {
+          transform: [
+            { scale: Animated.multiply(scaleAnim, pressAnim) }
+          ],
+          opacity: opacityAnim,
+        }
       ]}
     >
       <Pressable
         {...longPressHandlers}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         style={[
           dynamicStyles.card,
           isFavoriteLoading && { opacity: 0.7 }

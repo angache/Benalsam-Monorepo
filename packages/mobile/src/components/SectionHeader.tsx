@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  Animated,
 } from 'react-native';
 import { ChevronRight, ArrowRight } from 'lucide-react-native';
 import { useThemeColors } from '../stores';
@@ -42,8 +43,23 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   testID,
 }) => {
   const colors = useThemeColors();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handleActionPress = () => {
+    // Press animation
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
     if (onActionPress) {
       onActionPress();
     }
@@ -65,25 +81,27 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       </View>
       
       {(showAction || showChevron) && (
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={handleActionPress}
-          activeOpacity={0.7}
-          disabled={!onActionPress}
-        >
-          {showAction && (
-            <Text style={[styles.actionText, { color: colors.primary }, actionStyle]}>
-              {actionText}
-            </Text>
-          )}
-          {showChevron && (
-            <ChevronRight 
-              size={16} 
-              color={colors.primary} 
-              style={styles.chevron}
-            />
-          )}
-        </TouchableOpacity>
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleActionPress}
+            activeOpacity={0.7}
+            disabled={!onActionPress}
+          >
+            {showAction && (
+              <Text style={[styles.actionText, { color: colors.primary }, actionStyle]}>
+                {actionText}
+              </Text>
+            )}
+            {showChevron && (
+              <ChevronRight 
+                size={16} 
+                color={colors.primary} 
+                style={styles.chevron}
+              />
+            )}
+          </TouchableOpacity>
+        </Animated.View>
       )}
     </View>
   );
