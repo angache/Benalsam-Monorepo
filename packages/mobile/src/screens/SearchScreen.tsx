@@ -34,8 +34,12 @@ import {
   SortOptions,
   ListingListItem,
   PopularSearches,
+  VirtualizedResults,
 } from "../components";
 import { supabase } from "../services/supabaseClient";
+import { useDebouncedSearch } from "../hooks/useDebouncedSearch";
+// import SearchAnalytics from "../services/SearchAnalytics";
+import SearchCache from "../services/SearchCache";
 
 
 
@@ -64,12 +68,49 @@ const SearchScreen = ({ navigation, route }: any) => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedSort, setSelectedSort] = useState('created_at-desc');
 
-  // Manuel arama fonksiyonu
+  // Debounced search hook - Loop sorunu nedeniyle devre dışı
+  // const {
+  //   results: debouncedResults,
+  //   isLoading: debouncedLoading,
+  //   error: debouncedError,
+  //   searchQuery: debouncedQuery,
+  //   setSearchQuery: setDebouncedQuery,
+  //   totalCount: debouncedTotalCount,
+  //   searchDuration,
+  //   clearResults: clearDebouncedResults,
+  //   refreshSearch: refreshDebouncedSearch,
+  // } = useDebouncedSearch({
+  //   debounceMs: 800,
+  //   minQueryLength: 3,
+  //   maxResults: 50,
+  //   enablePerformanceMonitoring: false,
+  //   onSearchStart: () => {
+  //     if (__DEV__) {
+  //       console.log('🔍 Debounced search started');
+  //     }
+  //   },
+  //   onSearchComplete: (results, duration) => {
+  //     if (__DEV__) {
+  //       console.log(`🔍 Debounced search completed: ${results.length} results in ${duration}ms`);
+  //     }
+  //     if (results.length > 0) {
+  //       setResults(results);
+  //       setTotalCount(results.length);
+  //     }
+  //   },
+  //   onSearchError: (error) => {
+  //     if (__DEV__) {
+  //       console.error('🔍 Debounced search error:', error);
+  //     }
+  //   },
+  // });
+
+  // Manuel arama fonksiyonu (eski sistem)
   const performSearch = useCallback(async (query?: string, categories?: string[]) => {
     const searchText = query || searchQuery;
     const searchCategories = categories || selectedCategories;
     
-    console.log('🔍 performSearch called with:', { query: searchText, categories: searchCategories });
+    // console.log('🔍 performSearch called with:', { query: searchText, categories: searchCategories });
     
     if (!searchText.trim() && searchCategories.length === 0) {
       console.log('🔍 No search text and no categories, clearing results');
@@ -80,8 +121,21 @@ const SearchScreen = ({ navigation, route }: any) => {
     }
     
     setIsLoading(true);
+    const searchStartTime = Date.now();
     
     try {
+      // Check cache first
+      const cachedResults = await SearchCache.getInstance().getCachedSearchResults(searchText);
+      if (cachedResults && cachedResults.length > 0) {
+        if (__DEV__) {
+          console.log('💾 Using cached results');
+        }
+        setResults(cachedResults);
+        setTotalCount(cachedResults.length);
+        setIsLoading(false);
+        return;
+      }
+
       let query = supabase.from('listings').select('*');
       
       if (searchText.trim()) {
@@ -91,7 +145,7 @@ const SearchScreen = ({ navigation, route }: any) => {
       if (searchCategories.length > 0) {
         // Çoklu kategori filtresi
         const categoryValues = searchCategories.map(cat => findCategoryValue(cat));
-        console.log('🔍 Category filter values:', categoryValues);
+        // console.log('🔍 Category filter values:', categoryValues);
         query = query.in('category', categoryValues);
       }
       
@@ -108,12 +162,51 @@ const SearchScreen = ({ navigation, route }: any) => {
         console.error('🔍 Search error:', error);
         setResults([]);
         setTotalCount(0);
+        
+        // Track error - Şimdilik devre dışı
+        // await SearchAnalytics.getInstance().trackError(searchText, error.message, user?.id);
       } else {
-        setResults(data || []);
-        setTotalCount(data?.length || 0);
+                const searchResults = data || [];
+        const searchDuration = Date.now() - searchStartTime;
+        
+        setResults(searchResults);
+        setTotalCount(searchResults.length);
+
+        // Cache results
+        await SearchCache.getInstance().cacheSearchResults(searchText, searchResults);
+        
+        // Basit performance monitoring
+        if (__DEV__) {
+          if (searchDuration > 1000) {
+            console.warn(`⚠️ Slow search: ${searchDuration}ms for "${searchText}"`);
+          } else if (searchDuration < 200) {
+            console.log(`⚡ Fast search: ${searchDuration}ms for "${searchText}"`);
+          } else {
+            console.log(`🔍 Search: ${searchResults.length} results in ${searchDuration}ms`);
+          }
+        }
+        
+        // Track analytics - Şimdilik devre dışı
+        // await SearchAnalytics.getInstance().trackSearch(
+        //   searchText,
+        //   searchResults.length,
+        //   searchDuration,
+        //   searchCategories.length > 0 ? searchCategories[0] : undefined,
+        //   { categories: searchCategories },
+        //   user?.id
+        // );
+
+        // console.log(`📊 Search Analytics: ${searchResults.length} results in ${searchDuration}ms`);
+        
+        // Performance monitoring - Şimdilik devre dışı
+        // if (searchDuration > 1000) {
+        //   console.warn(`⚠️ Slow search detected: ${searchDuration}ms for "${searchText}"`);
+        // } else if (searchDuration < 200) {
+        //   console.log(`⚡ Fast search: ${searchDuration}ms for "${searchText}"`);
+        // }
         
         // Arama sonuçları geldiğinde klavyeyi kapat
-        if (data && data.length > 0) {
+        if (searchResults.length > 0) {
           Keyboard.dismiss();
         }
       }
@@ -129,11 +222,25 @@ const SearchScreen = ({ navigation, route }: any) => {
   // Sayfa açıldığında veya route params değiştiğinde otomatik arama yap
   useEffect(() => {
     if (initialQuery.trim()) {
-      console.log('🔍 Initial query detected:', initialQuery);
+      if (__DEV__) {
+        console.log('🔍 Initial query detected:', initialQuery);
+      }
       setSearchQuery(initialQuery);
       performSearch(initialQuery);
     }
   }, [initialQuery]);
+
+  // Memory management - component unmount'ta temizlik
+  useEffect(() => {
+    return () => {
+      if (__DEV__) {
+        console.log('🧹 SearchScreen cleanup');
+      }
+      setResults([]);
+      setTotalCount(0);
+      setIsLoading(false);
+    };
+  }, []);
 
   // Kategori değerini veritabanı değerine çevir
   const findCategoryValue = (mainCategory: string): string => {
@@ -156,7 +263,7 @@ const SearchScreen = ({ navigation, route }: any) => {
     };
 
     const result = categoryMap[mainCategory] || mainCategory.toLowerCase();
-    console.log('🔍 findCategoryValue:', mainCategory, '->', result);
+            // console.log('🔍 findCategoryValue:', mainCategory, '->', result);
     return result;
   };
 
@@ -257,11 +364,14 @@ const SearchScreen = ({ navigation, route }: any) => {
       <SearchBar
         value={searchQuery}
         onChangeText={(text) => {
-          console.log("🔍 SearchScreen onChangeText - Text:", text);
+          // console.log("🔍 SearchScreen onChangeText - Text:", text);
           setSearchQuery(text);
+          // setDebouncedQuery(text); // Debounced search'i tetikle
         }}
         onSearch={() => {
-          console.log("🔍 SearchScreen onSearch - Called");
+          if (__DEV__) {
+            console.log("🔍 SearchScreen onSearch - Enter pressed");
+          }
           if (searchQuery.trim()) {
             performSearch(searchQuery);
           }
@@ -273,7 +383,7 @@ const SearchScreen = ({ navigation, route }: any) => {
           // Suggestion seçildiğinde klavyeyi kapat
           Keyboard.dismiss();
         }}
-        placeholder="Ne arıyorsunuz?"
+        placeholder="Ne arıyorsunuz? (Enter'a basın)"
         showSuggestions={true}
         autoFocus={false}
       />
@@ -282,14 +392,18 @@ const SearchScreen = ({ navigation, route }: any) => {
 
 
 
-  // Enhanced List Item Renderer
+  // Enhanced List Item Renderer - Optimized
   const renderListItem = useCallback(({ item }: { item: any }) => {
+    const handlePress = () => {
+      navigation.navigate('ListingDetail', { listingId: item.id });
+    };
+
     if (viewMode === 'grid') {
       return (
         <View style={[styles.listItem, styles.gridItem]}>
           <ListingCard
             listing={item}
-            onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+            onPress={handlePress}
           />
         </View>
       );
@@ -298,7 +412,7 @@ const SearchScreen = ({ navigation, route }: any) => {
         <View style={[styles.listItem, styles.listItemFull]}>
           <ListingListItem
             listing={item}
-            onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+            onPress={handlePress}
           />
         </View>
       );
@@ -350,7 +464,10 @@ const SearchScreen = ({ navigation, route }: any) => {
     </View>
   );
 
-  console.log("isLoading:", isLoading, "totalCount:", totalCount);
+  // Render loop kontrolü - sadece geliştirme sırasında aktif
+  if (__DEV__) {
+    console.log("🔄 SearchScreen render - isLoading:", isLoading, "totalCount:", totalCount);
+  }
 
   return (
     <SafeAreaView
@@ -374,7 +491,7 @@ const SearchScreen = ({ navigation, route }: any) => {
       <FlatList
         data={results}
         renderItem={renderListItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={useCallback((item: any) => item.id, [])}
         numColumns={viewMode === 'grid' ? 2 : 1}
         columnWrapperStyle={viewMode === 'grid' ? styles.row : undefined}
         ListEmptyComponent={renderEmptyState}
@@ -387,6 +504,13 @@ const SearchScreen = ({ navigation, route }: any) => {
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         windowSize={10}
+        initialNumToRender={10}
+        updateCellsBatchingPeriod={50}
+        getItemLayout={viewMode === 'list' ? (data, index) => ({
+          length: 120, // ListingListItem yüksekliği
+          offset: 120 * index,
+          index,
+        }) : undefined}
         key={viewMode} // Force re-render when view mode changes
       />
 

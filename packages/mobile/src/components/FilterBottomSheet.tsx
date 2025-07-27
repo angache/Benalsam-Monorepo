@@ -61,12 +61,15 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   const [expandedSections, setExpandedSections] = useState<string[]>(['category']);
   const [selectedFilters, setSelectedFilters] = useState<any>({});
   
-  // currentFilters değiştiğinde selectedFilters'ı güncelle
+  // currentFilters değiştiğinde selectedFilters'ı güncelle - Sadece ilk yüklemede
   useEffect(() => {
-    if (currentFilters) {
+    if (currentFilters && Object.keys(currentFilters).length > 0 && Object.keys(selectedFilters).length === 0) {
+      if (__DEV__) {
+        console.log('🔍 FilterBottomSheet: Initializing filters from currentFilters');
+      }
       setSelectedFilters(currentFilters);
     }
-  }, [currentFilters]);
+  }, [currentFilters]); // selectedFilters dependency'sini kaldırdık
   
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -271,10 +274,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   const dynamicCategoryCounts = getDynamicCategoryCounts();
   
   // Debug: Kategori sayılarını logla
-  console.log('🔍 FilterBottomSheet - Search Results:', searchResults.length);
-  console.log('🔍 FilterBottomSheet - Raw Categories:', searchResults.map(item => item.category));
-  console.log('🔍 FilterBottomSheet - Category Counts:', dynamicCategoryCounts);
-  console.log('🔍 FilterBottomSheet - Dynamic Categories:', getDynamicCategories());
+      // Debug logları kaldırıldı - performans için
 
   // Filter sections data
   const filterSections: FilterSection[] = [
@@ -283,7 +283,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
       title: 'Kategoriler',
       icon: <Tag size={20} color={colors.text} />,
       options: getDynamicCategories().map(category => {
-        console.log('🔍 Creating option for category:', category, typeof category);
+        // Debug log kaldırıldı
         return {
           id: category.toLowerCase().replace(/[^a-z0-9]/g, '-'),
           label: String(category || ''),
