@@ -41,6 +41,7 @@ import { ListingWithUser } from '../services/listingService/core';
 import { CategoryWithListings } from '../services/categoryFollowService';
 import { UseQueryResult } from '@tanstack/react-query';
 import { useScrollHeader } from '../hooks/useScrollHeader';
+import { useUserPreferences } from '../hooks/useUserPreferences';
 
 // Legacy imports - aşamalı olarak kaldırılacak
 import { categoriesConfig } from '../config/categories-with-attributes';
@@ -85,7 +86,17 @@ const STATS = [
 const { width: screenWidth, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SIDE_PADDING = spacing.md; // 16px - Sol ve sağ kenar mesafesi
 const CARD_GAP = spacing.md; // 16px - Kartlar arası mesafe (8px'den 16px'e çıkarıldı)
-const NUM_COLUMNS = 2;
+const getNumColumns = (contentTypePreference: string) => {
+  switch (contentTypePreference) {
+    case 'compact':
+      return 3;
+    case 'list':
+      return 1;
+    case 'grid':
+    default:
+      return 2;
+  }
+};
 
 // Progressive Disclosure - Her section'da gösterilecek maksimum item sayısı
 const PROGRESSIVE_DISCLOSURE_LIMITS = {
@@ -144,6 +155,16 @@ const styles = StyleSheet.create({
   },
   welcomeSubtext: {
     ...typography.body2, // fontSize: 14, fontWeight: 'normal', lineHeight: 20
+  },
+  welcomeCloseButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 4,
+  },
+  welcomeCloseText: {
+    ...typography.caption1, // fontSize: 12, fontWeight: 'normal', lineHeight: 16
+    textDecorationLine: 'underline',
   },
   searchSection: {
     ...margins.h.md, // marginHorizontal: 16
@@ -526,6 +547,48 @@ const HomeScreen = () => {
 
   const { data: followedCategories = [], isLoading: followedLoading, error: followedError, refetch: refetchFollowed } = useFollowedCategoryListings() as UseQueryResult<CategoryWithListings[], Error>;
   const { toggleFavorite } = useToggleFavorite();
+  const { 
+    preferences, 
+    addFavoriteCategory, 
+    removeFavoriteCategory,
+    hideCategory,
+    showCategory,
+    updateContentTypePreference,
+    toggleCategoryBadges,
+    toggleUrgencyBadges,
+    toggleUserRatings,
+    toggleDistance,
+    addRecentSearch,
+    addSearchHistory,
+    hideWelcomeMessage
+  } = useUserPreferences();
+
+  // 🧪 TEST: User preferences'ı değiştir (sonra kaldırılacak)
+  useEffect(() => {
+    // Test için preferences'ı değiştir
+    const testPreferences = async () => {
+      // Kategori rozetlerini gizle
+      if (preferences.showCategoryBadges) {
+        await toggleCategoryBadges();
+      }
+      // Acil rozetlerini gizle
+      if (preferences.showUrgencyBadges) {
+        await toggleUrgencyBadges();
+      }
+      // Hoşgeldin mesajını gizle
+      if (preferences.showWelcomeMessage) {
+        await hideWelcomeMessage();
+      }
+      // Compact layout'a geç
+      if (preferences.contentTypePreference !== 'compact') {
+        await updateContentTypePreference('compact');
+      }
+    };
+    
+    // 3 saniye sonra test et
+    const timer = setTimeout(testPreferences, 3000);
+    return () => clearTimeout(timer);
+  }, [preferences, toggleCategoryBadges, toggleUrgencyBadges, hideWelcomeMessage, updateContentTypePreference]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -569,13 +632,16 @@ const HomeScreen = () => {
   const limitedFollowedCategories = followedCategories.slice(0, PROGRESSIVE_DISCLOSURE_LIMITS.FOLLOWED_CATEGORIES);
 
   const getCurrentCategories = () => {
-    if (categoryPath.length === 0) return categoriesConfig;
+    if (categoryPath.length === 0) {
+      // Filter out hidden categories
+      return categoriesConfig.filter(cat => !preferences.hiddenCategories.includes(cat.name));
+    }
     let current: any = categoriesConfig.find(cat => cat.name === categoryPath[0]);
     for (let i = 1; i < categoryPath.length; i++) {
       if (!current || !current.subcategories) return [];
       current = current.subcategories.find((cat: any) => cat.name === categoryPath[i]);
     }
-    return current?.subcategories || [];
+    return (current?.subcategories || []).filter((cat: any) => !preferences.hiddenCategories.includes(cat.name));
   };
 
 
@@ -629,8 +695,10 @@ const HomeScreen = () => {
       onToggleFavorite={() => handleToggleFavorite(item.id, !!item.is_favorited)}
       isFavoriteLoading={selectedListingId === item.id}
       isGrid={true} // Grid layout için marginRight devre dışı
+      showCategoryBadges={preferences.showCategoryBadges}
+      showUrgencyBadges={preferences.showUrgencyBadges}
     />
-  ), [navigation, handleToggleFavorite, selectedListingId]);
+  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges]);
 
   const renderHorizontalListing = useCallback(({ item, index }: { item: ListingWithUser; index: number }) => (
     <ListingCard
@@ -641,8 +709,10 @@ const HomeScreen = () => {
       isFavoriteLoading={selectedListingId === item.id}
       isGrid={false} // Horizontal layout için marginRight aktif
       style={{ width: 200, marginRight: 12 }}
+      showCategoryBadges={preferences.showCategoryBadges}
+      showUrgencyBadges={preferences.showUrgencyBadges}
     />
-  ), [navigation, handleToggleFavorite, selectedListingId]);
+  ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges]);
 
   const renderSkeletonGrid = useCallback(() => (
     <View style={styles.skeletonGrid}>
@@ -668,9 +738,9 @@ const HomeScreen = () => {
 
   const getItemLayout = useCallback((data: any, index: number) => ({
     length: 280, // Approximate card height + margin
-    offset: 280 * Math.floor(index / NUM_COLUMNS),
+    offset: 280 * Math.floor(index / getNumColumns(preferences.contentTypePreference)),
     index,
-  }), []);
+  }), [preferences.contentTypePreference]);
 
   const navigateToScreen = (screen: keyof RootStackParamList, params?: any) => {
     navigation.navigate(screen, params);
@@ -943,7 +1013,7 @@ const HomeScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           {/* Hoşgeldin Mesajı */}
-          {user && (
+          {user && preferences.showWelcomeMessage && (
             <View style={[styles.welcomeSection, { backgroundColor: colors.surface }]}>
               <Text style={[styles.welcomeText, { color: colors.text }]}>
                 Merhaba {user.username || user.email?.split('@')[0]}! 👋
@@ -951,6 +1021,14 @@ const HomeScreen = () => {
               <Text style={[styles.welcomeSubtext, { color: colors.textSecondary }]}>
                 İhtiyacınız olan ürünleri keşfedin ve satın alın!
               </Text>
+              <TouchableOpacity 
+                style={styles.welcomeCloseButton}
+                onPress={hideWelcomeMessage}
+              >
+                <Text style={[styles.welcomeCloseText, { color: colors.textSecondary }]}>
+                  Kapat
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -964,7 +1042,10 @@ const HomeScreen = () => {
               }}
               onSearch={() => {
                 if (selectedCategory.trim()) {
-                  navigation.navigate('Search', { query: selectedCategory.trim() });
+                  const searchTerm = selectedCategory.trim();
+                  addRecentSearch(searchTerm);
+                  addSearchHistory(searchTerm);
+                  navigation.navigate('Search', { query: searchTerm });
                 }
               }}
               placeholder="Ne arıyorsunuz?"
@@ -1238,10 +1319,11 @@ const HomeScreen = () => {
                     data={limitedNewListings}
                     renderItem={renderGridListing}
                     keyExtractor={keyExtractor}
-                    numColumns={NUM_COLUMNS}
+                    numColumns={getNumColumns(preferences.contentTypePreference)}
                     contentContainerStyle={styles.gridListContainer}
                     columnWrapperStyle={styles.gridRow}
                     scrollEnabled={false}
+                    key={`grid-${preferences.contentTypePreference}`} // Force re-render when layout changes
                   />
                 </View>
               </>

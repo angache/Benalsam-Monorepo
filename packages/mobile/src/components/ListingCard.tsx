@@ -28,6 +28,8 @@ interface ListingCardProps {
   index?: number;
   isFavoriteLoading?: boolean;
   isGrid?: boolean; // Grid layout için marginRight kontrolü
+  showCategoryBadges?: boolean;
+  showUrgencyBadges?: boolean;
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -43,6 +45,8 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   index = 0,
   isFavoriteLoading = false,
   isGrid = false,
+  showCategoryBadges = true,
+  showUrgencyBadges = true,
 }) => {
   const colors = useThemeColors();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -285,7 +289,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
           )}
 
           {/* Badges */}
-          {cardData.isUrgent && (
+          {showUrgencyBadges && cardData.isUrgent && (
             <View style={dynamicStyles.urgentBadge}>
               <Zap size={12} color={colors.white} />
               <Text style={dynamicStyles.badgeText}>ACİL</Text>
@@ -309,7 +313,6 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
               strokeWidth={2}
             />
           </TouchableOpacity>
-
 
         </View>
 
