@@ -33,6 +33,7 @@ import {
   SearchResults,
   SortOptions,
   ListingListItem,
+  PopularSearches,
 } from "../components";
 import { supabase } from "../services/supabaseClient";
 
@@ -266,6 +267,7 @@ const SearchScreen = ({ navigation, route }: any) => {
           }
         }}
         onSuggestionSelect={(suggestion) => {
+          console.log('🔍 SearchScreen onSuggestionSelect - Suggestion:', suggestion);
           setSearchQuery(suggestion.text);
           performSearch(suggestion.text);
           // Suggestion seçildiğinde klavyeyi kapat
@@ -306,18 +308,45 @@ const SearchScreen = ({ navigation, route }: any) => {
   // Empty State
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
-        <TrendingUp size={48} color={colors.textSecondary} />
-      </View>
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        {searchQuery ? 'Arama sonucu bulunamadı' : 'Arama yapmaya başlayın'}
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        {searchQuery
-          ? 'Farklı anahtar kelimeler deneyin veya filtreleri değiştirin'
-          : 'İstediğiniz ürünü bulmak için arama yapın'
-        }
-      </Text>
+      {!searchQuery ? (
+        // Arama yapılmamışsa popüler aramaları göster
+        <>
+          <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
+            <TrendingUp size={48} color={colors.textSecondary} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            Arama yapmaya başlayın
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            İstediğiniz ürünü bulmak için arama yapın
+          </Text>
+          
+          {/* Popüler Aramalar */}
+          <View style={styles.popularSearchesContainer}>
+            <PopularSearches
+              onSearchPress={(text) => {
+                console.log('🔍 Popular search selected:', text);
+                setSearchQuery(text);
+                performSearch(text);
+              }}
+              visible={true}
+            />
+          </View>
+        </>
+      ) : (
+        // Arama yapılmış ama sonuç yoksa
+        <>
+          <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
+            <TrendingUp size={48} color={colors.textSecondary} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            Arama sonucu bulunamadı
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            Farklı anahtar kelimeler deneyin veya filtreleri değiştirin
+          </Text>
+        </>
+      )}
     </View>
   );
 
@@ -584,6 +613,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
+  },
+  popularSearchesContainer: {
+    marginTop: 24,
+    width: '100%',
   },
 
   // Loading Overlay

@@ -150,7 +150,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             }
           }}
           onBlur={() => {
-            setIsFocused(false);
+            // Suggestions'a tıklarken hemen kapanmasın
+            setTimeout(() => {
+              setIsFocused(false);
+            }, 100);
           }}
           onSubmitEditing={handleSearchPress}
           returnKeyType="search"
@@ -190,18 +193,26 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Suggestions List */}
       {showSuggestionsList && (
-        <View style={styles.suggestionsWrapper}>
+        <View 
+          style={styles.suggestionsWrapper}
+          onStartShouldSetResponder={() => true}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
           <SimpleSearchSuggestions
             query={value}
             onSuggestionPress={(suggestion) => {
-              console.log('🔍 Suggestion selected:', suggestion);
+              console.log('🔍 SearchBar - Suggestion selected:', suggestion);
               onChangeText(suggestion);
               setShowSuggestionsList(false);
-              onSuggestionSelect?.({
-                id: `selected-${Date.now()}`,
-                text: suggestion,
-                type: 'suggestion',
-              });
+              
+              // Timing sorunu için setTimeout kullan
+              setTimeout(() => {
+                onSuggestionSelect?.({
+                  id: `selected-${Date.now()}`,
+                  text: suggestion,
+                  type: 'suggestion',
+                });
+              }, 0);
             }}
             visible={true}
           />

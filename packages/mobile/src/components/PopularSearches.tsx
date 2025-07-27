@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { TrendingUp, Flame, Star, Search } from 'lucide-react-native';
+import { TrendingUp, Flame, Star, Zap } from 'lucide-react-native';
 import { useThemeColors } from '../stores/themeStore';
 import { supabase } from '../services/supabaseClient';
 
 interface PopularSearchesProps {
-  onPopularSearchPress: (text: string) => void;
+  onSearchPress: (text: string) => void;
   visible: boolean;
+  category?: string;
 }
 
 interface PopularSearch {
   id: string;
   text: string;
   count: number;
-  category?: string;
   trend: 'up' | 'down' | 'stable';
+  category?: string;
 }
 
 const PopularSearches: React.FC<PopularSearchesProps> = ({
-  onPopularSearchPress,
+  onSearchPress,
   visible,
+  category,
 }) => {
   const colors = useThemeColors();
   const [popularSearches, setPopularSearches] = useState<PopularSearch[]>([]);
@@ -30,277 +32,222 @@ const PopularSearches: React.FC<PopularSearchesProps> = ({
     if (visible) {
       loadPopularSearches();
     }
-  }, [visible]);
+  }, [visible, category]);
 
   const loadPopularSearches = async () => {
     setIsLoading(true);
     try {
-      // Gerçek verilerden popüler aramaları çek
-      const { data, error } = await supabase
-        .from('listings')
-        .select('title, category, created_at')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Gerçek uygulamada bu veriler analytics'ten gelecek
+      // Şimdilik statik veri kullanıyoruz
+      const mockPopularSearches: PopularSearch[] = [
+        { id: '1', text: 'iPhone', count: 1250, trend: 'up', category: 'Elektronik' },
+        { id: '2', text: 'araba', count: 980, trend: 'up', category: 'Araç & Vasıta' },
+        { id: '3', text: 'ev', count: 850, trend: 'stable', category: 'Ev Aletleri & Mobilya' },
+        { id: '4', text: 'bilgisayar', count: 720, trend: 'down', category: 'Elektronik' },
+        { id: '5', text: 'mobilya', count: 650, trend: 'up', category: 'Ev Aletleri & Mobilya' },
+        { id: '6', text: 'telefon', count: 580, trend: 'up', category: 'Elektronik' },
+        { id: '7', text: 'buzdolabı', count: 420, trend: 'stable', category: 'Ev Aletleri & Mobilya' },
+        { id: '8', text: 'bisiklet', count: 380, trend: 'up', category: 'Araç & Vasıta' },
+      ];
 
-      if (!error && data) {
-        // Başlıklardan popüler kelimeleri çıkar
-        const wordCounts: { [key: string]: number } = {};
-        const categoryCounts: { [key: string]: number } = {};
+      // Kategori filtresi varsa uygula
+      const filteredSearches = category 
+        ? mockPopularSearches.filter(search => search.category === category)
+        : mockPopularSearches;
 
-        data.forEach((item) => {
-          if (item.title) {
-            // Başlığı kelimelere böl
-            const words = item.title.toLowerCase()
-              .split(/\s+/)
-              .filter((word: string) => word.length > 2); // 2 karakterden uzun kelimeler
+      // En popüler 6 aramayı göster
+      const sortedSearches = filteredSearches
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
 
-            words.forEach((word: string) => {
-              wordCounts[word] = (wordCounts[word] || 0) + 1;
-            });
-
-            // Kategori sayısını da tut
-            if (item.category) {
-              categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
-            }
-          }
-        });
-
-        // En popüler kelimeleri al
-        const sortedWords = Object.entries(wordCounts)
-          .sort(([,a], [,b]) => b - a)
-          .slice(0, 8)
-          .map(([word, count], index) => ({
-            id: `popular-${index}`,
-            text: word,
-            count,
-            trend: getRandomTrend(),
-          }));
-
-        // En popüler kategorileri al
-        const sortedCategories = Object.entries(categoryCounts)
-          .sort(([,a], [,b]) => b - a)
-          .slice(0, 4)
-          .map(([category, count], index) => ({
-            id: `category-${index}`,
-            text: category,
-            count,
-            category: category,
-            trend: getRandomTrend(),
-          }));
-
-        // Birleştir ve sırala
-        const allPopular = [...sortedWords, ...sortedCategories]
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 10);
-
-        setPopularSearches(allPopular);
-      }
+      setPopularSearches(sortedSearches);
     } catch (error) {
       console.error('Popüler aramalar yüklenemedi:', error);
-      // Fallback: statik popüler aramalar
-      setPopularSearches(getStaticPopularSearches());
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getRandomTrend = (): 'up' | 'down' | 'stable' => {
-    const trends: ('up' | 'down' | 'stable')[] = ['up', 'down', 'stable'];
-    return trends[Math.floor(Math.random() * trends.length)];
-  };
-
-  const getStaticPopularSearches = (): PopularSearch[] => {
-    return [
-      { id: '1', text: 'telefon', count: 156, trend: 'up' },
-      { id: '2', text: 'bilgisayar', count: 142, trend: 'up' },
-      { id: '3', text: 'araba', count: 98, trend: 'stable' },
-      { id: '4', text: 'mobilya', count: 87, trend: 'down' },
-      { id: '5', text: 'Elektronik', count: 76, category: 'Elektronik', trend: 'up' },
-      { id: '6', text: 'ayakkabı', count: 65, trend: 'up' },
-      { id: '7', text: 'Moda', count: 54, category: 'Moda', trend: 'stable' },
-      { id: '8', text: 'ev', count: 43, trend: 'down' },
-    ];
-  };
-
-  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+  const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <TrendingUp size={14} color="#22c55e" />;
+        return <TrendingUp size={14} color={colors.success} />;
       case 'down':
-        return <TrendingUp size={14} color="#ef4444" style={{ transform: [{ rotate: '180deg' }] }} />;
-      case 'stable':
-        return <Star size={14} color="#f59e0b" />;
+        return <TrendingUp size={14} color={colors.error} style={{ transform: [{ rotate: '180deg' }] }} />;
+      default:
+        return <Zap size={14} color={colors.warning} />;
     }
   };
 
-  const getTrendText = (trend: 'up' | 'down' | 'stable') => {
+  const getTrendText = (trend: string) => {
     switch (trend) {
       case 'up':
         return 'Yükseliyor';
       case 'down':
         return 'Düşüyor';
-      case 'stable':
+      default:
         return 'Stabil';
     }
-  };
-
-  const formatCount = (count: number) => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}k`;
-    }
-    return count.toString();
   };
 
   if (!visible) return null;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textSecondary }]}>
-          📈 Popüler Aramalar
-        </Text>
-        <View style={styles.trendIndicator}>
-          <Flame size={16} color="#f59e0b" />
+        <View style={styles.titleContainer}>
+          <Flame size={20} color={colors.primary} />
+          <Text style={[styles.title, { color: colors.text }]}>
+            🔥 Popüler Aramalar
+          </Text>
         </View>
+        {category && (
+          <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
+            {category} kategorisinde
+          </Text>
+        )}
       </View>
 
       <ScrollView 
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        nestedScrollEnabled={true}
-        scrollEventThrottle={16}
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
-        {popularSearches.map((item, index) => (
+        {popularSearches.map((search, index) => (
           <TouchableOpacity
-            key={item.id}
+            key={search.id}
             style={[
-              styles.popularItem,
+              styles.searchChip,
               { 
-                borderBottomColor: colors.border,
-                borderBottomWidth: index === popularSearches.length - 1 ? 0 : 1
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
               }
             ]}
-            onPress={() => onPopularSearchPress(item.text)}
+            onPress={() => onSearchPress(search.text)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             activeOpacity={0.7}
           >
-            <View style={styles.rankContainer}>
-              <Text style={[styles.rank, { color: colors.textSecondary }]}>
-                #{index + 1}
-              </Text>
-            </View>
-
-            <View style={styles.contentContainer}>
-              <View style={styles.textContainer}>
-                <Text style={[styles.popularText, { color: colors.text }]}>
-                  {item.text}
+            <View style={styles.chipContent}>
+              <View style={styles.rankContainer}>
+                <Text style={[styles.rank, { color: colors.primary }]}>
+                  #{index + 1}
                 </Text>
-                {item.category && (
-                  <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
-                    {item.category}
-                  </Text>
-                )}
               </View>
-
-              <View style={styles.statsContainer}>
+              
+              <View style={styles.searchInfo}>
+                <Text style={[styles.searchText, { color: colors.text }]}>
+                  {search.text}
+                </Text>
                 <View style={styles.trendContainer}>
-                  {getTrendIcon(item.trend)}
+                  {getTrendIcon(search.trend)}
                   <Text style={[styles.trendText, { color: colors.textSecondary }]}>
-                    {getTrendText(item.trend)}
+                    {getTrendText(search.trend)}
                   </Text>
                 </View>
+              </View>
+
+              <View style={styles.countContainer}>
+                <Star size={12} color={colors.warning} fill={colors.warning} />
                 <Text style={[styles.countText, { color: colors.textSecondary }]}>
-                  {formatCount(item.count)} arama
+                  {search.count.toLocaleString()}
                 </Text>
               </View>
             </View>
-
-            <Search size={16} color={colors.textSecondary} style={styles.searchIcon} />
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {popularSearches.length === 0 && !isLoading && (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            Henüz popüler arama yok
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    maxHeight: 300,
+    marginVertical: 8,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 12,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   title: {
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
   },
-  trendIndicator: {
-    padding: 4,
+  categoryText: {
+    fontSize: 12,
+    marginLeft: 28,
   },
-  scrollView: {
-    maxHeight: 250,
+  scrollContainer: {
+    paddingHorizontal: 4,
   },
-  popularItem: {
+  searchChip: {
+    marginHorizontal: 6,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    minWidth: 140,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  chipContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
   },
   rankContainer: {
-    width: 30,
-    alignItems: 'center',
-    marginRight: 12,
+    marginRight: 8,
   },
   rank: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  contentContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  textContainer: {
+  searchInfo: {
     flex: 1,
   },
-  popularText: {
+  searchText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 2,
-  },
-  categoryText: {
-    fontSize: 11,
-  },
-  statsContainer: {
-    alignItems: 'flex-end',
   },
   trendContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
   },
   trendText: {
     fontSize: 10,
     marginLeft: 4,
   },
+  countContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
   countText: {
     fontSize: 10,
+    marginLeft: 2,
   },
-  searchIcon: {
-    marginLeft: 12,
+  emptyContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+    fontStyle: 'italic',
   },
 });
 

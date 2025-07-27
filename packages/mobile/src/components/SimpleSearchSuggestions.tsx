@@ -5,6 +5,7 @@ import { useThemeColors } from '../stores/themeStore';
 import { supabase } from '../services/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SearchHistory from './SearchHistory';
+import PopularSearches from './PopularSearches';
 
 // Kategori bazlı öneriler
 const CATEGORY_SUGGESTIONS = {
@@ -151,6 +152,7 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
             console.log('🔍 SimpleSearchSuggestions - Suggestion pressed:', suggestion);
             onSuggestionPress(suggestion);
           }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
         {getIcon(suggestion)}
         <Text style={[styles.suggestionText, { color: colors.text }]}>
@@ -203,6 +205,13 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
               }
             </>
           )}
+
+          {/* Popüler Aramalar (Query varken de göster) */}
+          <PopularSearches
+            onSearchPress={onSuggestionPress}
+            visible={true}
+            category={detectedCategory || undefined}
+          />
         </ScrollView>
       </View>
     );
@@ -224,12 +233,10 @@ const SimpleSearchSuggestions: React.FC<SimpleSearchSuggestionsProps> = ({
         />
 
         {/* Popüler Aramalar */}
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          📈 Popüler Aramalar
-        </Text>
-        {popularSearches.map((suggestion: string, index: number) => 
-          renderSuggestionItem(suggestion, index, 'popular')
-        )}
+        <PopularSearches
+          onSearchPress={onSuggestionPress}
+          visible={true}
+        />
       </ScrollView>
     </View>
   );

@@ -2,350 +2,226 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export interface SuggestionItem {
+interface SearchSuggestion {
   id: string;
   text: string;
-  type: 'dynamic' | 'history' | 'popular' | 'category';
-  timestamp?: number;
-  count?: number;
-  trend?: 'up' | 'down' | 'stable';
+  type: 'history' | 'trending' | 'suggestion' | 'category';
   category?: string;
+  count?: number;
+  timestamp?: number;
 }
 
-export interface SearchSuggestionsState {
-  dynamicSuggestions: SuggestionItem[];
-  historySuggestions: SuggestionItem[];
-  popularSuggestions: SuggestionItem[];
-  categorySuggestions: SuggestionItem[];
+interface UseSearchSuggestionsOptions {
+  maxHistoryItems?: number;
+  maxSuggestions?: number;
+  debounceMs?: number;
+  enableCaching?: boolean;
+}
+
+interface UseSearchSuggestionsReturn {
+  suggestions: SearchSuggestion[];
   isLoading: boolean;
   error: string | null;
-}
-
-export interface UseSearchSuggestionsOptions {
-  debounceMs?: number;
-  maxDynamicResults?: number;
-  maxHistoryResults?: number;
-  maxPopularResults?: number;
-  maxCategoryResults?: number;
-  enableCaching?: boolean;
-  cacheExpiryMs?: number;
+  addToHistory: (text: string) => Promise<void>;
+  clearHistory: () => Promise<void>;
+  removeFromHistory: (id: string) => Promise<void>;
+  refreshSuggestions: () => Promise<void>;
 }
 
 const DEFAULT_OPTIONS: UseSearchSuggestionsOptions = {
+  maxHistoryItems: 20,
+  maxSuggestions: 10,
   debounceMs: 300,
-  maxDynamicResults: 8,
-  maxHistoryResults: 10,
-  maxPopularResults: 10,
-  maxCategoryResults: 5,
   enableCaching: true,
-  cacheExpiryMs: 5 * 60 * 1000, // 5 dakika
 };
 
 export const useSearchSuggestions = (
   query: string,
   options: UseSearchSuggestionsOptions = {}
-) => {
+): UseSearchSuggestionsReturn => {
   const config = { ...DEFAULT_OPTIONS, ...options };
-  const [state, setState] = useState<SearchSuggestionsState>({
-    dynamicSuggestions: [],
-    historySuggestions: [],
-    popularSuggestions: [],
-    categorySuggestions: [],
-    isLoading: false,
-    error: null,
-  });
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+  const cacheRef = useRef<Map<string, SearchSuggestion[]>>(new Map());
 
-  const debounceRef = useRef<NodeJS.Timeout>();
-  const abortControllerRef = useRef<AbortController>();
+  // Fetch suggestions from database
+  const fetchSuggestions = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      return;
+    }
 
-  // Cache management
-  const cacheKey = (type: string, data: string) => `search_suggestions_${type}_${data}`;
-  const isCacheValid = (timestamp: number) => Date.now() - timestamp < config.cacheExpiryMs!;
+    // Check cache first
+    if (config.enableCaching && cacheRef.current.has(searchQuery)) {
+      setSuggestions(cacheRef.current.get(searchQuery) || []);
+      return;
+    }
 
-  // Dynamic suggestions from database
-  const fetchDynamicSuggestions = useCallback(async (searchQuery: string): Promise<SuggestionItem[]> => {
-    if (!searchQuery.trim() || searchQuery.length < 2) return [];
+    setIsLoading(true);
+    setError(null);
 
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select('title, description, category')
+        .select('title, category')
         .or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
-        .order('created_at', { ascending: false })
-        .limit(config.maxDynamicResults!);
+        .limit(config.maxSuggestions || 10);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      if (!data || data.length === 0) return [];
+      const dbSuggestions: SearchSuggestion[] = (data || [])
+        .map((item, index) => ({
+          id: `suggestion-${index}`,
+          text: item.title,
+          type: 'suggestion' as const,
+          category: item.category,
+        }))
+        .filter((item, index, array) => 
+          array.findIndex(s => s.text === item.text) === index
+        )
+        .slice(0, config.maxSuggestions || 10);
 
-      // Başlıklardan benzersiz öneriler çıkar
-      const suggestions = new Set<string>();
-      data.forEach(item => {
-        if (item.title) {
-          const words = item.title.toLowerCase()
-            .split(/\s+/)
-            .filter((word: string) => 
-              word.length >= 2 && 
-              word.includes(searchQuery.toLowerCase()) &&
-              !suggestions.has(word)
-            );
-                     words.forEach((word: string) => suggestions.add(word));
-        }
-      });
+      // Cache the results
+      if (config.enableCaching) {
+        cacheRef.current.set(searchQuery, dbSuggestions);
+      }
 
-      return Array.from(suggestions).slice(0, config.maxDynamicResults!).map((text, index) => ({
-        id: `dynamic-${Date.now()}-${index}`,
-        text,
-        type: 'dynamic' as const,
-      }));
-    } catch (error) {
-      console.error('Dynamic suggestions fetch error:', error);
-      return [];
+      setSuggestions(dbSuggestions);
+    } catch (err) {
+      console.error('Search suggestions error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
     }
-  }, [config.maxDynamicResults]);
+  }, [config.maxSuggestions, config.enableCaching]);
 
-  // History suggestions from AsyncStorage
-  const fetchHistorySuggestions = useCallback(async (): Promise<SuggestionItem[]> => {
+  // Load search history
+  const loadHistory = useCallback(async (): Promise<SearchSuggestion[]> => {
     try {
       const history = await AsyncStorage.getItem('searchHistory');
-      if (!history) return [];
-
-      const parsedHistory = JSON.parse(history);
-      return parsedHistory
-        .sort((a: any, b: any) => b.timestamp - a.timestamp)
-        .slice(0, config.maxHistoryResults!)
-        .map((item: any) => ({
-          id: item.id,
-          text: item.text,
-          type: 'history' as const,
-          timestamp: item.timestamp,
-        }));
+      if (history) {
+        const parsedHistory = JSON.parse(history);
+        return parsedHistory
+          .sort((a: any, b: any) => b.timestamp - a.timestamp)
+          .slice(0, config.maxHistoryItems || 20)
+          .map((item: any) => ({
+            id: item.id,
+            text: item.text,
+            type: 'history' as const,
+            timestamp: item.timestamp,
+          }));
+      }
     } catch (error) {
-      console.error('History suggestions fetch error:', error);
-      return [];
+      console.error('Failed to load search history:', error);
     }
-  }, [config.maxHistoryResults]);
+    return [];
+  }, [config.maxHistoryItems]);
 
-  // Popular suggestions with analytics
-  const fetchPopularSuggestions = useCallback(async (): Promise<SuggestionItem[]> => {
-    try {
-      // Cache kontrolü
-      if (config.enableCaching) {
-        const cached = await AsyncStorage.getItem(cacheKey('popular', 'all'));
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          if (isCacheValid(timestamp)) {
-            return data;
-          }
-        }
-      }
-
-      const { data, error } = await supabase
-        .from('listings')
-        .select('title, category, created_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) return getStaticPopularSuggestions();
-
-      // Popüler kelimeleri analiz et
-      const wordCounts: { [key: string]: number } = {};
-      const categoryCounts: { [key: string]: number } = {};
-
-      data.forEach((item) => {
-        if (item.title) {
-          const words = item.title.toLowerCase()
-            .split(/\s+/)
-            .filter((word: string) => word.length > 2);
-
-          words.forEach((word: string) => {
-            wordCounts[word] = (wordCounts[word] || 0) + 1;
-          });
-
-          if (item.category) {
-            categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
-          }
-        }
-      });
-
-      // En popüler kelimeleri al
-      const popularWords = Object.entries(wordCounts)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, config.maxPopularResults!)
-        .map(([text, count], index) => ({
-          id: `popular-${index}`,
-          text,
-          type: 'popular' as const,
-          count,
-          trend: getRandomTrend(),
-        }));
-
-      // Cache'e kaydet
-      if (config.enableCaching) {
-        await AsyncStorage.setItem(cacheKey('popular', 'all'), JSON.stringify({
-          data: popularWords,
-          timestamp: Date.now(),
-        }));
-      }
-
-      return popularWords;
-    } catch (error) {
-      console.error('Popular suggestions fetch error:', error);
-      return getStaticPopularSuggestions();
+  // Debounced search function
+  const debouncedSearch = useCallback((searchQuery: string) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
-  }, [config.maxPopularResults, config.enableCaching, config.cacheExpiryMs]);
 
-  // Category-based suggestions
-  const fetchCategorySuggestions = useCallback(async (searchQuery: string): Promise<SuggestionItem[]> => {
-    if (!searchQuery.trim()) return [];
+    debounceTimeoutRef.current = setTimeout(() => {
+      fetchSuggestions(searchQuery);
+    }, config.debounceMs || 300);
+  }, [config.debounceMs, fetchSuggestions]);
 
-    const detectedCategory = detectCategory(searchQuery);
-    if (!detectedCategory) return [];
-
-    const categorySuggestions = CATEGORY_SUGGESTIONS[detectedCategory as keyof typeof CATEGORY_SUGGESTIONS] || [];
-    
-    return categorySuggestions
-      .filter((suggestion: string) => suggestion.toLowerCase().includes(searchQuery.toLowerCase()))
-      .slice(0, config.maxCategoryResults!)
-      .map((text, index) => ({
-        id: `category-${detectedCategory}-${index}`,
-        text,
-        type: 'category' as const,
-        category: detectedCategory,
-      }));
-  }, [config.maxCategoryResults]);
-
-  // Ana fetch fonksiyonu
-  const fetchAllSuggestions = useCallback(async (searchQuery: string) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-
+  // Add to search history
+  const addToHistory = useCallback(async (text: string) => {
     try {
-      // Önceki request'i iptal et
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      abortControllerRef.current = new AbortController();
+      const newItem = {
+        id: `history-${Date.now()}`,
+        text: text.trim(),
+        timestamp: Date.now(),
+      };
 
-      const [dynamic, history, popular, category] = await Promise.all([
-        fetchDynamicSuggestions(searchQuery),
-        fetchHistorySuggestions(),
-        fetchPopularSuggestions(),
-        fetchCategorySuggestions(searchQuery),
-      ]);
-
-      setState({
-        dynamicSuggestions: dynamic,
-        historySuggestions: history,
-        popularSuggestions: popular,
-        categorySuggestions: category,
-        isLoading: false,
-        error: null,
-      });
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return; // Request iptal edildi, state'i güncelleme
-      }
+      const existingHistory = await AsyncStorage.getItem('searchHistory');
+      const history = existingHistory ? JSON.parse(existingHistory) : [];
       
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
-      }));
+      // Remove duplicate
+      const filteredHistory = history.filter((item: any) => item.text !== text);
+      
+      // Add to beginning
+      const updatedHistory = [newItem, ...filteredHistory].slice(0, config.maxHistoryItems || 20);
+      
+      await AsyncStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+    } catch (error) {
+      console.error('Failed to add to search history:', error);
     }
-  }, [fetchDynamicSuggestions, fetchHistorySuggestions, fetchPopularSuggestions, fetchCategorySuggestions]);
+  }, [config.maxHistoryItems]);
 
-  // Debounced search
+  // Remove from history
+  const removeFromHistory = useCallback(async (id: string) => {
+    try {
+      const history = await AsyncStorage.getItem('searchHistory');
+      if (history) {
+        const parsedHistory = JSON.parse(history);
+        const updatedHistory = parsedHistory.filter((item: any) => item.id !== id);
+        await AsyncStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+      }
+    } catch (error) {
+      console.error('Failed to remove from history:', error);
+    }
+  }, []);
+
+  // Clear all history
+  const clearHistory = useCallback(async () => {
+    try {
+      await AsyncStorage.removeItem('searchHistory');
+    } catch (error) {
+      console.error('Failed to clear history:', error);
+    }
+  }, []);
+
+  // Refresh suggestions
+  const refreshSuggestions = useCallback(async () => {
+    if (query.trim()) {
+      await fetchSuggestions(query);
+    }
+  }, [query, fetchSuggestions]);
+
+  // Main effect to handle query changes
   useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+    if (query.trim()) {
+      debouncedSearch(query);
+    } else {
+      // If no query, show history
+      loadHistory().then(history => {
+        setSuggestions(history);
+      });
     }
-
-    debounceRef.current = setTimeout(() => {
-      fetchAllSuggestions(query);
-    }, config.debounceMs);
 
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [query, fetchAllSuggestions, config.debounceMs]);
+  }, [query, debouncedSearch, loadHistory]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
     };
   }, []);
 
-  // Utility functions
-  const getRandomTrend = (): 'up' | 'down' | 'stable' => {
-    const trends: ('up' | 'down' | 'stable')[] = ['up', 'down', 'stable'];
-    return trends[Math.floor(Math.random() * trends.length)];
-  };
-
-  const getStaticPopularSuggestions = (): SuggestionItem[] => {
-    return [
-      { id: '1', text: 'telefon', type: 'popular', count: 156, trend: 'up' },
-      { id: '2', text: 'bilgisayar', type: 'popular', count: 142, trend: 'up' },
-      { id: '3', text: 'araba', type: 'popular', count: 98, trend: 'stable' },
-      { id: '4', text: 'mobilya', type: 'popular', count: 87, trend: 'down' },
-      { id: '5', text: 'ayakkabı', type: 'popular', count: 65, trend: 'up' },
-      { id: '6', text: 'ev', type: 'popular', count: 43, trend: 'down' },
-    ];
-  };
-
-  const detectCategory = (text: string): string | null => {
-    const lowerText = text.toLowerCase();
-    
-    if (lowerText.includes('telefon') || lowerText.includes('iphone') || lowerText.includes('samsung')) {
-      return 'Elektronik';
-    }
-    if (lowerText.includes('bilgisayar') || lowerText.includes('laptop') || lowerText.includes('pc')) {
-      return 'Elektronik';
-    }
-    if (lowerText.includes('araba') || lowerText.includes('otomobil') || lowerText.includes('araç')) {
-      return 'Araçlar';
-    }
-    if (lowerText.includes('mobilya') || lowerText.includes('koltuk') || lowerText.includes('masa')) {
-      return 'Ev & Yaşam';
-    }
-    if (lowerText.includes('ayakkabı') || lowerText.includes('giyim') || lowerText.includes('kıyafet')) {
-      return 'Moda';
-    }
-    
-    return null;
-  };
-
-  const CATEGORY_SUGGESTIONS = {
-    Elektronik: ['iPhone 15', 'Samsung Galaxy', 'MacBook Pro', 'Gaming Laptop', 'Tablet', 'Akıllı Saat'],
-    'Araçlar': ['BMW X5', 'Mercedes C200', 'Audi A4', 'Volkswagen Golf', 'Toyota Corolla', 'Honda Civic'],
-    'Ev & Yaşam': ['Koltuk Takımı', 'Yemek Masası', 'Yatak Odası', 'Mutfak Mobilyası', 'Bahçe Mobilyası'],
-    Moda: ['Nike Ayakkabı', 'Adidas Spor', 'Kadın Elbise', 'Erkek Gömlek', 'Çanta', 'Takı'],
-  };
-
-  // Public methods
-  const refreshSuggestions = useCallback(() => {
-    fetchAllSuggestions(query);
-  }, [fetchAllSuggestions, query]);
-
-  const clearCache = useCallback(async () => {
-    try {
-      const keys = await AsyncStorage.getAllKeys();
-      const cacheKeys = keys.filter(key => key.startsWith('search_suggestions_'));
-      await AsyncStorage.multiRemove(cacheKeys);
-    } catch (error) {
-      console.error('Cache temizleme hatası:', error);
-    }
-  }, []);
-
   return {
-    ...state,
+    suggestions,
+    isLoading,
+    error,
+    addToHistory,
+    clearHistory,
+    removeFromHistory,
     refreshSuggestions,
-    clearCache,
   };
 }; 
