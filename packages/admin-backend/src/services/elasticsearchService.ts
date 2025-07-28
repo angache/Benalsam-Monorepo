@@ -58,8 +58,7 @@ export class AdminElasticsearchService {
   // Static method to search specific index
   static async searchIndexStatic(indexName: string, options: { size?: number } = {}): Promise<any> {
     try {
-      const node =
-        process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200';
+      const node = process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200';
       const username = process.env.ELASTICSEARCH_USERNAME || '';
       const password = process.env.ELASTICSEARCH_PASSWORD || '';
       
@@ -72,13 +71,32 @@ export class AdminElasticsearchService {
         auth: username ? { username, password } : undefined 
       });
       
+      // Index'e göre sıralama belirle
+      let sortFields: any[];
+      if (indexName === 'user_behaviors') {
+        sortFields = [
+          { timestamp: { order: 'desc' as const } },
+          { _id: { order: 'desc' as const } }
+        ];
+      } else if (indexName === 'benalsam_listings') {
+        sortFields = [
+          { created_at: { order: 'desc' as const } },
+          { _id: { order: 'desc' as const } }
+        ];
+      } else {
+        // Default sıralama
+        sortFields = [
+          { _id: { order: 'desc' as const } }
+        ];
+      }
+      
       const response = await client.search({
         index: indexName,
         body: {
           query: {
             match_all: {}
           },
-          sort: [{ _id: { order: 'desc' } }],
+          sort: sortFields,
           size: options.size || 20
         }
       });
@@ -214,13 +232,32 @@ export class AdminElasticsearchService {
 
   async searchIndex(indexName: string, options: { size?: number } = {}): Promise<any> {
     try {
+      // Index'e göre sıralama belirle
+      let sortFields: any[];
+      if (indexName === 'user_behaviors') {
+        sortFields = [
+          { timestamp: { order: 'desc' as const } },
+          { _id: { order: 'desc' as const } }
+        ];
+      } else if (indexName === 'benalsam_listings') {
+        sortFields = [
+          { created_at: { order: 'desc' as const } },
+          { _id: { order: 'desc' as const } }
+        ];
+      } else {
+        // Default sıralama
+        sortFields = [
+          { _id: { order: 'desc' as const } }
+        ];
+      }
+
       const response = await this.client.search({
         index: indexName,
         body: {
           query: {
             match_all: {}
           },
-          sort: [{ _id: { order: 'desc' } }],
+          sort: sortFields,
           size: options.size || 20
         }
       });

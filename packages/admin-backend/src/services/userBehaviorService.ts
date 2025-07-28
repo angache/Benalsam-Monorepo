@@ -46,7 +46,7 @@ export class UserBehaviorService {
   private analyticsIndex: string = 'user_analytics';
 
   constructor(
-    node: string = process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
+    node: string = process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200',
     username: string = process.env.ELASTICSEARCH_USERNAME || '',
     password: string = process.env.ELASTICSEARCH_PASSWORD || ''
   ) {
@@ -152,6 +152,9 @@ export class UserBehaviorService {
 
   async getUserBehaviorStats(userId: string, days: number = 30): Promise<any> {
     try {
+      const fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - days);
+
       const response = await this.client.search({
         index: this.behaviorIndex,
         body: {
@@ -159,67 +162,70 @@ export class UserBehaviorService {
             bool: {
               must: [
                 { term: { user_id: userId } },
-                {
-                  range: {
-                    timestamp: {
-                      gte: `now-${days}d`
-                    }
-                  }
-                }
+                { range: { timestamp: { gte: fromDate.toISOString() } } }
               ]
             }
           },
           aggs: {
             event_types: {
-              terms: { field: 'event_type' }
+              terms: { field: 'event_type.keyword' }
             },
             daily_activity: {
               date_histogram: {
                 field: 'timestamp',
-                calendar_interval: 'day'
+                calendar_interval: 'day',
+                format: 'yyyy-MM-dd'
               }
             },
-            popular_sections: {
-              terms: { field: 'event_data.section_name' }
+            screen_usage: {
+              terms: { field: 'event_data.screen_name.keyword' }
             }
-          }
+          },
+          size: 0
         }
       });
 
-      return response;
+      return {
+        event_types: (response.aggregations?.event_types as any)?.buckets || [],
+        daily_activity: (response.aggregations?.daily_activity as any)?.buckets || [],
+        screen_usage: (response.aggregations?.screen_usage as any)?.buckets || []
+      };
     } catch (error) {
       logger.error('❌ Error getting user behavior stats:', error);
-      return null;
+      return { event_types: [], daily_activity: [], screen_usage: [] };
     }
   }
 
   async getPopularSections(days: number = 7): Promise<any> {
     try {
+      const fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - days);
+
       const response = await this.client.search({
         index: this.behaviorIndex,
         body: {
           query: {
-            range: {
-              timestamp: {
-                gte: `now-${days}d`
-              }
-            }
+            range: { timestamp: { gte: fromDate.toISOString() } }
           },
           aggs: {
             popular_sections: {
-              terms: { field: 'event_data.section_name', size: 10 }
+              terms: { field: 'event_data.section_name.keyword', size: 10 }
             },
             event_types: {
-              terms: { field: 'event_type' }
+              terms: { field: 'event_type.keyword' }
             }
-          }
+          },
+          size: 0
         }
       });
 
-      return response;
+      return {
+        sections: (response.aggregations?.popular_sections as any)?.buckets || [],
+        event_types: (response.aggregations?.event_types as any)?.buckets || []
+      };
     } catch (error) {
       logger.error('❌ Error getting popular sections:', error);
-      return null;
+      return { sections: [], event_types: [] };
     }
   }
 
@@ -376,7 +382,7 @@ export class UserBehaviorService {
           },
           aggs: {
             feature_usage: {
-              terms: { field: 'event_type', size: 20 }
+              terms: { field: 'event_type.keyword', size: 20 }
             }
           },
           size: 0
@@ -468,10 +474,10 @@ export class UserBehaviorService {
               cardinality: { field: 'user_id' }
             },
             total_events: {
-              value_count: { field: 'event_type' }
+              value_count: { field: 'event_type.keyword' }
             },
             event_types: {
-              terms: { field: 'event_type' }
+              terms: { field: 'event_type.keyword' }
             }
           },
           size: 0
@@ -516,21 +522,28 @@ export class UserBehaviorService {
         }
       });
 
-      return response.hits?.hits?.map((hit: any) => ({
-        id: hit._id,
-        userId: hit._source.user_id,
-        username: hit._source.user_id,
-        user_profile: {
-          id: hit._source.user_id,
-          email: hit._source.event_data?.user_email || `${hit._source.user_id}@example.com`,
-          name: hit._source.event_data?.user_name || hit._source.user_id,
-          avatar: hit._source.event_data?.user_avatar || null
-        },
-        action: hit._source.event_type,
-        screen: hit._source.event_data?.screen_name || 'Unknown',
-        timestamp: hit._source.timestamp,
-        deviceInfo: hit._source.device_info || { platform: 'Unknown', model: 'Unknown' }
-      })) || [];
+      return response.hits?.hits?.map((hit: any) => {
+        const source = hit._source;
+        
+        // New format: user_profile object
+        const userProfile = {
+          id: source.user_profile?.id || 'unknown',
+          email: source.user_profile?.email || 'unknown@example.com',
+          name: source.user_profile?.name || 'Unknown User',
+          avatar: source.user_profile?.avatar || null
+        };
+
+        return {
+          id: hit._id,
+          userId: userProfile.id,
+          username: userProfile.id,
+          user_profile: userProfile,
+          action: source.event_type,
+          screen: source.event_data?.screen_name || 'Unknown',
+          timestamp: source.timestamp,
+          deviceInfo: source.device_info || { platform: 'Unknown', model: 'Unknown' }
+        };
+      }) || [];
     } catch (error) {
       logger.error('❌ Error getting user activities:', error);
       return [];
@@ -591,10 +604,10 @@ export class UserBehaviorService {
               cardinality: { field: 'user_id' }
             },
             total_events: {
-              value_count: { field: 'event_type' }
+              value_count: { field: 'event_type.keyword' }
             },
             event_types: {
-              terms: { field: 'event_type' }
+              terms: { field: 'event_type.keyword' }
             }
           },
           size: 0

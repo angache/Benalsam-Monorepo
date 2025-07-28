@@ -122,12 +122,22 @@ const formatEventData = (source: any, indexName: string) => {
     device: `${device_info?.platform} ${device_info?.version} (${device_info?.model})`,
   };
 
-  // Add user info if available
+  // Add user info if available (handle both old and new formats)
   if (user_profile) {
+    // New format: user_profile object
     formattedData.user = user_profile.name || user_profile.email || 'Unknown User';
     if (user_profile.avatar) {
       formattedData.avatar = user_profile.avatar;
     }
+  } else if (event_data?.user_name || event_data?.user_email) {
+    // Old format: user data in event_data
+    formattedData.user = event_data.user_name || event_data.user_email || 'Unknown User';
+    if (event_data.user_avatar) {
+      formattedData.avatar = event_data.user_avatar;
+    }
+  } else {
+    // Fallback
+    formattedData.user = 'Unknown User';
   }
 
   // Format event-specific data
