@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
+import { useAuthStore } from '../stores/authStore';
 
 export interface UserBehaviorEvent {
   user_id: string;
@@ -98,11 +99,19 @@ class AnalyticsService {
   // Track user behavior event
   async trackEvent(event: Omit<UserBehaviorEvent, 'user_id' | 'timestamp' | 'session_id' | 'device_info'>): Promise<boolean> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = useAuthStore.getState().user;
       if (!user) {
         console.log('⚠️ No user found for analytics tracking');
         return false;
       }
+      console.log('🔐 User found for analytics tracking:', user);
+      // Use existing user data from auth store
+      const userProfile = {
+        id: user.id,
+        email: user.email,
+        name: user.username || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        avatar: user.avatar_url || null
+      };
 
       const fullEvent: UserBehaviorEvent = {
         ...event,
@@ -117,7 +126,7 @@ class AnalyticsService {
         const authToken = await this.getAuthToken();
         console.log('🔐 Auth token for analytics:', authToken ? 'Token exists' : 'No token');
         
-                      const response = await fetch('http://192.168.1.6:3002/api/v1/analytics/track-behavior', {
+        const response = await fetch('http://192.168.1.6:3002/api/v1/analytics/track-behavior', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -127,7 +136,8 @@ class AnalyticsService {
             event_type: fullEvent.event_type,
             event_data: fullEvent.event_data,
             session_id: fullEvent.session_id,
-            device_info: fullEvent.device_info
+            device_info: fullEvent.device_info,
+            user_profile: userProfile
           })
         });
 

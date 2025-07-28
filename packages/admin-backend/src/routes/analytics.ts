@@ -143,4 +143,132 @@ router.get('/performance-metrics', authenticateToken, async (req, res) => {
   }
 });
 
+// Get popular pages analytics
+router.get('/popular-pages', authenticateToken, async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    
+    const stats = await userBehaviorService.getPopularPages(Number(days));
+    
+    if (stats) {
+      res.json({ success: true, data: stats });
+    } else {
+      res.status(404).json({ success: false, message: 'Popular pages not found' });
+    }
+  } catch (error) {
+    logger.error('Error getting popular pages:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get feature usage analytics
+router.get('/feature-usage', authenticateToken, async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    
+    const stats = await userBehaviorService.getFeatureUsage(Number(days));
+    
+    if (stats) {
+      res.json({ success: true, data: stats });
+    } else {
+      res.status(404).json({ success: false, message: 'Feature usage not found' });
+    }
+  } catch (error) {
+    logger.error('Error getting feature usage:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get user journey analytics
+router.get('/user-journey/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { days = 7 } = req.query;
+    
+    const journey = await userBehaviorService.getUserJourney(userId, Number(days));
+    
+    if (journey) {
+      res.json({ success: true, data: journey });
+    } else {
+      res.status(404).json({ success: false, message: 'User journey not found' });
+    }
+  } catch (error) {
+    logger.error('Error getting user journey:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get real-time metrics
+router.get('/real-time-metrics', authenticateToken, async (req, res) => {
+  try {
+    const metrics = await userBehaviorService.getRealTimeMetrics();
+    res.json({ success: true, data: metrics });
+  } catch (error) {
+    logger.error('Error getting real-time metrics:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get user activities
+router.get('/user-activities', authenticateToken, async (req, res) => {
+  try {
+    const activities = await userBehaviorService.getUserActivities();
+    res.json({ success: true, data: activities });
+  } catch (error) {
+    logger.error('Error getting user activities:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get performance alerts
+router.get('/performance-alerts', authenticateToken, async (req, res) => {
+  try {
+    const alerts = await userBehaviorService.getPerformanceAlerts();
+    res.json({ success: true, data: alerts });
+  } catch (error) {
+    logger.error('Error getting performance alerts:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get comprehensive analytics dashboard
+router.get('/dashboard', authenticateToken, async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    
+    const [
+      popularPages,
+      featureUsage,
+      bounceRate,
+      userActivities,
+      performanceMetrics
+    ] = await Promise.all([
+      userBehaviorService.getPopularPages(Number(days)),
+      userBehaviorService.getFeatureUsage(Number(days)),
+      userBehaviorService.getBounceRateStats(Number(days)),
+      userBehaviorService.getUserActivities(),
+      userBehaviorService.getPerformanceMetrics(Number(days))
+    ]);
+    
+    const dashboardData = {
+      popularPages,
+      featureUsage,
+      bounceRate,
+      userActivities,
+      performanceMetrics,
+      summary: {
+        totalPages: popularPages?.length || 0,
+        totalFeatures: featureUsage?.length || 0,
+        totalActivities: userActivities?.length || 0,
+        avgBounceRate: bounceRate?.average || 0
+      }
+    };
+    
+    res.json({ success: true, data: dashboardData });
+  } catch (error) {
+    logger.error('Error getting dashboard data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 export default router; 

@@ -13,6 +13,8 @@ import { CategoryEditPage } from './pages/CategoryEditPage';
 import { UsersPage } from './pages/UsersPage';
 import AdminManagementPage from './pages/AdminManagementPage';
 import ElasticsearchDashboardPage from './pages/ElasticsearchDashboardPage';
+import RealTimeAnalyticsPage from './pages/RealTimeAnalyticsPage';
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -138,6 +140,36 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ElasticsearchDashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/real-time-analytics"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RealTimeAnalyticsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RealTimeAnalyticsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics-dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AnalyticsDashboardPage />
                   </Layout>
                 </ProtectedRoute>
               }

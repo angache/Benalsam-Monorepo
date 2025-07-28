@@ -3,8 +3,8 @@ module.exports = {
     {
       name: 'admin-backend',
       cwd: './packages/admin-backend',
-      script: 'npx',
-      args: 'ts-node src/index.ts',
+      script: 'pnpm',
+      args: 'run dev',
       env: {
         NODE_ENV: 'development',
         PORT: 3002,
@@ -70,25 +70,26 @@ module.exports = {
       ignore_watch: ['node_modules', 'logs', 'dist'],
       max_memory_restart: '1G'
     },
-    {
-      name: 'mobile-dev-server',
-      cwd: './packages/mobile',
-      script: 'npx',
-      args: 'expo start --dev-client',
-      env: {
-        NODE_ENV: 'development',
-        EXPO_PORT: 8081
-      },
-      log_file: './logs/combined.log',
-      error_file: './logs/error.log',
-      out_file: './logs/out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      instances: 1,
-      autorestart: true,
-      watch: ['src'],
-      ignore_watch: ['node_modules', 'logs', '.expo'],
-      max_memory_restart: '1G'
-    }
+    // Mobile development server - commented out for now, may be needed later
+    // {
+    //   name: 'mobile-dev-server',
+    //   cwd: './packages/mobile',
+    //   script: 'npx',
+    //   args: 'expo start --dev-client',
+    //   env: {
+    //     NODE_ENV: 'development',
+    //     EXPO_PORT: 8081
+    //   },
+    //   log_file: './logs/combined.log',
+    //   error_file: './logs/error.log',
+    //   out_file: './logs/out.log',
+    //   log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    //   instances: 1,
+    //   autorestart: true,
+    //   watch: ['src'],
+    //   ignore_watch: ['node_modules', 'logs', '.expo'],
+    //   max_memory_restart: '1G'
+    // }
   ],
 
   deploy: {

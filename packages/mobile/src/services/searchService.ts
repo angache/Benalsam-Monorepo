@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { environment, getApiUrl } from '../config/environment';
+import analyticsService from './analyticsService';
 
 export interface SearchParams {
   query?: string;
@@ -44,7 +45,7 @@ export interface SearchResponse {
 // Elasticsearch search via admin-backend
 export const searchWithElasticsearch = async (params: SearchParams): Promise<SearchResponse> => {
   try {
-    const response = await fetch(getApiUrl(environment.API_ENDPOINTS.ELASTICSEARCH_SEARCH), {
+    const response = await fetch('http://192.168.1.6:3002/api/v1/elasticsearch/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,14 +63,63 @@ export const searchWithElasticsearch = async (params: SearchParams): Promise<Sea
     
     // Admin-backend response formatını mobile formatına çevir
     if (responseData.success && responseData.data) {
+      // Elasticsearch sonuçlarını Supabase'den tam verilerle birleştir
+      const elasticsearchHits = responseData.data.hits || [];
+      
+      if (elasticsearchHits.length > 0) {
+        // Elasticsearch'ten gelen ID'leri kullanarak Supabase'den tam verileri al
+        const listingIds = elasticsearchHits.map((hit: any) => hit.id);
+        const { data: fullListings, error } = await supabase
+          .from('listings')
+          .select('*')
+          .in('id', listingIds);
+
+        if (error) {
+          console.error('❌ Error fetching full listings from Supabase:', error);
+          // Fallback to Supabase search
+          return await searchWithSupabase(params);
+        }
+
+        // Elasticsearch score'larını koru ve tam verilerle birleştir
+        const enrichedResults = elasticsearchHits.map((hit: any) => {
+          const fullListing = fullListings?.find(listing => listing.id === hit.id);
+          
+          // Veri formatını normalize et
+          const normalizedListing = {
+            ...fullListing,
+            // Elasticsearch'ten gelen field'ları koru
+            budget: hit.budget || fullListing?.budget || fullListing?.price || 0,
+            location: hit.location || fullListing?.location || '-',
+            urgency: hit.urgency || fullListing?.urgency || 'normal',
+            category: hit.category || fullListing?.category || 'Genel',
+            // Image field'larını normalize et
+            main_image_url: fullListing?.main_image_url || fullListing?.main_image || fullListing?.image_url || null,
+            // Elasticsearch score'ını ekle
+            _score: hit.score,
+          };
+          
+          return normalizedListing;
+        }).filter(Boolean);
+
+        return {
+          results: enrichedResults,
+          total: responseData.data.total || 0,
+          page: responseData.data.page || 1,
+          limit: responseData.data.limit || 20,
+          hasMore: (responseData.data.page || 1) < (responseData.data.totalPages || 1),
+          searchDuration: 0,
+          suggestions: [],
+        };
+      }
+
       return {
-        results: responseData.data.hits || [],
+        results: [],
         total: responseData.data.total || 0,
         page: responseData.data.page || 1,
         limit: responseData.data.limit || 20,
-        hasMore: (responseData.data.page || 1) < (responseData.data.totalPages || 1),
-        searchDuration: 0, // Admin-backend'den gelmiyor
-        suggestions: [], // Admin-backend'den gelmiyor
+        hasMore: false,
+        searchDuration: 0,
+        suggestions: [],
       };
     }
     
@@ -138,6 +188,20 @@ export const searchWithSupabase = async (params: SearchParams): Promise<SearchRe
 // Combined search function (tries ES first, falls back to Supabase)
 export const searchListings = async (params: SearchParams): Promise<SearchResponse> => {
   try {
+    // Track search analytics
+    if (params.query?.trim()) {
+      analyticsService.trackEvent({
+        event_type: 'search',
+        event_data: {
+          search_term: params.query,
+          screen_name: 'SearchScreen',
+          section_name: 'Search Results',
+          filters: params.filters,
+          sort: params.sort,
+        }
+      });
+    }
+
     // Try Elasticsearch first
     return await searchWithElasticsearch(params);
   } catch (error) {

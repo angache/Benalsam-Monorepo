@@ -349,6 +349,8 @@ const MyListingsScreen = ({ navigation }: any) => {
           listing={item}
           onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
           style={styles.listingCard}
+          screenName="MyListingsScreen"
+          sectionName="My Listings"
         />
         <View style={styles.cardActionOverlay}>
           <TouchableOpacity 

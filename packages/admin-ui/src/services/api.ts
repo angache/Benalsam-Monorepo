@@ -69,7 +69,7 @@ export const apiService = {
 
   async getProfile(): Promise<User> {
     const response = await apiClient.get<ApiResponse<User>>('/auth/profile');
-    return response.data.data;
+    return response.data.data!;
   },
 
   // Listings
@@ -217,6 +217,57 @@ export const apiService = {
   // Health check
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     const response = await apiClient.get('/health');
+    return response.data;
+  },
+
+  // Real-time Analytics
+  async getRealTimeMetrics(): Promise<any> {
+    const response = await apiClient.get('/analytics/real-time-metrics');
+    return response.data.data;
+  },
+
+  async getUserActivities(): Promise<any[]> {
+    const response = await apiClient.get('/analytics/user-activities');
+    return response.data.data || [];
+  },
+
+  async getPerformanceAlerts(): Promise<any[]> {
+    const response = await apiClient.get('/analytics/performance-alerts');
+    return response.data.data || [];
+  },
+
+  async getPerformanceMetrics(days: number = 7): Promise<any> {
+    const response = await apiClient.get(`/analytics/performance-metrics?days=${days}`);
+    return response.data.data;
+  },
+
+  async getDashboardStats(): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>('/analytics/dashboard-stats');
+    return response.data.data;
+  },
+
+  async getAnalyticsDashboard(days: number = 7): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>(`/analytics/dashboard?days=${days}`);
+    return response.data;
+  },
+
+  async getPopularPages(days: number = 7): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>(`/analytics/popular-pages?days=${days}`);
+    return response.data;
+  },
+
+  async getFeatureUsage(days: number = 7): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>(`/analytics/feature-usage?days=${days}`);
+    return response.data;
+  },
+
+  async getUserJourney(userId: string, days: number = 7): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>(`/analytics/user-journey/${userId}?days=${days}`);
+    return response.data;
+  },
+
+  async getBounceRate(days: number = 7): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>(`/analytics/bounce-rate?days=${days}`);
     return response.data;
   },
 }; 

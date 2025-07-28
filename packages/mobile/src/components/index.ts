@@ -29,6 +29,8 @@ export {
 // Search Components
 export { default as SimpleSearchSuggestions } from './SimpleSearchSuggestions';
 export { default as VirtualizedResults } from './VirtualizedResults';
+export { SearchResults } from './SearchResults';
+export { SortOptions } from './SortOptions';
 
 // Tab Bar
 export { default as TabBarIcon } from './TabBarIcon';

@@ -74,6 +74,8 @@ const FavoritesScreen = ({ navigation }: NavigationProps) => {
     <ListingCard
       listing={item}
       onPress={() => navigation.navigate('ListingDetail', { listingId: item.id })}
+      screenName="FavoritesScreen"
+      sectionName="Favorites"
     />
   );
 

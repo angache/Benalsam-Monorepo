@@ -268,4 +268,11 @@ export interface AppContextType {
   user: AdminUser | null;
   setUser: (user: AdminUser | null) => void;
   logout: () => void;
+}
+
+// Layout Types
+export interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+  variant?: 'permanent' | 'temporary' | 'persistent';
 } 

@@ -572,6 +572,44 @@ export interface AnalyticsData {
 }
 
 // ===========================
+// REAL-TIME ANALYTICS TYPES
+// ===========================
+
+export interface RealTimeMetrics {
+  activeUsers: number;
+  totalSessions: number;
+  pageViews: number;
+  avgResponseTime: number;
+  errorRate: number;
+  memoryUsage: number;
+  bundleSize: number;
+  apiCalls: number;
+}
+
+export interface UserActivity {
+  id: string;
+  userId: string;
+  username: string;
+  action: string;
+  screen: string;
+  timestamp: string;
+  duration?: number;
+  deviceInfo: {
+    platform: string;
+    model: string;
+  };
+}
+
+export interface PerformanceAlert {
+  id: string;
+  type: 'error' | 'warning' | 'info';
+  message: string;
+  timestamp: string;
+  severity: 'low' | 'medium' | 'high';
+  resolved: boolean;
+}
+
+// ===========================
 // API PARAMETER TYPES
 // ===========================
 

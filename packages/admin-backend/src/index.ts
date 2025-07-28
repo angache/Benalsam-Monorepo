@@ -81,7 +81,18 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/', limiter);
+
+// Analytics için daha yüksek rate limit
+const analyticsLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 300, // limit each IP to 300 requests per minute (5x artırıldı)
+  message: 'Too many analytics requests, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// app.use('/api/', limiter); // Rate limiting geçici olarak devre dışı
+// app.use('/api/v1/analytics/', analyticsLimiter); // Analytics rate limiting geçici olarak devre dışı
 
 // Body parsing middleware
 app.use(compression());

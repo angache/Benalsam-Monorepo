@@ -25,6 +25,7 @@ import {
 } from 'lucide-react-native';
 import { useLongPress } from '../hooks/useLongPress';
 import { haptic } from '../utils/hapticFeedback';
+import analyticsService from '../services/analyticsService';
 
 interface ListingCardProps {
   listing: any;
@@ -37,6 +38,8 @@ interface ListingCardProps {
   showCategoryBadges?: boolean;
   showUrgencyBadges?: boolean;
   numColumns?: number; // Grid sütun sayısı
+  screenName?: string; // Analytics için screen adı
+  sectionName?: string; // Analytics için section adı
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -75,6 +78,8 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   showCategoryBadges = true,
   showUrgencyBadges = true,
   numColumns = 2,
+  screenName = 'Unknown',
+  sectionName = 'Unknown',
 }) => {
   const colors = useThemeColors();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -111,6 +116,50 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   const scaleAnim = useMemo(() => new Animated.Value(1), []);
   const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
+  // Analytics tracking functions
+  const trackCardClick = useCallback(() => {
+    analyticsService.trackEvent({
+      event_type: 'click',
+      event_data: {
+        screen_name: screenName,
+        section_name: sectionName,
+        listing_id: cardData.id,
+        action: 'view_listing',
+        listing_title: cardData.title,
+        listing_category: cardData.category,
+        listing_price: cardData.price,
+      }
+    });
+  }, [screenName, sectionName, cardData]);
+
+  const trackFavoriteAction = useCallback((action: 'add' | 'remove') => {
+    analyticsService.trackEvent({
+      event_type: 'favorite',
+      event_data: {
+        screen_name: screenName,
+        section_name: sectionName,
+        listing_id: cardData.id,
+        action: action,
+        listing_title: cardData.title,
+        listing_category: cardData.category,
+      }
+    });
+  }, [screenName, sectionName, cardData]);
+
+  const trackLongPressAction = useCallback((action: 'share' | 'save' | 'report') => {
+    analyticsService.trackEvent({
+      event_type: 'click',
+      event_data: {
+        screen_name: screenName,
+        section_name: sectionName,
+        listing_id: cardData.id,
+        action: `long_press_${action}`,
+        listing_title: cardData.title,
+        listing_category: cardData.category,
+      }
+    });
+  }, [screenName, sectionName, cardData]);
+
   // Long press actions
   const handleLongPress = useCallback(() => {
     haptic.medium();
@@ -123,6 +172,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
           text: 'Paylaş', 
           onPress: () => {
             haptic.light();
+            trackLongPressAction('share');
             console.log('Share listing:', cardData.id);
           }
         },
@@ -130,6 +180,7 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
           text: 'Kaydet', 
           onPress: () => {
             haptic.success();
+            trackLongPressAction('save');
             onToggleFavorite?.();
           }
         },
@@ -138,16 +189,20 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
           style: 'destructive',
           onPress: () => {
             haptic.warning();
+            trackLongPressAction('report');
             console.log('Report listing:', cardData.id);
           }
         },
       ]
     );
-  }, [cardData.id, onToggleFavorite]);
+  }, [cardData.id, onToggleFavorite, trackLongPressAction]);
 
   const { handlers: longPressHandlers } = useLongPress({
     onLongPress: handleLongPress,
-    onPress: onPress,
+    onPress: () => {
+      trackCardClick();
+      onPress?.();
+    },
   }, {
     duration: 750, // 500ms'den 750ms'ye çıkarıldı
     hapticFeedback: true,
@@ -187,8 +242,10 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
   const handleFavoritePress = useCallback((e: any) => {
     e.stopPropagation();
     haptic.selection();
+    const action = cardData.isFavorited ? 'remove' : 'add';
+    trackFavoriteAction(action);
     onToggleFavorite?.();
-  }, [cardData.id, onToggleFavorite]);
+  }, [cardData.id, cardData.isFavorited, onToggleFavorite, trackFavoriteAction]);
 
   const formatPrice = useCallback((price: number) => {
     if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M`;

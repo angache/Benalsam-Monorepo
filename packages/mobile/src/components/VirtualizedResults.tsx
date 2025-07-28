@@ -23,6 +23,8 @@ interface VirtualizedResultsProps {
   loadingMessage?: string;
   error?: string | null;
   onRetry?: () => void;
+  screenName?: string; // Analytics için screen adı
+  sectionName?: string; // Analytics için section adı
 }
 
 const VirtualizedResults: React.FC<VirtualizedResultsProps> = ({
@@ -38,6 +40,8 @@ const VirtualizedResults: React.FC<VirtualizedResultsProps> = ({
   loadingMessage = 'Yükleniyor...',
   error = null,
   onRetry,
+  screenName = 'Unknown',
+  sectionName = 'Unknown',
 }) => {
   const colors = useThemeColors();
 
@@ -61,6 +65,8 @@ const VirtualizedResults: React.FC<VirtualizedResultsProps> = ({
           <ListingCard
             listing={item}
             onPress={() => onItemPress(item)}
+            screenName={screenName}
+            sectionName={sectionName}
           />
         </View>
       );

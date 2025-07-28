@@ -831,6 +831,8 @@ const HomeScreen = () => {
       showCategoryBadges={preferences.showCategoryBadges}
       showUrgencyBadges={preferences.showUrgencyBadges}
       numColumns={getNumColumns(preferences.contentTypePreference)}
+      screenName="HomeScreen"
+      sectionName="All Listings"
     />
   ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges, preferences.contentTypePreference, trackView]);
 
@@ -849,6 +851,8 @@ const HomeScreen = () => {
       style={{ width: 200, marginRight: 12 }}
       showCategoryBadges={preferences.showCategoryBadges}
       showUrgencyBadges={preferences.showUrgencyBadges}
+      screenName="HomeScreen"
+      sectionName="Horizontal Listings"
     />
   ), [navigation, handleToggleFavorite, selectedListingId, preferences.showCategoryBadges, preferences.showUrgencyBadges, trackView]);
 

@@ -3,7 +3,7 @@ import { Listing, ApiResponse, QueryFilters } from '../types';
 import { processFetchedListings } from './listingService/core';
 
 // Elasticsearch API endpoint (admin-backend üzerinden)
-const ELASTICSEARCH_API_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api/v1', '') || 'https://benalsam.com';
+const ELASTICSEARCH_API_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://192.168.1.6:3002';
 
 export interface ElasticsearchSearchParams {
   query?: string;

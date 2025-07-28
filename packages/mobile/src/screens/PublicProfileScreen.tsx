@@ -100,7 +100,11 @@ const PublicProfileScreen = () => {
 
   const renderListingItem = ({ item }: { item: any }) => (
     <View style={styles.listingItem}>
-      <ListingCard listing={item} />
+      <ListingCard 
+        listing={item} 
+        screenName="PublicProfileScreen"
+        sectionName="User Listings"
+      />
     </View>
   );
 

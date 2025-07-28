@@ -73,8 +73,15 @@ const navigationItems = [
   },
   {
     id: 'analytics',
-    title: 'Analitik',
+    title: 'Real-Time Analytics',
     path: '/analytics',
+    icon: BarChart3,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'analytics-dashboard',
+    title: 'Analytics Dashboard',
+    path: '/analytics-dashboard',
     icon: BarChart3,
     permission: PERMISSIONS.ANALYTICS_VIEW,
   },

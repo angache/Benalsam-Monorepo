@@ -434,6 +434,8 @@ const SearchScreen = ({ navigation, route }: any) => {
           <ListingCard
             listing={item}
             onPress={handlePress}
+            screenName="SearchScreen"
+            sectionName="Search Results"
           />
         </View>
       );
@@ -562,7 +564,7 @@ const SearchScreen = ({ navigation, route }: any) => {
           <View style={styles.sortModalContent}>
             <SortOptions
               selectedSort={selectedSort}
-              onSortChange={(sort) => {
+              onSortChange={(sort: string) => {
                 console.log('🔍 Sort changed to:', sort);
                 setSelectedSort(sort);
                 setShowSortOptions(false);

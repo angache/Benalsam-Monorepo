@@ -37,6 +37,8 @@ interface SearchResultsProps {
   emptySubtitle?: string;
   showFilters?: boolean;
   onShowFilters?: () => void;
+  screenName?: string; // Analytics için screen adı
+  sectionName?: string; // Analytics için section adı
 }
 
 export const SearchResults: React.FC<SearchResultsProps> = ({
@@ -53,6 +55,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   emptySubtitle = 'Farklı anahtar kelimeler deneyin',
   showFilters = false,
   onShowFilters,
+  screenName = 'Unknown',
+  sectionName = 'Unknown',
 }) => {
   const colors = useThemeColors();
   const [refreshing, setRefreshing] = useState(false);
@@ -79,6 +83,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         listing={item}
         onPress={() => onItemPress?.(item)}
         style={viewMode === 'list' ? styles.listCard : undefined}
+        screenName={screenName}
+        sectionName={sectionName}
       />
     </View>
   ), [viewMode, onItemPress]);
