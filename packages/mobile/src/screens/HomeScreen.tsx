@@ -609,21 +609,7 @@ const HomeScreen = () => {
     hideWelcomeMessage
   } = userPrefs;
 
-  // Debug: User preferences durumunu kontrol et (sadece geliştirme için)
-  if (__DEV__) {
-    console.log('🔍 HomeScreen User Preferences:', {
-      showWelcomeMessage: preferences?.showWelcomeMessage,
-      contentTypePreference: preferences?.contentTypePreference,
-      showCategoryBadges: preferences?.showCategoryBadges,
-      showUrgencyBadges: preferences?.showUrgencyBadges,
-      numColumns: getNumColumns(preferences?.contentTypePreference || 'grid'),
-    });
-    console.log('👤 HomeScreen User ID:', user?.id);
-    
-    // Performance monitoring - Debug summary
-    const performanceSummary = performanceService.getPerformanceSummary();
-    console.log('📊 Performance Summary:', performanceSummary);
-  }
+  // User preferences loaded
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -726,38 +712,7 @@ const HomeScreen = () => {
   
   // Debug: Smart recommendations durumunu kontrol et
   if (__DEV__) {
-    console.log('🧠 Smart Recommendations Debug:', {
-      hasData: !!smartRecommendations?.data,
-      listingsCount: smartRecommendations?.data?.listings?.length || 0,
-      limitedCount: limitedRecommendations.length,
-      isLoading: recommendationsLoading,
-      hasError: !!recommendationsError,
-    });
-    
-    console.log('🏪 Seller Recommendations Debug:', {
-      hasData: !!sellerRecommendations?.data,
-      listingsCount: sellerRecommendations?.data?.listings?.length || 0,
-      limitedCount: limitedSellerRecommendations.length,
-      isLoading: sellerRecommendationsLoading,
-      hasError: !!sellerRecommendationsError,
-    });
-    
-    console.log('👁️ Recent Views Debug:', {
-      hasData: !!recentViews?.recentViews,
-      viewsCount: recentViews?.recentViews?.length || 0,
-      limitedCount: limitedRecentViews.length,
-      isLoading: recentViewsLoading,
-      hasError: !!recentViewsError,
-      filteredListings: limitedRecentViews.map(view => view.listing).filter((listing): listing is ListingWithUser => !!listing).length,
-    });
-    
-    console.log('🔍 Similar Listings Debug:', {
-      hasData: !!similarListings?.similarListings,
-      listingsCount: similarListings?.similarListings?.length || 0,
-      limitedCount: limitedSimilarListings.length,
-      isLoading: similarListingsLoading,
-      hasError: !!similarListingsError,
-    });
+    // Debug logs removed for cleaner console
   }
 
   const getCurrentCategories = () => {
@@ -924,30 +879,31 @@ const HomeScreen = () => {
     const colors = useThemeColors();
     
     const handleFooterLink = (type: string) => {
+      // Footer link handling
       switch (type) {
         case 'about':
-          console.log('Navigate to About page');
+          // Navigate to About page
           break;
         case 'contact':
-          console.log('Navigate to Contact page');
+          // Navigate to Contact page
           break;
         case 'help':
-          console.log('Navigate to Help page');
+          // Navigate to Help page
           break;
         case 'privacy':
-          console.log('Navigate to Privacy Policy');
+          // Navigate to Privacy Policy
           break;
         case 'terms':
-          console.log('Navigate to Terms of Service');
+          // Navigate to Terms of Service
           break;
         case 'instagram':
-          console.log('Open Instagram');
+          // Open Instagram
           break;
         case 'facebook':
-          console.log('Open Facebook');
+          // Open Facebook
           break;
         case 'twitter':
-          console.log('Open Twitter');
+          // Open Twitter
           break;
         default:
           break;
@@ -1184,7 +1140,6 @@ const HomeScreen = () => {
             <SearchBar
               value={selectedCategory}
               onChangeText={(text) => {
-                console.log('🔍 HomeScreen onChangeText:', text);
                 setSelectedCategory(text);
               }}
               onSearch={() => {
@@ -1217,7 +1172,6 @@ const HomeScreen = () => {
                         break;
                       case 'safety':
                         // TODO: Navigate to safety guide
-                        console.log('Navigate to safety guide');
                         break;
                       default:
                         navigateToScreen('Search', { query: banner.text });
@@ -1239,7 +1193,7 @@ const HomeScreen = () => {
                             navigateToAllListings();
                             break;
                           case 'safety':
-                            console.log('Navigate to safety guide');
+                            // Navigate to safety guide
                             break;
                           default:
                             navigateToScreen('Search', { query: banner.text });
@@ -1267,18 +1221,15 @@ const HomeScreen = () => {
                       switch (stat.label) {
                         case 'Aktif Kullanıcı':
                           // TODO: Navigate to user directory
-                          console.log('Navigate to user directory');
                           break;
                         case 'Alım İlanı':
                           navigateToScreen('Search', { query: 'alınık' });
                           break;
                         case 'Memnuniyet':
                           // TODO: Navigate to reviews
-                          console.log('Navigate to reviews');
                           break;
                         case 'Destek':
                           // TODO: Navigate to support
-                          console.log('Navigate to support');
                           break;
                         default:
                           navigateToScreen('Search', { query: stat.label });
