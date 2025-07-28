@@ -37,19 +37,16 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   }, [uri]);
 
   const handleError = useCallback(() => {
-    console.log('🚨 Image failed to load:', uri);
     setHasError(true);
     setIsLoading(false);
   }, [uri]);
 
   const handleLoad = useCallback(() => {
-    console.log('✅ Image loaded successfully (cache hit):', uri);
     setIsLoading(false);
     setHasError(false);
   }, [uri]);
 
   const handleLoadStart = useCallback(() => {
-    console.log('🔄 Image loading started:', uri);
     setIsLoading(true);
     setHasError(false);
   }, [uri]);

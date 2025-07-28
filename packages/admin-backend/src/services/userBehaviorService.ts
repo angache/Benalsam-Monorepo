@@ -522,9 +522,9 @@ export class UserBehaviorService {
         username: hit._source.user_id,
         user_profile: {
           id: hit._source.user_id,
-          email: `${hit._source.user_id}@example.com`,
-          name: hit._source.user_id,
-          avatar: null
+          email: hit._source.event_data?.user_email || `${hit._source.user_id}@example.com`,
+          name: hit._source.event_data?.user_name || hit._source.user_id,
+          avatar: hit._source.event_data?.user_avatar || null
         },
         action: hit._source.event_type,
         screen: hit._source.event_data?.screen_name || 'Unknown',

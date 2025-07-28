@@ -108,7 +108,7 @@ class AnalyticsService {
       // Use existing user data from auth store
       const userProfile = {
         id: user.id,
-        email: user.email,
+        email: user.email || user.user_metadata?.email || 'user@example.com',
         name: user.username || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
         avatar: user.avatar_url || null
       };
@@ -126,7 +126,7 @@ class AnalyticsService {
         const authToken = await this.getAuthToken();
         console.log('🔐 Auth token for analytics:', authToken ? 'Token exists' : 'No token');
         
-        const response = await fetch('http://192.168.1.6:3002/api/v1/analytics/track-behavior', {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://192.168.1.72:3002'}/api/v1/analytics/track-behavior`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

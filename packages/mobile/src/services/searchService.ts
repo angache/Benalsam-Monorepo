@@ -45,7 +45,7 @@ export interface SearchResponse {
 // Elasticsearch search via admin-backend
 export const searchWithElasticsearch = async (params: SearchParams): Promise<SearchResponse> => {
   try {
-    const response = await fetch('http://192.168.1.6:3002/api/v1/elasticsearch/search', {
+    const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://192.168.1.72:3002'}/api/v1/elasticsearch/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

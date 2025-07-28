@@ -1,11 +1,7 @@
 import { supabase  } from '../services/supabaseClient';
 
 export const uploadImages = async (files: any[], userId: string, bucket: string) => {
-  // Debug: Authentication kontrolü
-  console.log('🔍 [ImageUpload] Starting upload process...');
-  console.log('🔍 [ImageUpload] User ID:', userId);
-  console.log('🔍 [ImageUpload] Bucket:', bucket);
-  console.log('🔍 [ImageUpload] Files count:', files.length);
+  // Authentication kontrolü
   
   // Authentication session kontrolü
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -20,15 +16,14 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
     throw new Error('Authentication session expired. Please log in again.');
   }
   
-  console.log('✅ [ImageUpload] Session found, user ID:', session.user.id);
-  console.log('✅ [ImageUpload] Session user matches provided userId:', session.user.id === userId);
+  // Session validated
   
   const uploadPromises = files.map(async (file, index) => {
     // React Native için dosya formatını düzelt
     const fileExt = file.name?.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${userId}/${Date.now()}-${Math.random()}.${fileExt}`;
     
-    console.log(`📁 [ImageUpload] File ${index + 1} path:`, fileName);
+    // File path generated
     
     // MIME type'ı dosya uzantısından belirle
     let mimeType = 'image/jpeg'; // default
@@ -48,7 +43,7 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
           name: file.name,
           type: mimeType,
         } as any;
-        console.log(`📁 [ImageUpload] File ${index + 1} processed as local file:`, file.uri);
+        // Local file processed
       } catch (error) {
         console.error(`❌ Error processing local file ${index + 1}:`, error);
         throw error;
@@ -56,11 +51,11 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
     } else {
       // Bu büyük ihtimalle önceden yüklenmiş dosya, doğrudan kullan
       fileToUpload = file;
-      console.log(`📁 [ImageUpload] File ${index + 1} processed as existing file`);
+      // Existing file processed
     }
 
     try {
-      console.log(`🚀 [ImageUpload] Starting upload for file ${index + 1}...`);
+      // Starting upload
       
       // Supabase'e upload - contentType'ı manuel belirt
       const { data, error } = await supabase.storage
@@ -80,7 +75,7 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
         throw error;
       }
 
-      console.log(`✅ [ImageUpload] File ${index + 1} uploaded successfully:`, data.path);
+      // File uploaded successfully
 
       // Public URL oluştur
       const { data: publicData } = supabase.storage
@@ -88,7 +83,7 @@ export const uploadImages = async (files: any[], userId: string, bucket: string)
         .getPublicUrl(fileName);
 
       const publicUrl = publicData.publicUrl;
-      console.log(`🔗 [ImageUpload] File ${index + 1} public URL:`, publicUrl);
+      // Public URL generated
 
       return { fileName, url: publicUrl };
     } catch (error) {

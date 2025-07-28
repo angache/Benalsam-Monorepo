@@ -75,7 +75,7 @@ const MainTabs = () => {
   }, [colors]);
 
   useEffect(() => {
-    console.log('🔵 [Navigation] MainTabs rendered. User state:', user ? 'Logged in' : 'Not logged in');
+    // console.log('🔵 [Navigation] MainTabs rendered. User state:', user ? 'Logged in' : 'Not logged in');
   }, [user]);
 
   return (
@@ -145,7 +145,7 @@ const MainTabs = () => {
           options={{ title: "Anasayfa" }}
           listeners={{
             tabPress: () => {
-              console.log("🔵 [Navigation] Home tab pressed");
+              // console.log("🔵 [Navigation] Home tab pressed");
             },
           }}
         />
@@ -155,7 +155,7 @@ const MainTabs = () => {
           options={{ title: "Arama" }}
           listeners={{
             tabPress: () => {
-              console.log("🔵 [Navigation] Search tab pressed");
+              // console.log("🔵 [Navigation] Search tab pressed");
             },
           }}
         />
@@ -170,7 +170,7 @@ const MainTabs = () => {
               }}
               listeners={{
                 tabPress: () => {
-                  console.log("🔵 [Navigation] Create tab pressed");
+                  // console.log("🔵 [Navigation] Create tab pressed");
                 },
               }}
             />
@@ -180,7 +180,7 @@ const MainTabs = () => {
               options={{ title: "Favoriler" }}
               listeners={{
                 tabPress: () => {
-                  console.log("🔵 [Navigation] Favorites tab pressed");
+                  // console.log("🔵 [Navigation] Favorites tab pressed");
                 },
               }}
             />
@@ -190,7 +190,7 @@ const MainTabs = () => {
               options={{ title: "Profil" }}
               listeners={{
                 tabPress: () => {
-                  console.log("🔵 [Navigation] Profile tab pressed");
+                  // console.log("🔵 [Navigation] Profile tab pressed");
                 },
               }}
             />
@@ -212,7 +212,7 @@ const MainTabs = () => {
             }}
             listeners={{
               tabPress: () => {
-                console.log("🔵 [Navigation] Login tab pressed");
+                // console.log("🔵 [Navigation] Login tab pressed");
               },
             }}
           />
@@ -227,7 +227,7 @@ const AppNavigator = () => {
   const colors = useThemeColors();
 
   useEffect(() => {
-    console.log('🔵 [Navigation] AppNavigator rendered. User state:', user ? 'Logged in' : 'Not logged in');
+    // console.log('🔵 [Navigation] AppNavigator rendered. User state:', user ? 'Logged in' : 'Not logged in');
   }, [user]);
 
   return (
@@ -244,7 +244,7 @@ const AppNavigator = () => {
         component={MainTabs}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] MainTabs screen focused');
+            // console.log('🔵 [Navigation] MainTabs screen focused');
           },
         }}
       />
@@ -253,7 +253,7 @@ const AppNavigator = () => {
         component={ListingDetailScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] ListingDetail screen focused');
+            // console.log('🔵 [Navigation] ListingDetail screen focused');
           },
         }}
       />
@@ -262,7 +262,7 @@ const AppNavigator = () => {
         component={ProfileScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] ProfileScreen screen focused');
+            // console.log('🔵 [Navigation] ProfileScreen screen focused');
           },
         }}
       />
@@ -271,7 +271,7 @@ const AppNavigator = () => {
         component={LoginScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] Login screen focused');
+            // console.log('🔵 [Navigation] Login screen focused');
           },
         }}
       />
@@ -280,7 +280,7 @@ const AppNavigator = () => {
         component={RegisterScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] Register screen focused');
+            // console.log('🔵 [Navigation] Register screen focused');
           },
         }}
       />
@@ -289,7 +289,7 @@ const AppNavigator = () => {
         component={PublicProfileScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] PublicProfile screen focused');
+            // console.log('🔵 [Navigation] PublicProfile screen focused');
           },
         }}
       />
@@ -298,7 +298,7 @@ const AppNavigator = () => {
         component={AIGenerateListingScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] AIGenerateListing screen focused');
+            // console.log('🔵 [Navigation] AIGenerateListing screen focused');
           },
         }}
       />
@@ -310,7 +310,7 @@ const AppNavigator = () => {
         }}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] ElasticsearchTest screen focused');
+            // console.log('🔵 [Navigation] ElasticsearchTest screen focused');
           },
         }}
       />
@@ -320,7 +320,7 @@ const AppNavigator = () => {
         component={CreateListingCategoryScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] CreateListingCategory screen focused');
+            // console.log('🔵 [Navigation] CreateListingCategory screen focused');
           },
         }}
       />
@@ -329,7 +329,7 @@ const AppNavigator = () => {
         component={CreateListingDetailsScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] CreateListingDetails screen focused');
+            // console.log('🔵 [Navigation] CreateListingDetails screen focused');
           },
         }}
       />
@@ -338,7 +338,7 @@ const AppNavigator = () => {
         component={CreateListingImagesScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] CreateListingImages screen focused');
+            // Screen focused
           },
         }}
       />
@@ -347,7 +347,7 @@ const AppNavigator = () => {
         component={CreateListingLocationScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] CreateListingLocation screen focused');
+            // Screen focused
           },
         }}
       />
@@ -356,7 +356,7 @@ const AppNavigator = () => {
         component={CreateListingConfirmScreen}
         listeners={{
           focus: () => {
-            console.log('🔵 [Navigation] CreateListingConfirm screen focused');
+            // console.log('🔵 [Navigation] CreateListingConfirm screen focused');
           },
         }}
       />
@@ -369,7 +369,7 @@ const AppNavigator = () => {
             component={MyListingsScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] MyListings screen focused');
+                // Screen focused
               },
             }}
           />
@@ -378,7 +378,7 @@ const AppNavigator = () => {
             component={EditListingScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] EditListing screen focused');
+                // console.log('🔵 [Navigation] EditListing screen focused');
               },
             }}
           />
@@ -387,7 +387,7 @@ const AppNavigator = () => {
             component={ConversationsListScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Messages screen focused');
+                // console.log('🔵 [Navigation] Messages screen focused');
               },
             }}
           />
@@ -396,7 +396,7 @@ const AppNavigator = () => {
             component={ConversationScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Conversation screen focused');
+                // console.log('🔵 [Navigation] Conversation screen focused');
               },
             }}
           />
@@ -405,7 +405,7 @@ const AppNavigator = () => {
             component={SettingsScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Settings screen focused');
+                // console.log('🔵 [Navigation] Settings screen focused');
               },
             }}
           />
@@ -417,7 +417,7 @@ const AppNavigator = () => {
             }}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] EditProfile screen focused');
+                // console.log('🔵 [Navigation] EditProfile screen focused');
               },
             }}
           />
@@ -441,7 +441,7 @@ const AppNavigator = () => {
             })}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Inventory screen focused');
+                // console.log('🔵 [Navigation] Inventory screen focused');
               },
             }}
           />
@@ -462,7 +462,7 @@ const AppNavigator = () => {
             })}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] InventoryForm screen focused');
+                // console.log('🔵 [Navigation] InventoryForm screen focused');
               },
             }}
           />
@@ -471,7 +471,7 @@ const AppNavigator = () => {
             component={StockImageSearchScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] StockImageSearch screen focused');
+                // console.log('🔵 [Navigation] StockImageSearch screen focused');
               },
             }}
           />
@@ -492,7 +492,7 @@ const AppNavigator = () => {
             })}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Following screen focused');
+                // console.log('🔵 [Navigation] Following screen focused');
               },
             }}
           />
@@ -501,7 +501,7 @@ const AppNavigator = () => {
             component={FollowCategoryScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] FollowCategory screen focused');
+                // console.log('🔵 [Navigation] FollowCategory screen focused');
               },
             }}
           />
@@ -510,7 +510,7 @@ const AppNavigator = () => {
             component={MakeOfferScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] MakeOffer screen focused');
+                // console.log('🔵 [Navigation] MakeOffer screen focused');
               },
             }}
           />
@@ -519,7 +519,7 @@ const AppNavigator = () => {
             component={ReceivedOffersScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] ReceivedOffers screen focused');
+                // console.log('🔵 [Navigation] ReceivedOffers screen focused');
               },
             }}
           />
@@ -528,7 +528,7 @@ const AppNavigator = () => {
             component={SentOffersScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] SentOffers screen focused');
+                // console.log('🔵 [Navigation] SentOffers screen focused');
               },
             }}
           />
@@ -537,7 +537,7 @@ const AppNavigator = () => {
             component={SecurityScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Security screen focused');
+                // console.log('🔵 [Navigation] Security screen focused');
               },
             }}
           />
@@ -546,7 +546,7 @@ const AppNavigator = () => {
             component={PrivacyScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Privacy screen focused');
+                // console.log('🔵 [Navigation] Privacy screen focused');
               },
             }}
           />
@@ -555,7 +555,7 @@ const AppNavigator = () => {
             component={BlockedUsersScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] BlockedUsers screen focused');
+                // console.log('🔵 [Navigation] BlockedUsers screen focused');
               },
             }}
           />
@@ -576,7 +576,7 @@ const AppNavigator = () => {
             }}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] SelectDistrict screen focused');
+                // console.log('🔵 [Navigation] SelectDistrict screen focused');
               },
             }}
           />
@@ -585,7 +585,7 @@ const AppNavigator = () => {
             component={CreateListingMethodScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] CreateListingMethod screen focused');
+                // console.log('🔵 [Navigation] CreateListingMethod screen focused');
               },
             }}
           />
@@ -594,7 +594,7 @@ const AppNavigator = () => {
             component={TrustScoreScreen}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] TrustScore screen focused');
+                // console.log('🔵 [Navigation] TrustScore screen focused');
               },
             }}
           />
@@ -611,7 +611,7 @@ const AppNavigator = () => {
             }}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] FirebaseTest screen focused');
+                // console.log('🔵 [Navigation] FirebaseTest screen focused');
               },
             }}
           />
@@ -628,7 +628,7 @@ const AppNavigator = () => {
             }}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] FCMTest screen focused');
+                // console.log('🔵 [Navigation] FCMTest screen focused');
               },
             }}
           />
@@ -645,7 +645,7 @@ const AppNavigator = () => {
             }}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] Moderation screen focused');
+                // console.log('🔵 [Navigation] Moderation screen focused');
               },
             }}
           />
@@ -662,7 +662,7 @@ const AppNavigator = () => {
             }}
             listeners={{
               focus: () => {
-                console.log('🔵 [Navigation] AnalyticsDashboard screen focused');
+                // console.log('🔵 [Navigation] AnalyticsDashboard screen focused');
               },
             }}
           />

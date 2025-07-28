@@ -27,9 +27,7 @@ const CreateListingImagesScreen = () => {
   const route = useRoute<any>();
   const { data, setStepData } = useCreateListingStore();
   
-  // Debug: Store verilerini kontrol et
-  console.log('📸 CreateListingImages - Store data:', data);
-  console.log('📸 CreateListingImages - Budget:', data.details?.budget);
+  // Store data loaded
   
   const maxImages = 10;
   const [images, setImages] = useState<ListingImage[]>(data.images?.images || []);

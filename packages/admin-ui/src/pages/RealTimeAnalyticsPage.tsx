@@ -614,7 +614,7 @@ const RealTimeAnalyticsPage: React.FC = () => {
                           </Avatar>
                           {activity.user_profile?.name || 
                            activity.user_profile?.email || 
-                           'Unknown User'}
+                           (activity.userId ? `User ${activity.userId.slice(0, 8)}...` : 'Unknown User')}
                         </Box>
                       </TableCell>
                       <TableCell>
