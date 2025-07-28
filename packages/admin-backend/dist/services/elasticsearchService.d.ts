@@ -1,20 +1,24 @@
 import { Client } from '@elastic/elasticsearch';
 export declare class AdminElasticsearchService {
     protected client: Client;
-    protected indexName: string;
+    protected defaultIndexName: string;
     protected isConnected: boolean;
-    constructor(node?: string, indexName?: string, username?: string, password?: string);
+    constructor(node?: string, defaultIndexName?: string, username?: string, password?: string);
+    static getAllIndicesStats(): Promise<any>;
     getClient(): Client;
     testConnection(): Promise<boolean>;
     getHealth(): Promise<any>;
-    createIndex(mapping?: any): Promise<boolean>;
-    deleteIndex(): Promise<boolean>;
-    recreateIndex(mapping?: any): Promise<boolean>;
-    bulkIndex(documents: any[]): Promise<boolean>;
-    indexDocument(id: string, document: any): Promise<boolean>;
-    updateDocument(id: string, document: any): Promise<boolean>;
-    deleteDocument(id: string): Promise<boolean>;
-    search(query: any): Promise<any>;
+    createIndex(indexName?: string, mapping?: any): Promise<boolean>;
+    deleteIndex(indexName?: string): Promise<boolean>;
+    recreateIndex(indexName?: string, mapping?: any): Promise<boolean>;
+    bulkIndex(documents: any[], indexName?: string): Promise<boolean>;
+    indexDocument(id: string, document: any, indexName?: string): Promise<boolean>;
+    updateDocument(id: string, document: any, indexName?: string): Promise<boolean>;
+    deleteDocument(id: string, indexName?: string): Promise<boolean>;
+    search(query: any, indexName?: string): Promise<any>;
+    searchIndex(indexName: string, options?: {
+        size?: number;
+    }): Promise<any>;
     getIndexStats(): Promise<any>;
     reindexAllListings(): Promise<{
         success: boolean;

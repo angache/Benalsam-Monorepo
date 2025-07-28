@@ -11,7 +11,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   const isProduction = import.meta.env.PROD;
   
   // Get API URL from environment variable
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002/api/v1';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.1.6:3002/api/v1';
   const elasticsearchUrl = import.meta.env.VITE_ELASTICSEARCH_URL || 'http://localhost:9200';
   
   // Extract base URL for WebSocket

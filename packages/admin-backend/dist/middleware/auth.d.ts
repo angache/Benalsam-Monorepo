@@ -14,4 +14,5 @@ export declare const requireAnyPermission: (permissions: string[]) => (req: Auth
 export declare const requireAllPermissions: (permissions: string[]) => (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<void>;
 export declare const authMiddleware: (options?: AuthMiddlewareOptions) => any[];
 export declare const optionalAuth: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<void>;
+export declare const authenticateSupabaseToken: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=auth.d.ts.map

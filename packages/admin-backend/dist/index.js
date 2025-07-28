@@ -63,7 +63,13 @@ const limiter = (0, express_rate_limit_1.default)({
     standardHeaders: true,
     legacyHeaders: false,
 });
-app.use('/api/', limiter);
+const analyticsLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 1 * 60 * 1000,
+    max: 300,
+    message: 'Too many analytics requests, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 app.use((0, compression_1.default)());
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));

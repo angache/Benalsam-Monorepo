@@ -6,6 +6,7 @@ export declare class ElasticsearchController {
     private getQueueProcessorService;
     getHealth(req: Request, res: Response): Promise<void>;
     searchListings(req: Request, res: Response): Promise<void>;
+    searchIndex(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
     createIndex(req: Request, res: Response): Promise<void>;
     getIndexStats(req: Request, res: Response): Promise<void>;
     reindexAll(req: Request, res: Response): Promise<void>;

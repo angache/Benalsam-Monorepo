@@ -61,6 +61,33 @@ class ElasticsearchController {
             });
         }
     }
+    async searchIndex(req, res) {
+        try {
+            const { index, size = 20 } = req.query;
+            if (!index || typeof index !== 'string') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Index parameter is required'
+                });
+            }
+            const searchResult = await this.elasticsearchService.searchIndex(index, {
+                size: parseInt(size)
+            });
+            return res.json({
+                success: true,
+                data: searchResult,
+                message: 'Index search completed successfully'
+            });
+        }
+        catch (error) {
+            logger_1.default.error('❌ Index search failed:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Index search failed',
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    }
     async createIndex(req, res) {
         try {
             const success = await this.elasticsearchService.createIndex();
@@ -80,7 +107,7 @@ class ElasticsearchController {
     }
     async getIndexStats(req, res) {
         try {
-            const stats = await this.elasticsearchService.getIndexStats();
+            const stats = await services_1.AdminElasticsearchService.getAllIndicesStats();
             res.json({
                 success: true,
                 data: stats,

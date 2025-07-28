@@ -15,6 +15,7 @@ import type {
 } from '@benalsam/shared-types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || config.apiUrl;
+console.log('🔧 API_BASE_URL:', API_BASE_URL);
 
 // Axios instance
 const apiClient = axios.create({
@@ -270,4 +271,17 @@ export const apiService = {
     const response = await apiClient.get<ApiResponse<any>>(`/analytics/bounce-rate?days=${days}`);
     return response.data;
   },
+
+  // Elasticsearch
+  async getElasticsearchStats(): Promise<any> {
+    const response = await apiClient.get<ApiResponse<any>>('/elasticsearch/stats');
+    return response.data;
+  },
+
+  async searchElasticsearchIndex(indexName: string, size: number = 20): Promise<any> {
+    console.log('🔍 API Service: Searching index:', indexName, 'size:', size);
+    const response = await apiClient.get<ApiResponse<any>>(`/elasticsearch/search?index=${indexName}&size=${size}`);
+    console.log('📊 API Service: Response:', response.data);
+    return response.data;
+  }
 }; 

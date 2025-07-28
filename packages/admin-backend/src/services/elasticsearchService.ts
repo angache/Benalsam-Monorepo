@@ -3,17 +3,91 @@ import logger from '../config/logger';
 
 export class AdminElasticsearchService {
   protected client: Client;
-  protected indexName: string;
+  protected defaultIndexName: string;
   protected isConnected: boolean = false;
 
   constructor(
     node: string = process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
-    indexName: string = process.env.ELASTICSEARCH_INDEX || 'benalsam_listings',
+    defaultIndexName: string = 'benalsam_listings', // Default index, artık environment variable kullanmıyoruz
     username: string = process.env.ELASTICSEARCH_USERNAME || '',
     password: string = process.env.ELASTICSEARCH_PASSWORD || ''
   ) {
+    logger.info('🔧 ElasticsearchService constructor:', { node, defaultIndexName, username: username ? 'set' : 'not set' });
     this.client = new Client({ node, auth: username ? { username, password } : undefined });
-    this.indexName = indexName;
+    this.defaultIndexName = defaultIndexName;
+  }
+
+  // Static method to get all indices stats
+  static async getAllIndicesStats(): Promise<any> {
+    try {
+      const node = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
+      const username = process.env.ELASTICSEARCH_USERNAME || '';
+      const password = process.env.ELASTICSEARCH_PASSWORD || '';
+      
+      logger.info('🔍 Static method: Getting all indices stats...');
+      logger.info('🔧 Static method: Client config:', { node, username: username ? 'set' : 'not set' });
+      
+      // Create a new client instance for this operation
+      const client = new Client({ 
+        node, 
+        auth: username ? { username, password } : undefined 
+      });
+      
+      // Test connection first
+      await client.ping();
+      logger.info('✅ Static method: Elasticsearch connection successful');
+      
+      // First, get all indices using cat API
+      const indicesResponse = await client.cat.indices({ 
+        format: 'json',
+        expand_wildcards: 'all'
+      });
+      logger.info('📋 Static method: Available indices:', indicesResponse.map((idx: any) => idx.index));
+      
+      // Get all indices stats
+      const response = await client.indices.stats();
+      logger.info('📊 Static method: Indices stats response keys:', Object.keys(response.indices || {}));
+      
+      return response;
+    } catch (error) {
+      logger.error('Static method: Get index stats error:', error);
+      throw error;
+    }
+  }
+
+  // Static method to search specific index
+  static async searchIndexStatic(indexName: string, options: { size?: number } = {}): Promise<any> {
+    try {
+      const node =
+        process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200';
+      const username = process.env.ELASTICSEARCH_USERNAME || '';
+      const password = process.env.ELASTICSEARCH_PASSWORD || '';
+      
+      logger.info('🔍 Static method: Searching index:', indexName);
+      logger.info('🔧 Static method: Client config:', { node, username: username ? 'set' : 'not set' });
+      
+      // Create a new client instance for this operation
+      const client = new Client({ 
+        node, 
+        auth: username ? { username, password } : undefined 
+      });
+      
+      const response = await client.search({
+        index: indexName,
+        body: {
+          query: {
+            match_all: {}
+          },
+          sort: [{ _id: { order: 'desc' } }],
+          size: options.size || 20
+        }
+      });
+      
+      return response;
+    } catch (error) {
+      logger.error('Static method: Index search error:', error);
+      throw error;
+    }
   }
 
   getClient() {
@@ -37,10 +111,11 @@ export class AdminElasticsearchService {
     return response;
   }
 
-  async createIndex(mapping?: any): Promise<boolean> {
+  async createIndex(indexName?: string, mapping?: any): Promise<boolean> {
     try {
+      const targetIndex = indexName || this.defaultIndexName;
       await this.client.indices.create({
-        index: this.indexName,
+        index: targetIndex,
         body: mapping ? mapping : undefined
       });
       return true;
@@ -50,9 +125,10 @@ export class AdminElasticsearchService {
     }
   }
 
-  async deleteIndex(): Promise<boolean> {
+  async deleteIndex(indexName?: string): Promise<boolean> {
     try {
-      await this.client.indices.delete({ index: this.indexName });
+      const targetIndex = indexName || this.defaultIndexName;
+      await this.client.indices.delete({ index: targetIndex });
       return true;
     } catch (error) {
       logger.error('Delete index error:', error);
@@ -60,14 +136,16 @@ export class AdminElasticsearchService {
     }
   }
 
-  async recreateIndex(mapping?: any): Promise<boolean> {
-    await this.deleteIndex();
-    return this.createIndex(mapping);
+  async recreateIndex(indexName?: string, mapping?: any): Promise<boolean> {
+    const targetIndex = indexName || this.defaultIndexName;
+    await this.deleteIndex(targetIndex);
+    return this.createIndex(targetIndex, mapping);
   }
 
-  async bulkIndex(documents: any[]): Promise<boolean> {
+  async bulkIndex(documents: any[], indexName?: string): Promise<boolean> {
     try {
-      const body = documents.flatMap(doc => [{ index: { _index: this.indexName } }, doc]);
+      const targetIndex = indexName || this.defaultIndexName;
+      const body = documents.flatMap(doc => [{ index: { _index: targetIndex } }, doc]);
       await this.client.bulk({ refresh: true, body });
       return true;
     } catch (error) {
@@ -76,10 +154,11 @@ export class AdminElasticsearchService {
     }
   }
 
-  async indexDocument(id: string, document: any): Promise<boolean> {
+  async indexDocument(id: string, document: any, indexName?: string): Promise<boolean> {
     try {
+      const targetIndex = indexName || this.defaultIndexName;
       await this.client.index({
-        index: this.indexName,
+        index: targetIndex,
         id,
         body: document
       });
@@ -90,10 +169,11 @@ export class AdminElasticsearchService {
     }
   }
 
-  async updateDocument(id: string, document: any): Promise<boolean> {
+  async updateDocument(id: string, document: any, indexName?: string): Promise<boolean> {
     try {
+      const targetIndex = indexName || this.defaultIndexName;
       await this.client.update({
-        index: this.indexName,
+        index: targetIndex,
         id,
         body: { doc: document }
       });
@@ -104,10 +184,11 @@ export class AdminElasticsearchService {
     }
   }
 
-  async deleteDocument(id: string): Promise<boolean> {
+  async deleteDocument(id: string, indexName?: string): Promise<boolean> {
     try {
+      const targetIndex = indexName || this.defaultIndexName;
       await this.client.delete({
-        index: this.indexName,
+        index: targetIndex,
         id
       });
       return true;
@@ -117,10 +198,11 @@ export class AdminElasticsearchService {
     }
   }
 
-  async search(query: any): Promise<any> {
+  async search(query: any, indexName?: string): Promise<any> {
     try {
+      const targetIndex = indexName || this.defaultIndexName;
       const response = await this.client.search({
-        index: this.indexName,
+        index: targetIndex,
         body: query
       });
       return response;
@@ -130,9 +212,34 @@ export class AdminElasticsearchService {
     }
   }
 
+  async searchIndex(indexName: string, options: { size?: number } = {}): Promise<any> {
+    try {
+      const response = await this.client.search({
+        index: indexName,
+        body: {
+          query: {
+            match_all: {}
+          },
+          sort: [{ _id: { order: 'desc' } }],
+          size: options.size || 20
+        }
+      });
+      return response;
+    } catch (error) {
+      logger.error('Index search error:', error);
+      throw error;
+    }
+  }
+
   async getIndexStats(): Promise<any> {
     try {
-      const response = await this.client.indices.stats({ index: this.indexName });
+      logger.info('🔍 Getting all indices stats...');
+      logger.info('🔧 Client config:', { node: this.client.connectionPool.connections[0]?.url });
+      
+      // Tüm indexlerin stats'ini al
+      const response = await this.client.indices.stats();
+      logger.info('📊 Indices stats response keys:', Object.keys(response.indices || {}));
+      logger.info('📊 Indices stats response:', JSON.stringify(response, null, 2));
       return response;
     } catch (error) {
       logger.error('Get index stats error:', error);
@@ -311,7 +418,7 @@ export class AdminElasticsearchService {
       }
 
       const response = await this.client.search({
-        index: this.indexName,
+        index: this.defaultIndexName,
         body: searchBody,
       });
 

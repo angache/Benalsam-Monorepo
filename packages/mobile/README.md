@@ -66,9 +66,32 @@
    # AI Services Configuration (İsteğe bağlı)
    EXPO_PUBLIC_DEEPSEEK_API_KEY=your_deepseek_api_key_here
    EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+   
+   # Admin Backend Configuration (Geliştirme için)
+   EXPO_PUBLIC_ADMIN_BACKEND_URL=http://YOUR_LOCAL_IP:3002
    ```
 
-5. **Uygulamayı başlatın**
+5. **Environment variables'ları ayarlayın**
+   
+   **Önemli**: Geliştirme ortamında admin backend'e bağlanmak için:
+   
+   a) Yerel IP adresinizi bulun:
+   ```bash
+   # macOS/Linux
+   ifconfig | grep "inet " | grep -v 127.0.0.1
+   
+   # Windows
+   ipconfig | findstr "IPv4"
+   ```
+   
+   b) `.env` dosyasında `EXPO_PUBLIC_ADMIN_BACKEND_URL`'i güncelleyin:
+   ```env
+   EXPO_PUBLIC_ADMIN_BACKEND_URL=http://YOUR_LOCAL_IP:3002
+   ```
+   
+   **Not**: IP adresiniz değiştiğinde sadece bu environment variable'ı güncellemeniz yeterli.
+
+6. **Uygulamayı başlatın**
    ```bash
    npx expo start
    ```

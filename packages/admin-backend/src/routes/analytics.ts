@@ -21,7 +21,7 @@ router.post('/initialize', async (req, res) => {
 });
 
 // Track user behavior event
-router.post('/track-behavior', authenticateSupabaseToken, async (req, res) => {
+router.post('/track-behavior', async (req, res) => {
   try {
     const { event_type, event_data, session_id, device_info, user_profile } = req.body;
     

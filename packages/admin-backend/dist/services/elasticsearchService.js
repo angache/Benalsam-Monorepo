@@ -8,11 +8,37 @@ const elasticsearch_1 = require("@elastic/elasticsearch");
 const logger_1 = __importDefault(require("../config/logger"));
 class AdminElasticsearchService {
     client;
-    indexName;
+    defaultIndexName;
     isConnected = false;
-    constructor(node = process.env.ELASTICSEARCH_URL || 'http://localhost:9200', indexName = process.env.ELASTICSEARCH_INDEX || 'benalsam_listings', username = process.env.ELASTICSEARCH_USERNAME || '', password = process.env.ELASTICSEARCH_PASSWORD || '') {
+    constructor(node = process.env.ELASTICSEARCH_URL || 'http://localhost:9200', defaultIndexName = 'benalsam_listings', username = process.env.ELASTICSEARCH_USERNAME || '', password = process.env.ELASTICSEARCH_PASSWORD || '') {
+        logger_1.default.info('🔧 ElasticsearchService constructor:', { node, defaultIndexName, username: username ? 'set' : 'not set' });
         this.client = new elasticsearch_1.Client({ node, auth: username ? { username, password } : undefined });
-        this.indexName = indexName;
+        this.defaultIndexName = defaultIndexName;
+    }
+    static async getAllIndicesStats() {
+        try {
+            const node = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
+            const username = process.env.ELASTICSEARCH_USERNAME || '';
+            const password = process.env.ELASTICSEARCH_PASSWORD || '';
+            logger_1.default.info('🔍 Static method: Getting all indices stats...');
+            logger_1.default.info('🔧 Static method: Client config:', { node, username: username ? 'set' : 'not set' });
+            const client = new elasticsearch_1.Client({
+                node,
+                auth: username ? { username, password } : undefined
+            });
+            const indicesResponse = await client.cat.indices({
+                format: 'json',
+                expand_wildcards: 'all'
+            });
+            logger_1.default.info('📋 Static method: Available indices:', indicesResponse.map((idx) => idx.index));
+            const response = await client.indices.stats();
+            logger_1.default.info('📊 Static method: Indices stats response keys:', Object.keys(response.indices || {}));
+            return response;
+        }
+        catch (error) {
+            logger_1.default.error('Static method: Get index stats error:', error);
+            throw error;
+        }
     }
     getClient() {
         return this.client;
@@ -33,10 +59,11 @@ class AdminElasticsearchService {
         const response = await this.client.cluster.health();
         return response;
     }
-    async createIndex(mapping) {
+    async createIndex(indexName, mapping) {
         try {
+            const targetIndex = indexName || this.defaultIndexName;
             await this.client.indices.create({
-                index: this.indexName,
+                index: targetIndex,
                 body: mapping ? mapping : undefined
             });
             return true;
@@ -46,9 +73,10 @@ class AdminElasticsearchService {
             return false;
         }
     }
-    async deleteIndex() {
+    async deleteIndex(indexName) {
         try {
-            await this.client.indices.delete({ index: this.indexName });
+            const targetIndex = indexName || this.defaultIndexName;
+            await this.client.indices.delete({ index: targetIndex });
             return true;
         }
         catch (error) {
@@ -56,13 +84,15 @@ class AdminElasticsearchService {
             return false;
         }
     }
-    async recreateIndex(mapping) {
-        await this.deleteIndex();
-        return this.createIndex(mapping);
+    async recreateIndex(indexName, mapping) {
+        const targetIndex = indexName || this.defaultIndexName;
+        await this.deleteIndex(targetIndex);
+        return this.createIndex(targetIndex, mapping);
     }
-    async bulkIndex(documents) {
+    async bulkIndex(documents, indexName) {
         try {
-            const body = documents.flatMap(doc => [{ index: { _index: this.indexName } }, doc]);
+            const targetIndex = indexName || this.defaultIndexName;
+            const body = documents.flatMap(doc => [{ index: { _index: targetIndex } }, doc]);
             await this.client.bulk({ refresh: true, body });
             return true;
         }
@@ -71,10 +101,11 @@ class AdminElasticsearchService {
             return false;
         }
     }
-    async indexDocument(id, document) {
+    async indexDocument(id, document, indexName) {
         try {
+            const targetIndex = indexName || this.defaultIndexName;
             await this.client.index({
-                index: this.indexName,
+                index: targetIndex,
                 id,
                 body: document
             });
@@ -85,10 +116,11 @@ class AdminElasticsearchService {
             return false;
         }
     }
-    async updateDocument(id, document) {
+    async updateDocument(id, document, indexName) {
         try {
+            const targetIndex = indexName || this.defaultIndexName;
             await this.client.update({
-                index: this.indexName,
+                index: targetIndex,
                 id,
                 body: { doc: document }
             });
@@ -99,10 +131,11 @@ class AdminElasticsearchService {
             return false;
         }
     }
-    async deleteDocument(id) {
+    async deleteDocument(id, indexName) {
         try {
+            const targetIndex = indexName || this.defaultIndexName;
             await this.client.delete({
-                index: this.indexName,
+                index: targetIndex,
                 id
             });
             return true;
@@ -112,10 +145,11 @@ class AdminElasticsearchService {
             return false;
         }
     }
-    async search(query) {
+    async search(query, indexName) {
         try {
+            const targetIndex = indexName || this.defaultIndexName;
             const response = await this.client.search({
-                index: this.indexName,
+                index: targetIndex,
                 body: query
             });
             return response;
@@ -125,9 +159,32 @@ class AdminElasticsearchService {
             throw error;
         }
     }
+    async searchIndex(indexName, options = {}) {
+        try {
+            const response = await this.client.search({
+                index: indexName,
+                body: {
+                    query: {
+                        match_all: {}
+                    },
+                    sort: [{ _id: { order: 'desc' } }],
+                    size: options.size || 20
+                }
+            });
+            return response;
+        }
+        catch (error) {
+            logger_1.default.error('Index search error:', error);
+            throw error;
+        }
+    }
     async getIndexStats() {
         try {
-            const response = await this.client.indices.stats({ index: this.indexName });
+            logger_1.default.info('🔍 Getting all indices stats...');
+            logger_1.default.info('🔧 Client config:', { node: this.client.connectionPool.connections[0]?.url });
+            const response = await this.client.indices.stats();
+            logger_1.default.info('📊 Indices stats response keys:', Object.keys(response.indices || {}));
+            logger_1.default.info('📊 Indices stats response:', JSON.stringify(response, null, 2));
             return response;
         }
         catch (error) {
@@ -262,7 +319,7 @@ class AdminElasticsearchService {
                 searchBody.sort.unshift({ [sort.field]: { order: sort.order } });
             }
             const response = await this.client.search({
-                index: this.indexName,
+                index: this.defaultIndexName,
                 body: searchBody,
             });
             const total = typeof response.hits.total === 'number'

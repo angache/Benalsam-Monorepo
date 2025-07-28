@@ -77,6 +77,40 @@ export class ElasticsearchController {
   }
 
   /**
+   * Search specific index
+   */
+  async searchIndex(req: Request, res: Response) {
+    try {
+      const { index, size = 20 } = req.query;
+
+      if (!index || typeof index !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Index parameter is required'
+        });
+      }
+
+      // Use static method to search index
+      const searchResult = await AdminElasticsearchService.searchIndexStatic(index, {
+        size: parseInt(size as string)
+      });
+
+      return res.json({
+        success: true,
+        data: searchResult,
+        message: 'Index search completed successfully'
+      });
+    } catch (error) {
+      logger.error('❌ Index search failed:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Index search failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
    * Create index
    */
   async createIndex(req: Request, res: Response) {
@@ -102,7 +136,8 @@ export class ElasticsearchController {
    */
   async getIndexStats(req: Request, res: Response) {
     try {
-      const stats = await this.elasticsearchService.getIndexStats();
+      // Use static method to get all indices stats
+      const stats = await AdminElasticsearchService.getAllIndicesStats();
       
       res.json({
         success: true,

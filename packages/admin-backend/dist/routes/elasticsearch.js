@@ -10,6 +10,7 @@ router.get('/stats', (req, res) => elasticsearchController.getIndexStats(req, re
 router.get('/test-connection', (req, res) => elasticsearchController.testConnection(req, res));
 router.get('/test-redis', (req, res) => elasticsearchController.testRedisConnection(req, res));
 router.post('/search', (req, res) => elasticsearchController.searchListings(req, res));
+router.get('/search', (req, res) => elasticsearchController.searchIndex(req, res));
 router.get('/sync/status', (req, res) => elasticsearchController.getSyncStatus(req, res));
 router.get('/sync/config', (req, res) => elasticsearchController.getSyncConfig(req, res));
 router.post('/sync/config', (req, res) => elasticsearchController.updateSyncConfig(req, res));

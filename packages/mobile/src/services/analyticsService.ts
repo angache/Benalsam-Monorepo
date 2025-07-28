@@ -126,7 +126,7 @@ class AnalyticsService {
         const authToken = await this.getAuthToken();
         console.log('🔐 Auth token for analytics:', authToken ? 'Token exists' : 'No token');
         
-        const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://192.168.1.72:3002'}/api/v1/analytics/track-behavior`, {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL}/api/v1/analytics/track-behavior`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

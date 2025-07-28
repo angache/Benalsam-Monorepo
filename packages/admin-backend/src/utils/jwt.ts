@@ -25,6 +25,11 @@ export const jwtUtils = {
   // Verify Supabase JWT token
   verifySupabaseToken(token: string): any {
     try {
+      // Boş token kontrolü
+      if (!token || token.trim() === '') {
+        throw new Error('Empty token');
+      }
+      
       // Supabase JWT'yi decode et (signature doğrulaması yapmadan)
       const decoded = jwt.decode(token);
       if (!decoded || typeof decoded === 'string') {

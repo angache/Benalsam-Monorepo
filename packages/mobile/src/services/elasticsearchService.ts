@@ -3,7 +3,11 @@ import { Listing, ApiResponse, QueryFilters } from '../types';
 import { processFetchedListings } from './listingService/core';
 
 // Elasticsearch API endpoint (admin-backend üzerinden)
-const ELASTICSEARCH_API_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://192.168.1.72:3002';
+const ELASTICSEARCH_API_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL;
+
+if (!ELASTICSEARCH_API_URL) {
+  throw new Error('EXPO_PUBLIC_ADMIN_BACKEND_URL environment variable is not set');
+}
 
 export interface ElasticsearchSearchParams {
   query?: string;

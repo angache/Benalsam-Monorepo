@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.optionalAuth = exports.authMiddleware = exports.requireAllPermissions = exports.requireAnyPermission = exports.requirePermission = exports.requireRole = exports.authenticateToken = void 0;
+exports.authenticateSupabaseToken = exports.optionalAuth = exports.authMiddleware = exports.requireAllPermissions = exports.requireAnyPermission = exports.requirePermission = exports.requireRole = exports.authenticateToken = void 0;
 const database_1 = require("../config/database");
 const admin_types_1 = require("../types/admin-types");
 const response_1 = require("../utils/response");
@@ -184,4 +184,40 @@ const optionalAuth = async (req, res, next) => {
     next();
 };
 exports.optionalAuth = optionalAuth;
+const authenticateSupabaseToken = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        console.log('🔐 Auth header:', authHeader);
+        const token = authHeader && authHeader.split(' ')[1];
+        console.log('🔐 Token exists:', !!token);
+        if (!token) {
+            console.log('❌ No token provided');
+            response_1.ApiResponseUtil.unauthorized(res, 'Access token required');
+            return;
+        }
+        console.log('🔐 Token length:', token.length);
+        console.log('🔐 Token preview:', token.substring(0, 20) + '...');
+        const decoded = jwt_1.jwtUtils.verifySupabaseToken(token);
+        console.log('🔐 Token decoded successfully');
+        const { data: { user }, error } = await database_1.supabase.auth.getUser(token);
+        if (error || !user) {
+            console.log('❌ Supabase user error:', error);
+            response_1.ApiResponseUtil.unauthorized(res, 'Invalid user token');
+            return;
+        }
+        console.log('✅ User authenticated:', user.id);
+        req.user = {
+            id: user.id,
+            email: user.email || '',
+            role: 'user'
+        };
+        next();
+    }
+    catch (error) {
+        console.log('❌ Authentication error:', error);
+        logger_1.default.error('Supabase authentication error:', error);
+        response_1.ApiResponseUtil.unauthorized(res, 'Invalid token');
+    }
+};
+exports.authenticateSupabaseToken = authenticateSupabaseToken;
 //# sourceMappingURL=auth.js.map

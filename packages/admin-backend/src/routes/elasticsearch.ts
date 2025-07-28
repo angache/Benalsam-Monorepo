@@ -15,6 +15,7 @@ router.get('/test-redis', (req, res) => elasticsearchController.testRedisConnect
 
 // Search Routes
 router.post('/search', (req, res) => elasticsearchController.searchListings(req, res));
+router.get('/search', (req, res) => elasticsearchController.searchIndex(req, res));
 
 // Sync Management Routes
 router.get('/sync/status', (req, res) => elasticsearchController.getSyncStatus(req, res));

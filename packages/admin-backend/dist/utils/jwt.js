@@ -20,6 +20,25 @@ exports.jwtUtils = {
     verify(token) {
         return jsonwebtoken_1.default.verify(token, app_1.jwtConfig.secret);
     },
+    verifySupabaseToken(token) {
+        try {
+            if (!token || token.trim() === '') {
+                throw new Error('Empty token');
+            }
+            const decoded = jsonwebtoken_1.default.decode(token);
+            if (!decoded || typeof decoded === 'string') {
+                throw new Error('Invalid token format');
+            }
+            const now = Math.floor(Date.now() / 1000);
+            if (decoded.exp && decoded.exp < now) {
+                throw new Error('Token expired');
+            }
+            return decoded;
+        }
+        catch (error) {
+            throw new Error('Invalid Supabase token');
+        }
+    },
     decode(token) {
         try {
             return jsonwebtoken_1.default.decode(token);
