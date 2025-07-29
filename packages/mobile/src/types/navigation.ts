@@ -63,6 +63,7 @@ export type RootStackParamList = {
   FCMTest: undefined;
   Moderation: undefined;
   AnalyticsDashboard: undefined;
+  AnalyticsTest: undefined;
   ElasticsearchTest: undefined;
 };
 

@@ -1,5 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from '../config/logger';
+import { AnalyticsEvent, AnalyticsEventType, AnalyticsUser, AnalyticsSession, AnalyticsDevice, AnalyticsContext } from '@benalsam/shared-types';
 
 export interface UserBehaviorEvent {
   user_id: string;
@@ -58,12 +59,84 @@ export class UserBehaviorService {
 
   async initializeIndexes(): Promise<boolean> {
     try {
-      // User Behaviors Index
+      // User Behaviors Index - Enhanced for new analytics format
       await this.client.indices.create({
         index: this.behaviorIndex,
         body: {
           mappings: {
             properties: {
+              // Event properties
+              event_id: { type: 'keyword' },
+              event_name: { type: 'keyword' },
+              event_timestamp: { type: 'date' },
+              event_properties: { type: 'object', dynamic: true },
+              
+              // User properties
+              user: {
+                type: 'object',
+                properties: {
+                  id: { type: 'keyword' },
+                  email: { type: 'keyword' },
+                  name: { type: 'text' },
+                  avatar: { type: 'keyword' },
+                  properties: {
+                    type: 'object',
+                    properties: {
+                      registration_date: { type: 'date' },
+                      subscription_type: { type: 'keyword' },
+                      last_login: { type: 'date' },
+                      trust_score: { type: 'float' },
+                      verification_status: { type: 'keyword' }
+                    }
+                  }
+                }
+              },
+              
+              // Session properties
+              session: {
+                type: 'object',
+                properties: {
+                  id: { type: 'keyword' },
+                  start_time: { type: 'date' },
+                  duration: { type: 'long' },
+                  page_views: { type: 'integer' },
+                  events_count: { type: 'integer' }
+                }
+              },
+              
+              // Device properties
+              device: {
+                type: 'object',
+                properties: {
+                  platform: { type: 'keyword' },
+                  version: { type: 'keyword' },
+                  model: { type: 'keyword' },
+                  screen_resolution: { type: 'keyword' },
+                  app_version: { type: 'keyword' },
+                  os_version: { type: 'keyword' },
+                  browser: { type: 'keyword' },
+                  user_agent: { type: 'text' }
+                }
+              },
+              
+              // Context properties
+              context: {
+                type: 'object',
+                properties: {
+                  ip_address: { type: 'ip' },
+                  user_agent: { type: 'text' },
+                  referrer: { type: 'keyword' },
+                  utm_source: { type: 'keyword' },
+                  utm_medium: { type: 'keyword' },
+                  utm_campaign: { type: 'keyword' },
+                  utm_term: { type: 'keyword' },
+                  utm_content: { type: 'keyword' },
+                  language: { type: 'keyword' },
+                  timezone: { type: 'keyword' }
+                }
+              },
+              
+              // Legacy fields for backward compatibility
               user_id: { type: 'keyword' },
               event_type: { type: 'keyword' },
               event_data: { type: 'object' },
@@ -636,6 +709,428 @@ export class UserBehaviorService {
         newUsersToday: 0,
         newListingsToday: 0
       };
+    }
+  }
+
+  // ===========================
+  // STANDARDIZED ANALYTICS METHODS
+  // ===========================
+
+  async trackAnalyticsEvent(analyticsEvent: AnalyticsEvent): Promise<boolean> {
+    try {
+      // Enhanced document with additional metadata
+      const document = {
+        ...analyticsEvent,
+        '@timestamp': analyticsEvent.event_timestamp,
+        // Add legacy fields for backward compatibility
+        user_id: analyticsEvent.user.id,
+        event_type: analyticsEvent.event_name,
+        event_data: analyticsEvent.event_properties,
+        timestamp: analyticsEvent.event_timestamp,
+        session_id: analyticsEvent.session.id,
+        device_info: {
+          platform: analyticsEvent.device.platform,
+          version: analyticsEvent.device.version,
+          model: analyticsEvent.device.model
+        }
+      };
+
+      await this.client.index({
+        index: this.behaviorIndex,
+        body: document
+      });
+
+      logger.info(`Analytics event tracked: ${analyticsEvent.event_name} for user ${analyticsEvent.user.id} (session: ${analyticsEvent.session.id})`);
+      return true;
+    } catch (error) {
+      logger.error('Error tracking analytics event:', error);
+      return false;
+    }
+  }
+
+  async getAnalyticsEvents(params: {
+    page?: number;
+    limit?: number;
+    event_type?: string;
+    user_id?: string;
+    start_date?: string;
+    end_date?: string;
+  }): Promise<any> {
+    try {
+      const { page = 1, limit = 20, event_type, user_id, start_date, end_date } = params;
+      const from = (page - 1) * limit;
+
+      const query: any = {
+        bool: {
+          must: []
+        }
+      };
+
+      if (event_type) {
+        query.bool.must.push({ term: { event_name: event_type } });
+      }
+
+      if (user_id) {
+        query.bool.must.push({ term: { 'user.id': user_id } });
+      }
+
+      if (start_date || end_date) {
+        const range: any = {};
+        if (start_date) range.gte = start_date;
+        if (end_date) range.lte = end_date;
+        query.bool.must.push({ range: { event_timestamp: range } });
+      }
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query,
+          sort: [{ event_timestamp: { order: 'desc' } }],
+          from,
+          size: limit
+        }
+      });
+
+      return {
+        events: response.hits.hits.map((hit: any) => ({
+          ...hit._source,
+          _id: hit._id
+        })),
+        total: (response.hits.total as any)?.value || response.hits.total || 0,
+        page,
+        limit,
+        totalPages: Math.ceil(((response.hits.total as any)?.value || response.hits.total || 0) / limit)
+      };
+    } catch (error) {
+      logger.error('Error getting analytics events:', error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsEventTypes(days: number = 7): Promise<any> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            range: {
+              event_timestamp: {
+                gte: startDate.toISOString()
+              }
+            }
+          },
+          aggs: {
+            event_types: {
+              terms: {
+                field: 'event_name.keyword',
+                size: 20
+              },
+              aggs: {
+                event_count: {
+                  value_count: {
+                    field: 'event_name.keyword'
+                  }
+                }
+              }
+            }
+          },
+          size: 0
+        }
+      });
+
+      const buckets = (response.aggregations?.event_types as any)?.buckets || [];
+      
+      return buckets.map((bucket: any) => ({
+        event_type: bucket.key,
+        count: bucket.doc_count,
+        percentage: (bucket.doc_count / ((response.hits.total as any)?.value || response.hits.total || 0)) * 100
+      }));
+    } catch (error) {
+      logger.error('Error getting analytics event types:', error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsUserJourney(userId: string, days: number = 7): Promise<any> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { 'user.id': userId } },
+                {
+                  range: {
+                    event_timestamp: {
+                      gte: startDate.toISOString()
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          sort: [{ event_timestamp: { order: 'asc' } }],
+          size: 100
+        }
+      });
+
+      const events = response.hits.hits.map((hit: any) => ({
+        event_id: hit._source.event_id,
+        event_name: hit._source.event_name,
+        event_timestamp: hit._source.event_timestamp,
+        event_properties: hit._source.event_properties,
+        session_id: hit._source.session.id
+      }));
+
+      // Group events by session
+      const sessions: { [key: string]: any[] } = {};
+      events.forEach(event => {
+        if (!sessions[event.session_id]) {
+          sessions[event.session_id] = [];
+        }
+        sessions[event.session_id].push(event);
+      });
+
+      return {
+        user_id: userId,
+        total_sessions: Object.keys(sessions).length,
+        total_events: events.length,
+        sessions: Object.entries(sessions).map(([sessionId, sessionEvents]) => ({
+          session_id: sessionId,
+          events: sessionEvents,
+          session_start: sessionEvents[0]?.event_timestamp,
+          session_end: sessionEvents[sessionEvents.length - 1]?.event_timestamp,
+          event_count: sessionEvents.length
+        }))
+      };
+    } catch (error) {
+      logger.error('Error getting analytics user journey:', error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsSessionData(sessionId: string): Promise<any> {
+    try {
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            term: { 'session.id': sessionId }
+          },
+          sort: [{ event_timestamp: { order: 'asc' } }],
+          size: 100
+        }
+      });
+
+      const events = response.hits.hits.map((hit: any) => ({
+        event_id: hit._source.event_id,
+        event_name: hit._source.event_name,
+        event_timestamp: hit._source.event_timestamp,
+        event_properties: hit._source.event_properties,
+        user: hit._source.user,
+        device: hit._source.device
+      }));
+
+      if (events.length === 0) {
+        return null;
+      }
+
+      const firstEvent = events[0];
+      const lastEvent = events[events.length - 1];
+      const sessionDuration = new Date(lastEvent.event_timestamp).getTime() - new Date(firstEvent.event_timestamp).getTime();
+
+      return {
+        session_id: sessionId,
+        user: firstEvent.user,
+        device: firstEvent.device,
+        session_start: firstEvent.event_timestamp,
+        session_end: lastEvent.event_timestamp,
+        session_duration_ms: sessionDuration,
+        total_events: events.length,
+        events: events,
+        event_types: [...new Set(events.map(e => e.event_name))]
+      };
+    } catch (error) {
+      logger.error('Error getting analytics session data:', error);
+      throw error;
+    }
+  }
+
+  // Enhanced analytics methods
+  async getAnalyticsUserStats(userId: string, days: number = 30): Promise<any> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { 'user.id': userId } },
+                { range: { event_timestamp: { gte: startDate.toISOString() } } }
+              ]
+            }
+          },
+          aggs: {
+            event_types: {
+              terms: { field: 'event_name.keyword', size: 20 }
+            },
+            sessions: {
+              cardinality: { field: 'session.id' }
+            },
+            total_events: {
+              value_count: { field: 'event_id' }
+            },
+            avg_session_duration: {
+              avg: { field: 'session.duration' }
+            },
+            platforms: {
+              terms: { field: 'device.platform.keyword' }
+            }
+          }
+        }
+      });
+
+      return {
+        userId,
+        period: `${days} days`,
+        stats: {
+          totalEvents: (response.aggregations?.total_events as any)?.value || 0,
+          uniqueSessions: (response.aggregations?.sessions as any)?.value || 0,
+          avgSessionDuration: (response.aggregations?.avg_session_duration as any)?.value || 0,
+          eventTypes: (response.aggregations?.event_types as any)?.buckets || [],
+          platforms: (response.aggregations?.platforms as any)?.buckets || []
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting user analytics stats:', error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsPerformanceMetrics(days: number = 7): Promise<any> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { range: { event_timestamp: { gte: startDate.toISOString() } } },
+                { terms: { event_name: ['app_load', 'api_call', 'error_occurred'] } }
+              ]
+            }
+          },
+          aggs: {
+            app_load_times: {
+              filter: { term: { event_name: 'app_load' } },
+              aggs: {
+                avg_load_time: { avg: { field: 'event_properties.load_time_ms' } },
+                p95_load_time: { percentiles: { field: 'event_properties.load_time_ms', percents: [95] } }
+              }
+            },
+            api_call_times: {
+              filter: { term: { event_name: 'api_call' } },
+              aggs: {
+                avg_duration: { avg: { field: 'event_properties.duration_ms' } },
+                p95_duration: { percentiles: { field: 'event_properties.duration_ms', percents: [95] } }
+              }
+            },
+            error_rates: {
+              filter: { term: { event_name: 'error_occurred' } },
+              aggs: {
+                error_count: { value_count: { field: 'event_id' } },
+                error_types: { terms: { field: 'event_properties.error_type.keyword' } }
+              }
+            }
+          }
+        }
+      });
+
+      return {
+        period: `${days} days`,
+        performance: {
+          appLoad: {
+            avgLoadTime: (response.aggregations?.app_load_times as any)?.avg_load_time?.value || 0,
+            p95LoadTime: (response.aggregations?.app_load_times as any)?.p95_load_time?.values?.['95.0'] || 0
+          },
+          apiCalls: {
+            avgDuration: (response.aggregations?.api_call_times as any)?.avg_duration?.value || 0,
+            p95Duration: (response.aggregations?.api_call_times as any)?.p95_duration?.values?.['95.0'] || 0
+          },
+          errors: {
+            totalErrors: (response.aggregations?.error_rates as any)?.error_count?.value || 0,
+            errorTypes: (response.aggregations?.error_rates as any)?.error_types?.buckets || []
+          }
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting performance metrics:', error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsUserJourneyEnhanced(userId: string, days: number = 7): Promise<any> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { 'user.id': userId } },
+                { range: { event_timestamp: { gte: startDate.toISOString() } } }
+              ]
+            }
+          },
+          sort: [{ event_timestamp: { order: 'asc' } }],
+          size: 1000,
+          aggs: {
+            sessions: {
+              terms: { field: 'session.id', size: 100 },
+              aggs: {
+                session_events: {
+                  top_hits: {
+                    sort: [{ event_timestamp: { order: 'asc' } }],
+                    size: 50
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const sessions = (response.aggregations?.sessions as any)?.buckets?.map((bucket: any) => ({
+        sessionId: bucket.key,
+        events: bucket.session_events.hits.hits.map((hit: any) => hit._source),
+        eventCount: bucket.doc_count
+      })) || [];
+
+      return {
+        userId,
+        period: `${days} days`,
+        totalSessions: sessions.length,
+        sessions
+      };
+    } catch (error) {
+      logger.error('Error getting enhanced user journey:', error);
+      throw error;
     }
   }
 }

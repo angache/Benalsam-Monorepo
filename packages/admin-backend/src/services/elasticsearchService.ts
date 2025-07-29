@@ -1,5 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from '../config/logger';
+import { SearchOptimizedListing } from '@benalsam/shared-types';
 
 export class AdminElasticsearchService {
   protected client: Client;
@@ -8,133 +9,352 @@ export class AdminElasticsearchService {
 
   constructor(
     node: string = process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
-    defaultIndexName: string = 'benalsam_listings', // Default index, artık environment variable kullanmıyoruz
+    defaultIndexName: string = 'benalsam_listings',
     username: string = process.env.ELASTICSEARCH_USERNAME || '',
     password: string = process.env.ELASTICSEARCH_PASSWORD || ''
   ) {
-    logger.info('🔧 ElasticsearchService constructor:', { node, defaultIndexName, username: username ? 'set' : 'not set' });
-    this.client = new Client({ node, auth: username ? { username, password } : undefined });
     this.defaultIndexName = defaultIndexName;
+    this.client = new Client({
+      node,
+      auth: username && password ? { username, password } : undefined,
+      tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
+    });
   }
 
-  // Static method to get all indices stats
+  private getListingsIndexMapping() {
+    return {
+      settings: {
+        analysis: {
+          analyzer: {
+            turkish_analyzer: {
+              type: 'turkish'
+            }
+          }
+        },
+        number_of_shards: 1,
+        number_of_replicas: 0
+      },
+      mappings: {
+        properties: {
+          id: { type: 'keyword' },
+          user_id: { type: 'keyword' },
+          title: { type: 'text', analyzer: 'turkish_analyzer' },
+          description: { type: 'text', analyzer: 'turkish_analyzer' },
+          category: { type: 'keyword' },
+          subcategory: { type: 'keyword' },
+          
+          // Temel alanlar
+          budget: {
+            type: 'object',
+            properties: {
+              min: { type: 'float' },
+              max: { type: 'float' },
+              currency: { type: 'keyword' }
+            }
+          },
+          location: {
+            type: 'object',
+            properties: {
+              province: { type: 'keyword' },
+              district: { type: 'keyword' },
+              neighborhood: { type: 'keyword' },
+              coordinates: { type: 'geo_point' }
+            }
+          },
+          condition: { type: 'keyword' },
+          urgency: { type: 'keyword' },
+          main_image_url: { type: 'keyword' },
+          additional_image_urls: { type: 'keyword' },
+          status: { type: 'keyword' },
+          created_at: { type: 'date' },
+          updated_at: { type: 'date' },
+          
+          // Esnek attributes
+          attributes: {
+            type: 'object',
+            dynamic: true,
+            properties: {
+              // Sık kullanılan attribute'lar için özel mapping
+              brand: { type: 'keyword' },
+              model: { type: 'keyword' },
+              ram: { type: 'keyword' },
+              storage: { type: 'keyword' },
+              color: { type: 'keyword' },
+              size: { type: 'keyword' },
+              year: { type: 'integer' },
+              rooms: { type: 'integer' },
+              square_meters: { type: 'float' },
+              mileage: { type: 'integer' },
+              fuel_type: { type: 'keyword' },
+              transmission: { type: 'keyword' },
+              material: { type: 'keyword' },
+              warranty: { type: 'keyword' },
+              original_box: { type: 'boolean' },
+              furnished: { type: 'boolean' },
+              parking: { type: 'boolean' },
+              balcony: { type: 'boolean' },
+              elevator: { type: 'boolean' },
+              air_conditioning: { type: 'boolean' },
+              energy_class: { type: 'keyword' },
+              engine_size: { type: 'keyword' },
+              body_type: { type: 'keyword' },
+              doors: { type: 'integer' },
+              seats: { type: 'integer' },
+              bathrooms: { type: 'integer' },
+              floor: { type: 'integer' },
+              total_floors: { type: 'integer' },
+              heating: { type: 'keyword' },
+              building_type: { type: 'keyword' },
+              view: { type: 'keyword' },
+              floor_heating: { type: 'boolean' },
+              security_system: { type: 'boolean' },
+              garden: { type: 'boolean' },
+              land_type: { type: 'keyword' },
+              zoning: { type: 'keyword' },
+              utilities: { type: 'keyword' },
+              road_access: { type: 'boolean' },
+              clothing_type: { type: 'keyword' },
+              fit: { type: 'keyword' },
+              original_price: { type: 'float' },
+              sport_type: { type: 'keyword' },
+              rarity: { type: 'keyword' },
+              autographed: { type: 'boolean' },
+              limited_edition: { type: 'boolean' },
+              author: { type: 'text', analyzer: 'turkish_analyzer' },
+              publisher: { type: 'keyword' },
+              isbn: { type: 'keyword' },
+              language: { type: 'keyword' },
+              format: { type: 'keyword' },
+              genre: { type: 'keyword' },
+              pages: { type: 'integer' },
+              subject: { type: 'keyword' },
+              edition: { type: 'keyword' },
+              service_type: { type: 'keyword' },
+              experience_years: { type: 'integer' },
+              certification: { type: 'keyword' },
+              availability: { type: 'keyword' },
+              location_type: { type: 'keyword' },
+              languages: { type: 'keyword' },
+              portfolio_url: { type: 'keyword' },
+              references: { type: 'boolean' },
+              insurance: { type: 'boolean' },
+              payment_methods: { type: 'keyword' },
+              hourly_rate: { type: 'float' },
+              instrument_type: { type: 'keyword' },
+              case_included: { type: 'boolean' },
+              equipment_type: { type: 'keyword' },
+              power_output: { type: 'keyword' },
+              connectivity: { type: 'keyword' },
+              artist: { type: 'text', analyzer: 'turkish_analyzer' },
+              style: { type: 'keyword' },
+              medium: { type: 'keyword' },
+              dimensions: { type: 'object' },
+              framed: { type: 'boolean' },
+              year_created: { type: 'integer' },
+              weight: { type: 'float' },
+              craft_type: { type: 'keyword' },
+              handmade: { type: 'boolean' },
+              techniques: { type: 'keyword' },
+              period: { type: 'keyword' },
+              provenance: { type: 'text' },
+              age: { type: 'integer' },
+              toy_type: { type: 'keyword' },
+              age_range: { type: 'keyword' },
+              educational: { type: 'boolean' },
+              safety_certified: { type: 'boolean' },
+              platform: { type: 'keyword' },
+              manual: { type: 'boolean' },
+              region: { type: 'keyword' },
+              player_count: { type: 'keyword' },
+              aid_type: { type: 'keyword' },
+              weight_capacity: { type: 'keyword' },
+              adjustable: { type: 'boolean' }
+            }
+          },
+          
+          // Search optimization
+          search_keywords: { type: 'keyword' },
+          popularity_score: { type: 'float' },
+          user_trust_score: { type: 'float' }
+        }
+      }
+    };
+  }
+
+  private getUserBehaviorsIndexMapping() {
+    return {
+      settings: {
+        analysis: {
+          analyzer: {
+            turkish_analyzer: {
+              type: 'turkish'
+            }
+          }
+        },
+        number_of_shards: 1,
+        number_of_replicas: 0
+      },
+      mappings: {
+        properties: {
+          event_id: { type: 'keyword' },
+          event_name: { type: 'keyword' },
+          event_timestamp: { type: 'date' },
+          event_properties: { type: 'object', dynamic: true },
+          
+          user: {
+            type: 'object',
+            properties: {
+              id: { type: 'keyword' },
+              email: { type: 'keyword' },
+              name: { type: 'text', analyzer: 'turkish_analyzer' },
+              avatar: { type: 'keyword' },
+              properties: {
+                type: 'object',
+                properties: {
+                  registration_date: { type: 'date' },
+                  subscription_type: { type: 'keyword' },
+                  last_login: { type: 'date' },
+                  trust_score: { type: 'float' },
+                  verification_status: { type: 'keyword' }
+                }
+              }
+            }
+          },
+          
+          session: {
+            type: 'object',
+            properties: {
+              id: { type: 'keyword' },
+              start_time: { type: 'date' },
+              duration: { type: 'long' },
+              page_views: { type: 'integer' },
+              events_count: { type: 'integer' }
+            }
+          },
+          
+          device: {
+            type: 'object',
+            properties: {
+              platform: { type: 'keyword' },
+              version: { type: 'keyword' },
+              model: { type: 'keyword' },
+              screen_resolution: { type: 'keyword' },
+              app_version: { type: 'keyword' },
+              os_version: { type: 'keyword' },
+              browser: { type: 'keyword' },
+              user_agent: { type: 'text' }
+            }
+          },
+          
+          context: {
+            type: 'object',
+            properties: {
+              ip_address: { type: 'keyword' },
+              user_agent: { type: 'text' },
+              referrer: { type: 'keyword' },
+              utm_source: { type: 'keyword' },
+              utm_medium: { type: 'keyword' },
+              utm_campaign: { type: 'keyword' },
+              utm_term: { type: 'keyword' },
+              utm_content: { type: 'keyword' },
+              language: { type: 'keyword' },
+              timezone: { type: 'keyword' }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // Static methods for health checks
   static async getAllIndicesStats(): Promise<any> {
     try {
-      const node = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
-      const username = process.env.ELASTICSEARCH_USERNAME || '';
-      const password = process.env.ELASTICSEARCH_PASSWORD || '';
-      
-      logger.info('🔍 Static method: Getting all indices stats...');
-      logger.info('🔧 Static method: Client config:', { node, username: username ? 'set' : 'not set' });
-      
-      // Create a new client instance for this operation
-      const client = new Client({ 
-        node, 
-        auth: username ? { username, password } : undefined 
+      const client = new Client({
+        node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
+        auth: process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD ? {
+          username: process.env.ELASTICSEARCH_USERNAME,
+          password: process.env.ELASTICSEARCH_PASSWORD
+        } : undefined,
+        tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
       });
-      
-      // Test connection first
-      await client.ping();
-      logger.info('✅ Static method: Elasticsearch connection successful');
-      
-      // First, get all indices using cat API
-      const indicesResponse = await client.cat.indices({ 
-        format: 'json',
-        expand_wildcards: 'all'
-      });
-      logger.info('📋 Static method: Available indices:', indicesResponse.map((idx: any) => idx.index));
-      
-      // Get all indices stats
+
       const response = await client.indices.stats();
-      logger.info('📊 Static method: Indices stats response keys:', Object.keys(response.indices || {}));
-      
       return response;
     } catch (error) {
-      logger.error('Static method: Get index stats error:', error);
+      logger.error('Error getting indices stats:', error);
       throw error;
     }
   }
 
-  // Static method to search specific index
   static async searchIndexStatic(indexName: string, options: { size?: number } = {}): Promise<any> {
     try {
-      const node = process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200';
-      const username = process.env.ELASTICSEARCH_USERNAME || '';
-      const password = process.env.ELASTICSEARCH_PASSWORD || '';
-      
-      logger.info('🔍 Static method: Searching index:', indexName);
-      logger.info('🔧 Static method: Client config:', { node, username: username ? 'set' : 'not set' });
-      
-      // Create a new client instance for this operation
-      const client = new Client({ 
-        node, 
-        auth: username ? { username, password } : undefined 
+      const client = new Client({
+        node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
+        auth: process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD ? {
+          username: process.env.ELASTICSEARCH_USERNAME,
+          password: process.env.ELASTICSEARCH_PASSWORD
+        } : undefined,
+        tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
       });
-      
-      // Index'e göre sıralama belirle
-      let sortFields: any[];
-      if (indexName === 'user_behaviors') {
-        sortFields = [
-          { timestamp: { order: 'desc' as const } },
-          { _id: { order: 'desc' as const } }
-        ];
-      } else if (indexName === 'benalsam_listings') {
-        sortFields = [
-          { created_at: { order: 'desc' as const } },
-          { _id: { order: 'desc' as const } }
-        ];
-      } else {
-        // Default sıralama
-        sortFields = [
-          { _id: { order: 'desc' as const } }
-        ];
-      }
-      
+
       const response = await client.search({
         index: indexName,
-        body: {
-          query: {
-            match_all: {}
-          },
-          sort: sortFields,
-          size: options.size || 20
+        size: options.size || 10,
+        query: {
+          match_all: {}
         }
       });
-      
+
       return response;
     } catch (error) {
-      logger.error('Static method: Index search error:', error);
+      logger.error(`Error searching index ${indexName}:`, error);
       throw error;
     }
   }
 
+  // Instance methods
   getClient() {
     return this.client;
   }
 
   async testConnection(): Promise<boolean> {
     try {
-      await this.client.ping();
-      this.isConnected = true;
-      return true;
+      const response = await this.client.ping();
+      this.isConnected = response;
+      return response;
     } catch (error) {
+      logger.error('Elasticsearch connection test failed:', error);
       this.isConnected = false;
-      logger.error('❌ Elasticsearch connection failed:', error);
       return false;
     }
   }
 
   async getHealth(): Promise<any> {
-    const response = await this.client.cluster.health();
-    return response;
+    try {
+      return await this.client.cluster.health();
+    } catch (error) {
+      logger.error('Error getting cluster health:', error);
+      throw error;
+    }
   }
 
   async createIndex(indexName?: string, mapping?: any): Promise<boolean> {
     try {
       const targetIndex = indexName || this.defaultIndexName;
+      
+      // Use enhanced mapping based on index name
+      let enhancedMapping = mapping;
+      if (!mapping) {
+        if (targetIndex === 'benalsam_listings') {
+          enhancedMapping = this.getListingsIndexMapping();
+        } else if (targetIndex === 'user_behaviors') {
+          enhancedMapping = this.getUserBehaviorsIndexMapping();
+        }
+      }
+
       await this.client.indices.create({
         index: targetIndex,
-        body: mapping ? mapping : undefined
+        body: enhancedMapping
       });
       return true;
     } catch (error) {
@@ -146,7 +366,9 @@ export class AdminElasticsearchService {
   async deleteIndex(indexName?: string): Promise<boolean> {
     try {
       const targetIndex = indexName || this.defaultIndexName;
-      await this.client.indices.delete({ index: targetIndex });
+      await this.client.indices.delete({
+        index: targetIndex
+      });
       return true;
     } catch (error) {
       logger.error('Delete index error:', error);
@@ -155,16 +377,35 @@ export class AdminElasticsearchService {
   }
 
   async recreateIndex(indexName?: string, mapping?: any): Promise<boolean> {
-    const targetIndex = indexName || this.defaultIndexName;
-    await this.deleteIndex(targetIndex);
-    return this.createIndex(targetIndex, mapping);
+    try {
+      const targetIndex = indexName || this.defaultIndexName;
+      await this.deleteIndex(targetIndex);
+      await this.createIndex(targetIndex, mapping);
+      return true;
+    } catch (error) {
+      logger.error('Recreate index error:', error);
+      return false;
+    }
   }
 
   async bulkIndex(documents: any[], indexName?: string): Promise<boolean> {
     try {
       const targetIndex = indexName || this.defaultIndexName;
-      const body = documents.flatMap(doc => [{ index: { _index: targetIndex } }, doc]);
-      await this.client.bulk({ refresh: true, body });
+      const operations = documents.flatMap(doc => [
+        { index: { _index: targetIndex, _id: doc.id } },
+        doc
+      ]);
+
+      const response = await this.client.bulk({ body: operations });
+      
+      if (response.errors) {
+        const errors = response.items
+          .filter((item: any) => item.index?.error)
+          .map((item: any) => item.index.error);
+        logger.error('Bulk index errors:', errors);
+        return false;
+      }
+      
       return true;
     } catch (error) {
       logger.error('Bulk index error:', error);
@@ -193,7 +434,9 @@ export class AdminElasticsearchService {
       await this.client.update({
         index: targetIndex,
         id,
-        body: { doc: document }
+        body: {
+          doc: document
+        }
       });
       return true;
     } catch (error) {
@@ -232,145 +475,62 @@ export class AdminElasticsearchService {
 
   async searchIndex(indexName: string, options: { size?: number } = {}): Promise<any> {
     try {
-      // Index'e göre sıralama belirle
-      let sortFields: any[];
-      if (indexName === 'user_behaviors') {
-        sortFields = [
-          { timestamp: { order: 'desc' as const } },
-          { _id: { order: 'desc' as const } }
-        ];
-      } else if (indexName === 'benalsam_listings') {
-        sortFields = [
-          { created_at: { order: 'desc' as const } },
-          { _id: { order: 'desc' as const } }
-        ];
-      } else {
-        // Default sıralama
-        sortFields = [
-          { _id: { order: 'desc' as const } }
-        ];
-      }
-
       const response = await this.client.search({
         index: indexName,
-        body: {
-          query: {
-            match_all: {}
-          },
-          sort: sortFields,
-          size: options.size || 20
+        size: options.size || 10,
+        query: {
+          match_all: {}
         }
       });
       return response;
     } catch (error) {
-      logger.error('Index search error:', error);
+      logger.error(`Error searching index ${indexName}:`, error);
       throw error;
     }
   }
 
   async getIndexStats(): Promise<any> {
     try {
-      logger.info('🔍 Getting all indices stats...');
-      logger.info('🔧 Client config:', { node: this.client.connectionPool.connections[0]?.url });
-      
-      // Tüm indexlerin stats'ini al
-      const response = await this.client.indices.stats();
-      logger.info('📊 Indices stats response keys:', Object.keys(response.indices || {}));
-      logger.info('📊 Indices stats response:', JSON.stringify(response, null, 2));
+      const response = await this.client.indices.stats({
+        index: this.defaultIndexName
+      });
       return response;
     } catch (error) {
-      logger.error('Get index stats error:', error);
+      logger.error('Error getting index stats:', error);
       throw error;
     }
   }
 
   async reindexAllListings(): Promise<{ success: boolean; count: number; errors: string[] }> {
     try {
-      logger.info('🔄 Starting full reindex of all listings...');
+      // Supabase'den tüm listings'i çek
+      const response = await this.client.search({
+        index: 'benalsam_listings',
+        size: 10000,
+        query: { match_all: {} }
+      });
 
-      // Önce index'i sil ve yeniden oluştur
-      await this.deleteIndex();
-      await this.createIndex();
+      // Listings'i Enhanced Elasticsearch formatına çevir
+      const documents = response.hits.hits.map((hit: any) => {
+        const listing = hit._source;
+        return this.transformListingForElasticsearch(listing);
+      });
 
-      // Supabase'den tüm listings'i al
-      const { createClient } = require('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-
-      let page = 0;
-      const limit = 100;
-      let totalIndexed = 0;
-      const errors: string[] = [];
-
-      while (true) {
-        const { data: listings, error } = await supabase
-          .from('listings')
-          .select('*')
-          .range(page * limit, (page + 1) * limit - 1)
-          .eq('status', 'active');
-
-        if (error) {
-          logger.error('❌ Error fetching listings from Supabase:', error);
-          errors.push(`Supabase error: ${error.message}`);
-          break;
-        }
-
-        if (!listings || listings.length === 0) {
-          break;
-        }
-
-        // Listings'i Elasticsearch formatına çevir
-        const documents = listings.map((listing: any) => ({
-          id: listing.id,
-          title: listing.title,
-          description: listing.description,
-          category: listing.category,
-          budget: listing.budget,
-          location: listing.location || '',
-          latitude: listing.latitude || null,
-          longitude: listing.longitude || null,
-          urgency: listing.urgency,
-          attributes: listing.attributes,
-          user_id: listing.user_id,
-          status: listing.status,
-          created_at: listing.created_at,
-          updated_at: listing.updated_at,
-          popularity_score: listing.popularity_score || 0,
-          is_premium: listing.is_premium || false,
-          tags: listing.tags || [],
-        }));
-
-        // Bulk index
-        const success = await this.bulkIndex(documents);
-        if (success) {
-          totalIndexed += documents.length;
-          logger.info(
-            `✅ Indexed ${documents.length} listings (total: ${totalIndexed})`
-          );
-        } else {
-          errors.push(`Failed to index batch ${page + 1}`);
-        }
-
-        page++;
-
-        // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      logger.info(
-        `✅ Reindex completed. Total indexed: ${totalIndexed}, Errors: ${errors.length}`
-      );
-
+      // Elasticsearch'e bulk index
+      const success = await this.bulkIndex(documents);
+      
       return {
-        success: errors.length === 0,
-        count: totalIndexed,
-        errors,
+        success,
+        count: documents.length,
+        errors: success ? [] : ['Bulk indexing failed']
       };
-    } catch (error) {
-      logger.error('❌ Error during reindex:', error);
-      throw error;
+    } catch (error: any) {
+      logger.error('Reindex all listings error:', error);
+      return {
+        success: false,
+        count: 0,
+        errors: [error.message || 'Unknown error']
+      };
     }
   }
 
@@ -382,103 +542,234 @@ export class AdminElasticsearchService {
     limit?: number;
   }): Promise<any> {
     try {
-      const {
-        query = '',
-        filters = {},
-        sort = {},
-        page = 1,
-        limit = 20,
-      } = params;
-
-      const searchBody: any = {
-        query: {
-          bool: {
-            must: [],
-            filter: [],
-          },
-        },
-        sort: [
-          { _score: { order: 'desc' } },
-          { created_at: { order: 'desc' } },
-        ],
-        from: (page - 1) * limit,
-        size: limit,
+      const { query, filters, sort, page = 1, limit = 20 } = params;
+      
+      const searchQuery: any = {
+        bool: {
+          must: [],
+          filter: []
+        }
       };
 
       // Text search
-      if (query.trim()) {
-        searchBody.query.bool.must.push({
+      if (query) {
+        searchQuery.bool.must.push({
           multi_match: {
             query,
-            fields: ['title^3', 'description^2', 'category', 'tags'],
+            fields: ['title^2', 'description', 'search_keywords'],
             type: 'best_fields',
-            fuzziness: 'AUTO',
-          },
+            fuzziness: 'AUTO'
+          }
         });
       }
 
       // Filters
-      if (filters.category) {
-        searchBody.query.bool.filter.push({
-          term: { category: filters.category },
-        });
+      if (filters) {
+        if (filters.category) {
+          searchQuery.bool.filter.push({ term: { category: filters.category } });
+        }
+        if (filters.subcategory) {
+          searchQuery.bool.filter.push({ term: { subcategory: filters.subcategory } });
+        }
+        if (filters.location) {
+          searchQuery.bool.filter.push({ term: { 'location.province': filters.location } });
+        }
+        if (filters.minBudget || filters.maxBudget) {
+          const rangeQuery: any = { range: { 'budget.min': {} } };
+          if (filters.minBudget) rangeQuery.range['budget.min'].gte = filters.minBudget;
+          if (filters.maxBudget) rangeQuery.range['budget.min'].lte = filters.maxBudget;
+          searchQuery.bool.filter.push(rangeQuery);
+        }
+        if (filters.condition) {
+          searchQuery.bool.filter.push({ term: { condition: filters.condition } });
+        }
+        if (filters.urgency) {
+          searchQuery.bool.filter.push({ term: { urgency: filters.urgency } });
+        }
+
+        // Attribute filters
+        if (filters.attributes) {
+          Object.entries(filters.attributes).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              searchQuery.bool.filter.push({ term: { [`attributes.${key}`]: value } });
+            }
+          });
+        }
       }
 
-      if (filters.minBudget || filters.maxBudget) {
-        const rangeFilter: any = { budget: {} };
-        if (filters.minBudget) rangeFilter.budget.gte = filters.minBudget;
-        if (filters.maxBudget) rangeFilter.budget.lte = filters.maxBudget;
-        searchBody.query.bool.filter.push({ range: rangeFilter });
-      }
-
-      if (filters.location) {
-        searchBody.query.bool.filter.push({
-          geo_distance: {
-            distance: filters.location.radius || '10km',
-            location: {
-              lat: filters.location.lat,
-              lon: filters.location.lon,
-            },
-          },
-        });
-      }
-
-      if (filters.isPremium !== undefined) {
-        searchBody.query.bool.filter.push({
-          term: { is_premium: filters.isPremium },
-        });
-      }
-
-      // Custom sort
-      if (sort.field && sort.order) {
-        searchBody.sort.unshift({ [sort.field]: { order: sort.order } });
+      // Sort
+      let sortQuery: any[] = [];
+      if (sort) {
+        if (sort.field === 'relevance' && query) {
+          sortQuery.push({ _score: { order: 'desc' } });
+        } else if (sort.field === 'price') {
+          sortQuery.push({ 'budget.min': { order: sort.order || 'asc' } });
+        } else if (sort.field === 'date') {
+          sortQuery.push({ created_at: { order: sort.order || 'desc' } });
+        } else if (sort.field === 'popularity') {
+          sortQuery.push({ popularity_score: { order: sort.order || 'desc' } });
+        }
+      } else {
+        // Default sort
+        sortQuery.push({ created_at: { order: 'desc' } });
       }
 
       const response = await this.client.search({
         index: this.defaultIndexName,
-        body: searchBody,
+        body: {
+          query: searchQuery,
+          sort: sortQuery,
+          from: (page - 1) * limit,
+          size: limit,
+          aggs: {
+            categories: {
+              terms: { field: 'category', size: 20 }
+            },
+            conditions: {
+              terms: { field: 'condition', size: 10 }
+            },
+            locations: {
+              terms: { field: 'location.province', size: 20 }
+            },
+            budget_ranges: {
+              range: {
+                field: 'budget.min',
+                ranges: [
+                  { to: 1000 },
+                  { from: 1000, to: 5000 },
+                  { from: 5000, to: 10000 },
+                  { from: 10000, to: 50000 },
+                  { from: 50000 }
+                ]
+              }
+            }
+          }
+        }
       });
 
-      const total =
-        typeof response.hits.total === 'number'
-          ? response.hits.total
-          : response.hits.total?.value || 0;
+      const total = typeof response.hits.total === 'number' 
+        ? response.hits.total 
+        : response.hits.total?.value || 0;
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
           id: hit._id,
           score: hit._score,
-          ...hit._source,
+          ...hit._source
         })),
         total,
+        aggregations: response.aggregations,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit)
       };
     } catch (error) {
-      logger.error('❌ Error searching listings:', error);
+      logger.error('Search listings error:', error);
       throw error;
     }
+  }
+
+  // Transform listing to SearchOptimizedListing format
+  private transformListingForElasticsearch(listing: any): SearchOptimizedListing {
+    // Parse location details
+    const locationParts = (listing.location || '').split(',').map((part: string) => part.trim());
+    const location = {
+      province: locationParts[0] || '',
+      district: locationParts[1] || '',
+      neighborhood: locationParts[2] || '',
+      coordinates: listing.latitude && listing.longitude ? {
+        lat: listing.latitude,
+        lng: listing.longitude
+      } : undefined
+    };
+
+    // Parse budget details
+    const budget = {
+      min: listing.budget || 0,
+      max: listing.budget || 0,
+      currency: 'TRY'
+    };
+
+    // Parse attributes
+    const attributes = listing.attributes || {};
+
+    // Generate search keywords
+    const searchKeywords = this.generateSearchKeywords(listing, attributes);
+
+    // Calculate popularity score
+    const popularityScore = this.calculatePopularityScore(listing);
+
+    return {
+      id: listing.id,
+      user_id: listing.user_id,
+      title: listing.title,
+      description: listing.description,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      budget,
+      location,
+      condition: listing.condition || 'unknown',
+      urgency: listing.urgency || 'medium',
+      main_image_url: listing.main_image_url || listing.image_url || '',
+      additional_image_urls: listing.additional_image_urls || [],
+      status: listing.status || 'active',
+      created_at: listing.created_at,
+      updated_at: listing.updated_at,
+      attributes,
+      search_keywords: searchKeywords,
+      popularity_score: popularityScore,
+      user_trust_score: 0.5 // Default trust score
+    };
+  }
+
+  // Generate search keywords from listing data
+  private generateSearchKeywords(listing: any, attributes: any): string[] {
+    const keywords = new Set<string>();
+
+    // Add title and description keywords
+    if (listing.title) {
+      keywords.add(listing.title.toLowerCase());
+    }
+    if (listing.description) {
+      keywords.add(listing.description.toLowerCase());
+    }
+
+    // Add category keywords
+    if (listing.category) {
+      keywords.add(listing.category.toLowerCase());
+    }
+
+    // Add attribute keywords
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (value && typeof value === 'string') {
+        keywords.add(value.toLowerCase());
+      }
+    });
+
+    return Array.from(keywords);
+  }
+
+  // Calculate popularity score based on engagement metrics
+  private calculatePopularityScore(listing: any): number {
+    let score = 0;
+
+    // Base score from listing age (newer = higher score)
+    const createdAt = new Date(listing.created_at);
+    const now = new Date();
+    const daysSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    score += Math.max(0, 10 - daysSinceCreation * 0.1);
+
+    // Premium features boost
+    if (listing.is_premium) score += 5;
+    if (listing.is_featured) score += 3;
+    if (listing.is_urgent_premium) score += 2;
+
+    // Engagement metrics (if available)
+    if (listing.views) score += Math.min(listing.views * 0.01, 10);
+    if (listing.favorites) score += listing.favorites * 0.5;
+    if (listing.offers) score += listing.offers * 1;
+
+    return Math.min(score, 100); // Cap at 100
   }
 }
 

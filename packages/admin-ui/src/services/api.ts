@@ -283,5 +283,51 @@ export const apiService = {
     const response = await apiClient.get<ApiResponse<any>>(`/elasticsearch/search?index=${indexName}&size=${size}`);
     console.log('📊 API Service: Response:', response.data);
     return response.data;
+  },
+
+  // Enhanced Analytics Methods
+  async getAnalyticsEvents(params: {
+    page?: number;
+    limit?: number;
+    event_type?: string;
+    user_id?: string;
+    start_date?: string;
+    end_date?: string;
+  } = {}): Promise<any> {
+    const response = await apiClient.get('/analytics/events', { params });
+    return response.data;
+  },
+
+  async getAnalyticsEventTypes(days: number = 7): Promise<any> {
+    const response = await apiClient.get('/analytics/event-types', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async getAnalyticsUserStats(userId: string, days: number = 30): Promise<any> {
+    const response = await apiClient.get(`/analytics/user-stats/${userId}`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async getAnalyticsPerformanceMetrics(days: number = 7): Promise<any> {
+    const response = await apiClient.get('/analytics/performance-metrics', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async getAnalyticsUserJourney(userId: string, days: number = 7): Promise<any> {
+    const response = await apiClient.get(`/analytics/user-journey/${userId}`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async trackAnalyticsEvent(event: any): Promise<any> {
+    const response = await apiClient.post('/analytics/track-event', event);
+    return response.data;
   }
 }; 

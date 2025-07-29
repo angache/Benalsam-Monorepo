@@ -49,6 +49,7 @@ import {
   Award,
   Database,
   BarChart3,
+  Activity,
 } from 'lucide-react-native';
 import { useThemeStore, useThemeColors } from '../stores';
 import { useAuthStore } from '../stores';
@@ -837,6 +838,10 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
     }
   };
 
+  const handleAnalyticsTest = () => {
+    navigation.navigate('AnalyticsTest' as never);
+  };
+
   const handleSettingPress = async (onPress?: () => void) => {
     console.log('🔵 [Settings] handleSettingPress called, isUpdating:', isUpdating, 'onPress:', !!onPress);
     if (isUpdating || !onPress) return;
@@ -1122,6 +1127,13 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
       subtitle: 'Push notification token yönetimi',
       icon: Bell,
       onPress: () => navigation.navigate('FCMTest'),
+    },
+    {
+      id: 'analytics-test',
+      title: 'Analytics Test',
+      subtitle: 'Yeni analytics sistemini test edin',
+      icon: Activity,
+      onPress: handleAnalyticsTest,
     },
     // Admin seçenekleri
     ...(isAdmin ? [

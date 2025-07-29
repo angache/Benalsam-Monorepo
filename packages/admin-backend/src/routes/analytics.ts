@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken, authenticateSupabaseToken } from '../middleware/auth';
 import userBehaviorService from '../services/userBehaviorService';
 import logger from '../config/logger';
+import { AnalyticsEvent, AnalyticsEventType } from '@benalsam/shared-types';
 
 const router: Router = Router();
 
@@ -291,6 +292,108 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
     res.json({ success: true, data: dashboardData });
   } catch (error) {
     logger.error('Error getting dashboard data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// ===========================
+// STANDARDIZED ANALYTICS ENDPOINTS
+// ===========================
+
+// Track standardized analytics event
+router.post('/track-event', async (req, res) => {
+  try {
+    const analyticsEvent: AnalyticsEvent = req.body;
+    
+    // Validate required fields
+    if (!analyticsEvent.event_id || !analyticsEvent.event_name || !analyticsEvent.user || !analyticsEvent.session) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields: event_id, event_name, user, session' 
+      });
+    }
+    
+    // Validate event type
+    if (!Object.values(AnalyticsEventType).includes(analyticsEvent.event_name)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Invalid event type: ${analyticsEvent.event_name}` 
+      });
+    }
+    
+    const success = await userBehaviorService.trackAnalyticsEvent(analyticsEvent);
+    
+    if (success) {
+      return res.json({ success: true, message: 'Analytics event tracked successfully' });
+    } else {
+      return res.status(500).json({ success: false, message: 'Failed to track analytics event' });
+    }
+  } catch (error) {
+    logger.error('Error tracking analytics event:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get analytics events
+router.get('/events', authenticateToken, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, event_type, user_id, start_date, end_date } = req.query;
+    
+    const events = await userBehaviorService.getAnalyticsEvents({
+      page: Number(page),
+      limit: Number(limit),
+      event_type: event_type as string,
+      user_id: user_id as string,
+      start_date: start_date as string,
+      end_date: end_date as string
+    });
+    
+    res.json({ success: true, data: events });
+  } catch (error) {
+    logger.error('Error getting analytics events:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get analytics event types
+router.get('/event-types', authenticateToken, async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    
+    const eventTypes = await userBehaviorService.getAnalyticsEventTypes(Number(days));
+    
+    res.json({ success: true, data: eventTypes });
+  } catch (error) {
+    logger.error('Error getting analytics event types:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get user journey analytics
+router.get('/user-journey/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { days = 7 } = req.query;
+    
+    const journey = await userBehaviorService.getAnalyticsUserJourney(userId, Number(days));
+    
+    res.json({ success: true, data: journey });
+  } catch (error) {
+    logger.error('Error getting user journey:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get session data
+router.get('/session/:sessionId', authenticateToken, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    const sessionData = await userBehaviorService.getAnalyticsSessionData(sessionId);
+    
+    res.json({ success: true, data: sessionData });
+  } catch (error) {
+    logger.error('Error getting session data:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

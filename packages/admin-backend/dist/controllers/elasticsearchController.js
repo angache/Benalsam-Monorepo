@@ -70,7 +70,7 @@ class ElasticsearchController {
                     message: 'Index parameter is required'
                 });
             }
-            const searchResult = await this.elasticsearchService.searchIndex(index, {
+            const searchResult = await services_1.AdminElasticsearchService.searchIndexStatic(index, {
                 size: parseInt(size)
             });
             return res.json({

@@ -1,7 +1,16 @@
 import { supabase } from './supabaseClient';
-import { Platform } from 'react-native';
+import { Platform, Dimensions } from 'react-native';
 import * as Device from 'expo-device';
 import { useAuthStore } from '../stores/authStore';
+import { 
+  AnalyticsEvent, 
+  AnalyticsEventType, 
+  AnalyticsUser, 
+  AnalyticsSession, 
+  AnalyticsDevice, 
+  AnalyticsContext 
+} from '@benalsam/shared-types';
+import Constants from 'expo-constants';
 
 export interface UserBehaviorEvent {
   user_id: string;
@@ -62,16 +71,60 @@ class AnalyticsService {
   private currentScreen: string | undefined = undefined;
   private scrollDepth: number = 0;
   private sectionsEngaged: { [key: string]: { time_spent: number; interactions: number } } = {};
+  private pageViews: number = 0;
+  private eventsCount: number = 0;
   
   // Scroll tracking optimization
   private scrollTimeout: NodeJS.Timeout | null = null;
   private lastScrollTime: number = 0;
   private scrollThrottleMs: number = 1000; // 1 saniye
   private scrollDebounceMs: number = 500; // 500ms
+  
+  // Enhanced tracking
+  private userProfile: any = null;
+  private appVersion: string = '1.0.0';
+  private language: string = 'tr';
+  private timezone: string = 'Europe/Istanbul';
 
   constructor() {
     this.sessionId = this.generateSessionId();
     this.sessionStartTime = Date.now();
+    this.initializeAnalytics();
+  }
+
+  private async initializeAnalytics(): Promise<void> {
+    try {
+      // Get app version from Constants
+      this.appVersion = Constants.expoConfig?.version || '1.0.0';
+      
+      // Get timezone
+      this.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Get user profile if available
+      const user = useAuthStore.getState().user;
+      if (user) {
+        await this.loadUserProfile(user.id);
+      }
+      
+      console.log('✅ Analytics service initialized');
+    } catch (error) {
+      console.error('❌ Error initializing analytics:', error);
+    }
+  }
+
+  private async loadUserProfile(userId: string): Promise<void> {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) throw error;
+      this.userProfile = profile;
+    } catch (error) {
+      console.error('❌ Error loading user profile:', error);
+    }
   }
 
   private generateSessionId(): string {
@@ -179,6 +232,12 @@ class AnalyticsService {
     this.screenStartTime = Date.now();
     this.scrollDepth = 0;
     this.sectionsEngaged = {};
+
+    // Increment page views
+    this.pageViews++;
+
+    // Also track with new standardized format
+    await this.trackScreenViewNew(screenName);
 
     console.log(`📱 Screen view tracked: ${screenName}`);
   }
@@ -386,6 +445,203 @@ class AnalyticsService {
       console.error('❌ Error getting user stats:', error);
       return null;
     }
+  }
+
+  // ===========================
+  // STANDARDIZED ANALYTICS METHODS
+  // ===========================
+
+  // Track standardized analytics event
+  async trackAnalyticsEvent(eventName: typeof AnalyticsEventType[keyof typeof AnalyticsEventType], eventProperties: Record<string, any> = {}): Promise<boolean> {
+    try {
+      const user = useAuthStore.getState().user;
+      if (!user) {
+        console.warn('⚠️ No user found for analytics tracking');
+        return false;
+      }
+
+      // Increment event count
+      this.eventsCount++;
+
+      // Create analytics user object with enhanced data
+      const analyticsUser: AnalyticsUser = {
+        id: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.name || user.email || 'Unknown User',
+        avatar: user.user_metadata?.avatar_url || undefined,
+        properties: {
+          registration_date: user.created_at,
+          subscription_type: this.userProfile?.subscription_type || 'free',
+          last_login: new Date().toISOString(),
+          trust_score: this.userProfile?.trust_score || 0,
+          verification_status: this.userProfile?.verification_status || 'unverified'
+        }
+      };
+
+      // Create analytics session object with enhanced tracking
+      const analyticsSession: AnalyticsSession = {
+        id: this.sessionId || this.generateSessionId(),
+        start_time: new Date(this.sessionStartTime || Date.now()).toISOString(),
+        duration: this.sessionStartTime ? Date.now() - this.sessionStartTime : undefined,
+        page_views: this.pageViews,
+        events_count: this.eventsCount
+      };
+
+      // Create analytics device object with enhanced data
+      const { width, height } = Dimensions.get('screen');
+      const analyticsDevice: AnalyticsDevice = {
+        platform: Platform.OS as 'ios' | 'android',
+        version: Platform.Version?.toString(),
+        model: Device.modelName || undefined,
+        screen_resolution: `${width}x${height}`,
+        app_version: this.appVersion,
+        os_version: Device.osVersion || undefined,
+        user_agent: `BenAlsam-Mobile/${Platform.OS}/${Device.osVersion || 'unknown'}`
+      };
+
+      // Create analytics context object with enhanced data
+      const analyticsContext: AnalyticsContext = {
+        language: this.language,
+        timezone: this.timezone
+      };
+
+      // Create analytics event
+      const analyticsEvent: AnalyticsEvent = {
+        event_id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        event_name: eventName,
+        event_timestamp: new Date().toISOString(),
+        event_properties: {
+          ...eventProperties,
+          screen_name: this.currentScreen,
+          session_duration: analyticsSession.duration
+        },
+        user: analyticsUser,
+        session: analyticsSession,
+        device: analyticsDevice,
+        context: analyticsContext
+      };
+
+      // Send to backend
+      const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL}/api/v1/analytics/track-event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analyticsEvent)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.success;
+    } catch (error) {
+      console.error('❌ Error tracking analytics event:', error);
+      return false;
+    }
+  }
+
+  // Helper methods for specific event types
+  async trackScreenViewNew(screenName: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.SCREEN_VIEW, {
+      screen_name: screenName,
+      ...properties
+    });
+  }
+
+  async trackButtonClickNew(buttonName: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.BUTTON_CLICK, {
+      button_name: buttonName,
+      ...properties
+    });
+  }
+
+  async trackSearchNew(searchTerm: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.SEARCH, {
+      search_term: searchTerm,
+      ...properties
+    });
+  }
+
+  async trackListingViewNew(listingId: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.LISTING_VIEW, {
+      listing_id: listingId,
+      ...properties
+    });
+  }
+
+  async trackListingCreateNew(listingId: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.LISTING_CREATE, {
+      listing_id: listingId,
+      ...properties
+    });
+  }
+
+  async trackOfferSentNew(offerId: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.OFFER_SENT, {
+      offer_id: offerId,
+      ...properties
+    });
+  }
+
+  async trackMessageSentNew(messageId: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.MESSAGE_SENT, {
+      message_id: messageId,
+      ...properties
+    });
+  }
+
+  async trackAppLoadNew(properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.APP_LOAD, {
+      load_time_ms: Date.now() - (this.sessionStartTime || Date.now()),
+      ...properties
+    });
+  }
+
+  async trackApiCallNew(endpoint: string, duration: number, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.API_CALL, {
+      endpoint,
+      duration_ms: duration,
+      ...properties
+    });
+  }
+
+  async trackErrorNew(errorType: string, errorMessage: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackAnalyticsEvent(AnalyticsEventType.ERROR_OCCURRED, {
+      error_type: errorType,
+      error_message: errorMessage,
+      ...properties
+    });
+  }
+
+  // Enhanced methods for better analytics
+  async updateUserProfile(userId: string): Promise<void> {
+    await this.loadUserProfile(userId);
+  }
+
+  async setLanguage(language: string): Promise<void> {
+    this.language = language;
+  }
+
+  async setTimezone(timezone: string): Promise<void> {
+    this.timezone = timezone;
+  }
+
+  async getAnalyticsSummary(): Promise<{
+    sessionId: string;
+    pageViews: number;
+    eventsCount: number;
+    sessionDuration: number;
+    currentScreen: string;
+  }> {
+    return {
+      sessionId: this.sessionId || '',
+      pageViews: this.pageViews,
+      eventsCount: this.eventsCount,
+      sessionDuration: this.sessionStartTime ? Date.now() - this.sessionStartTime : 0,
+      currentScreen: this.currentScreen || ''
+    };
   }
 }
 

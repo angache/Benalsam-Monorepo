@@ -4,7 +4,12 @@ export declare class AdminElasticsearchService {
     protected defaultIndexName: string;
     protected isConnected: boolean;
     constructor(node?: string, defaultIndexName?: string, username?: string, password?: string);
+    private getListingsIndexMapping;
+    private getUserBehaviorsIndexMapping;
     static getAllIndicesStats(): Promise<any>;
+    static searchIndexStatic(indexName: string, options?: {
+        size?: number;
+    }): Promise<any>;
     getClient(): Client;
     testConnection(): Promise<boolean>;
     getHealth(): Promise<any>;
@@ -32,6 +37,9 @@ export declare class AdminElasticsearchService {
         page?: number;
         limit?: number;
     }): Promise<any>;
+    private transformListingForElasticsearch;
+    private generateSearchKeywords;
+    private calculatePopularityScore;
 }
 export declare const elasticsearchClient: Client;
 //# sourceMappingURL=elasticsearchService.d.ts.map

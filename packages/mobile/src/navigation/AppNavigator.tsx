@@ -51,6 +51,7 @@ import FirebaseTestScreen from '../screens/FirebaseTestScreen';
 import FCMTestScreen from '../screens/FCMTestScreen';
 import ModerationScreen from '../screens/ModerationScreen';
 import AnalyticsDashboardScreen from '../screens/AnalyticsDashboardScreen';
+import AnalyticsTestScreen from '../screens/AnalyticsTestScreen';
 import ElasticsearchTestScreen from '../screens/ElasticsearchTestScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -663,6 +664,23 @@ const AppNavigator = () => {
             listeners={{
               focus: () => {
                 // console.log('🔵 [Navigation] AnalyticsDashboard screen focused');
+              },
+            }}
+          />
+          <Stack.Screen 
+            name="AnalyticsTest" 
+            component={AnalyticsTestScreen}
+            options={{
+              headerShown: true,
+              title: 'Analytics Test',
+              headerBackTitle: 'Geri',
+              headerStyle: { backgroundColor: colors.surface },
+              headerTintColor: colors.text,
+              headerTitleStyle: { color: colors.text },
+            }}
+            listeners={{
+              focus: () => {
+                // console.log('🔵 [Navigation] AnalyticsTest screen focused');
               },
             }}
           />

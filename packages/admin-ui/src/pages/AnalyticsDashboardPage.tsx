@@ -55,6 +55,58 @@ import {
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
+import type { AnalyticsEvent, AnalyticsEventType } from '@benalsam/shared-types';
+
+// Enhanced interfaces for new analytics format
+interface AnalyticsEventSummary {
+  event_name: string;
+  count: number;
+  unique_users: number;
+  avg_session_duration: number;
+  daily_trend: Array<{
+    date: string;
+    count: number;
+  }>;
+}
+
+interface UserAnalyticsStats {
+  userId: string;
+  period: string;
+  stats: {
+    totalEvents: number;
+    uniqueSessions: number;
+    avgSessionDuration: number;
+    eventTypes: Array<{
+      key: string;
+      doc_count: number;
+    }>;
+    platforms: Array<{
+      key: string;
+      doc_count: number;
+    }>;
+  };
+}
+
+interface PerformanceMetrics {
+  period: string;
+  performance: {
+    appLoad: {
+      avgLoadTime: number;
+      p95LoadTime: number;
+    };
+    apiCalls: {
+      avgDuration: number;
+      p95Duration: number;
+    };
+    errors: {
+      totalErrors: number;
+      errorTypes: Array<{
+        key: string;
+        doc_count: number;
+      }>;
+    };
+  };
+}
 
 interface PopularPage {
   page_name: string;
@@ -114,6 +166,27 @@ const AnalyticsDashboardPage: React.FC = () => {
     queryFn: () => apiService.getAnalyticsDashboard(timeRange),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // New analytics queries - commented out until backend endpoints are ready
+  /*
+  const { data: analyticsEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['analytics-events', timeRange],
+    queryFn: () => apiService.getAnalyticsEvents({ limit: 100, start_date: new Date(Date.now() - timeRange * 24 * 60 * 60 * 1000).toISOString() }),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  const { data: performanceMetrics, isLoading: performanceLoading } = useQuery({
+    queryKey: ['analytics-performance', timeRange],
+    queryFn: () => apiService.getAnalyticsPerformanceMetrics(timeRange),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: eventTypes, isLoading: eventTypesLoading } = useQuery({
+    queryKey: ['analytics-event-types', timeRange],
+    queryFn: () => apiService.getAnalyticsEventTypes(timeRange),
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+  */
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
