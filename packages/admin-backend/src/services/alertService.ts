@@ -66,66 +66,95 @@ export class AlertService {
         index: this.rulesIndex
       });
 
-      if (!rulesIndexExists) {
-        await elasticsearchClient.indices.create({
-          index: this.rulesIndex,
-          body: {
-            mappings: {
-              properties: {
-                id: { type: 'keyword' },
-                name: { type: 'text' },
-                description: { type: 'text' },
-                type: { type: 'keyword' },
-                severity: { type: 'keyword' },
-                condition: {
-                  properties: {
-                    metric: { type: 'keyword' },
-                    operator: { type: 'keyword' },
-                    threshold: { type: 'float' },
-                    timeWindow: { type: 'long' }
-                  }
-                },
-                enabled: { type: 'boolean' },
-                createdAt: { type: 'date' },
-                updatedAt: { type: 'date' }
+      if (rulesIndexExists) {
+        // Delete existing index to recreate with correct mapping
+        await elasticsearchClient.indices.delete({
+          index: this.rulesIndex
+        });
+        logger.info(`🗑️ Deleted existing index: ${this.rulesIndex}`);
+      }
+
+      // Create new index with correct mapping
+      await elasticsearchClient.indices.create({
+        index: this.rulesIndex,
+        body: {
+          mappings: {
+            properties: {
+              id: { type: 'keyword' },
+              name: { type: 'text' },
+              description: { type: 'text' },
+              type: { type: 'keyword' },
+              severity: { type: 'keyword' },
+              condition: {
+                properties: {
+                  metric: { type: 'keyword' },
+                  operator: { type: 'keyword' },
+                  threshold: { type: 'float' },
+                  timeWindow: { type: 'long' }
+                }
+              },
+              enabled: { type: 'boolean' },
+              createdAt: { 
+                type: 'date',
+                format: 'strict_date_optional_time||epoch_millis'
+              },
+              updatedAt: { 
+                type: 'date',
+                format: 'strict_date_optional_time||epoch_millis'
               }
             }
           }
-        });
-        logger.info(`✅ Alert rules index created: ${this.rulesIndex}`);
-      }
+        }
+      });
+      logger.info(`✅ Alert rules index created: ${this.rulesIndex}`);
 
       // Alerts Index
       const alertsIndexExists = await elasticsearchClient.indices.exists({
         index: this.alertsIndex
       });
 
-      if (!alertsIndexExists) {
-        await elasticsearchClient.indices.create({
-          index: this.alertsIndex,
-          body: {
-            mappings: {
-              properties: {
-                id: { type: 'keyword' },
-                ruleId: { type: 'keyword' },
-                ruleName: { type: 'text' },
-                severity: { type: 'keyword' },
-                message: { type: 'text' },
-                metric: { type: 'keyword' },
-                value: { type: 'float' },
-                threshold: { type: 'float' },
-                status: { type: 'keyword' },
-                createdAt: { type: 'date' },
-                acknowledgedAt: { type: 'date' },
-                resolvedAt: { type: 'date' },
-                acknowledgedBy: { type: 'keyword' },
-                metadata: { type: 'object', dynamic: true }
-              }
+      if (alertsIndexExists) {
+        // Delete existing index to recreate with correct mapping
+        await elasticsearchClient.indices.delete({
+          index: this.alertsIndex
+        });
+        logger.info(`🗑️ Deleted existing index: ${this.alertsIndex}`);
+      }
+
+      // Create new alerts index with correct mapping
+      await elasticsearchClient.indices.create({
+        index: this.alertsIndex,
+        body: {
+          mappings: {
+            properties: {
+              id: { type: 'keyword' },
+              ruleId: { type: 'keyword' },
+              ruleName: { type: 'text' },
+              severity: { type: 'keyword' },
+              message: { type: 'text' },
+              metric: { type: 'keyword' },
+              value: { type: 'float' },
+              threshold: { type: 'float' },
+              status: { type: 'keyword' },
+              createdAt: { 
+                type: 'date',
+                format: 'strict_date_optional_time||epoch_millis'
+              },
+              acknowledgedAt: { 
+                type: 'date',
+                format: 'strict_date_optional_time||epoch_millis'
+              },
+              resolvedAt: { 
+                type: 'date',
+                format: 'strict_date_optional_time||epoch_millis'
+              },
+              acknowledgedBy: { type: 'keyword' },
+              metadata: { type: 'object', dynamic: true }
             }
           }
-        });
-        logger.info(`✅ Alerts index created: ${this.alertsIndex}`);
-      }
+        }
+      });
+      logger.info(`✅ Alerts index created: ${this.alertsIndex}`);
     } catch (error) {
       logger.error('Failed to initialize alert indexes:', error);
     }
