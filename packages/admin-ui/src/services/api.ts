@@ -262,7 +262,7 @@ export const apiService = {
     return response.data;
   },
 
-  async getAnalyticsUserJourney(userId: string, days: number = 7): Promise<any> {
+  async getAnalyticsUserJourneyData(userId: string, days: number = 7): Promise<any> {
     const response = await apiClient.get<ApiResponse<any>>(`/analytics/user-journey/${userId}?days=${days}`);
     return response.data;
   },
@@ -402,6 +402,160 @@ export const apiService = {
 
   async getJourneyDashboard(days: number = 7): Promise<any> {
     const response = await apiClient.get('/user-journey/dashboard', { params: { days } });
+    return response.data.data!;
+  },
+
+  // Analytics Alerts System
+  async initializeAnalyticsAlerts(): Promise<any> {
+    const response = await apiClient.post('/analytics-alerts/initialize');
+    return response.data.data!;
+  },
+
+  // Alert Rules Management
+  async createAlertRule(ruleData: any): Promise<any> {
+    const response = await apiClient.post('/analytics-alerts/rules', ruleData);
+    return response.data.data!;
+  },
+
+  async getAlertRules(): Promise<any> {
+    const response = await apiClient.get('/analytics-alerts/rules');
+    return response.data.data!;
+  },
+
+  async updateAlertRule(ruleId: string, ruleData: any): Promise<any> {
+    const response = await apiClient.put(`/analytics-alerts/rules/${ruleId}`, ruleData);
+    return response.data.data!;
+  },
+
+  async deleteAlertRule(ruleId: string): Promise<any> {
+    const response = await apiClient.delete(`/analytics-alerts/rules/${ruleId}`);
+    return response.data.data!;
+  },
+
+  // Notification Channels Management
+  async createNotificationChannel(channelData: any): Promise<any> {
+    const response = await apiClient.post('/analytics-alerts/channels', channelData);
+    return response.data.data!;
+  },
+
+  async getNotificationChannels(): Promise<any> {
+    const response = await apiClient.get('/analytics-alerts/channels');
+    return response.data.data!;
+  },
+
+  // Alerts Management
+  async getAlerts(params: {
+    status?: string;
+    severity?: string;
+    metric_type?: string;
+    start_date?: string;
+    end_date?: string;
+    limit?: number;
+  } = {}): Promise<any> {
+    const response = await apiClient.get('/analytics-alerts/alerts', { params });
+    return response.data.data!;
+  },
+
+  async acknowledgeAlert(alertId: string, acknowledgedBy: string): Promise<any> {
+    const response = await apiClient.post(`/analytics-alerts/alerts/${alertId}/acknowledge`, { acknowledgedBy });
+    return response.data.data!;
+  },
+
+  async resolveAlert(alertId: string): Promise<any> {
+    const response = await apiClient.post(`/analytics-alerts/alerts/${alertId}/resolve`);
+    return response.data.data!;
+  },
+
+  // Alert Summary
+  async getAlertSummary(): Promise<any> {
+    const response = await apiClient.get('/analytics-alerts/summary');
+    return response.data.data!;
+  },
+
+  // Test Alerts
+  async checkAlerts(metrics: any): Promise<any> {
+    const response = await apiClient.post('/analytics-alerts/check', { metrics });
+    return response.data.data!;
+  },
+
+  async testNotification(channelId: string, testAlert: any): Promise<any> {
+    const response = await apiClient.post('/analytics-alerts/test-notification', { channelId, testAlert });
+    return response.data.data!;
+  },
+
+  // Data Export System
+  async initializeDataExport(): Promise<any> {
+    const response = await apiClient.post('/data-export/initialize');
+    return response.data.data!;
+  },
+
+  async createExportRequest(requestData: {
+    export_type: 'csv' | 'json' | 'excel' | 'pdf';
+    data_type: 'user_analytics' | 'performance_metrics' | 'business_metrics' | 'custom';
+    filters?: {
+      date_range?: { start: string; end: string };
+      metrics?: string[];
+      user_segments?: string[];
+      custom_dimensions?: Record<string, any>;
+    };
+    schedule?: {
+      frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
+      time?: string;
+      days?: string[];
+    };
+  }): Promise<any> {
+    const response = await apiClient.post('/data-export/requests', requestData);
+    return response.data.data!;
+  },
+
+  async getExportRequests(params?: { user_id?: string; status?: string }): Promise<any> {
+    const response = await apiClient.get('/data-export/requests', { params });
+    return response.data.data!;
+  },
+
+  async processExport(exportId: string): Promise<any> {
+    const response = await apiClient.post(`/data-export/process/${exportId}`);
+    return response.data.data!;
+  },
+
+  async downloadExport(exportId: string): Promise<Blob> {
+    const response = await apiClient.get(`/data-export/download/${exportId}`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  async deleteExport(exportId: string): Promise<any> {
+    const response = await apiClient.delete(`/data-export/requests/${exportId}`);
+    return response.data.data!;
+  },
+
+  async getExportStatistics(): Promise<any> {
+    const response = await apiClient.get('/data-export/statistics');
+    return response.data.data!;
+  },
+
+  async quickExport(requestData: {
+    export_type: 'csv' | 'json' | 'excel' | 'pdf';
+    data_type: 'user_analytics' | 'performance_metrics' | 'business_metrics' | 'custom';
+    filters?: {
+      date_range?: { start: string; end: string };
+      metrics?: string[];
+      user_segments?: string[];
+      custom_dimensions?: Record<string, any>;
+    };
+  }): Promise<any> {
+    const response = await apiClient.post('/data-export/quick-export', requestData);
+    return response.data.data!;
+  },
+
+  async getExportFormats(): Promise<any> {
+    const response = await apiClient.get('/data-export/formats');
+    return response.data.data!;
+  },
+
+  async getExportDataTypes(): Promise<any> {
+    const response = await apiClient.get('/data-export/data-types');
     return response.data.data!;
   }
 }; 
