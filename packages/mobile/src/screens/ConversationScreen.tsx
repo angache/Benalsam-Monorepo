@@ -6,6 +6,7 @@ import { ArrowLeft, Send } from 'lucide-react-native';
 import { useAuthStore, useThemeColors } from '../stores';
 import { useConversationDetails, useMessages, useConversationActions } from '../hooks/queries/useConversations';
 import { Avatar } from '../components/Avatar';
+import analyticsService from '../services/analyticsService';
 
 const ConversationScreen = () => {
   const route = useRoute<any>();
@@ -38,6 +39,15 @@ const ConversationScreen = () => {
         conversationId,
         content: tempMessage,
         messageType: 'text'
+      });
+      
+      // Track message sent event
+      analyticsService.trackEvent('MESSAGE_SENT', {
+        conversation_id: conversationId,
+        message_type: 'text',
+        message_length: tempMessage.length,
+        recipient_id: otherUser?.id,
+        recipient_name: otherUser?.name || otherUser?.username
       });
     } catch (e) {
       setNewMessage(tempMessage); // Geri yükle

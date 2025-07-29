@@ -70,13 +70,10 @@ class PerformanceService {
     console.log('📦 Bundle Size:', estimatedSize, 'KB');
 
     // Send to analytics
-    analyticsService.trackEvent({
-      event_type: 'performance',
-      event_data: {
-        metric_type: 'bundle_size',
-        value: estimatedSize,
-        unit: 'KB'
-      }
+    analyticsService.trackEvent('PERFORMANCE', {
+      metric_type: 'bundle_size',
+      value: estimatedSize,
+      unit: 'KB'
     });
   }
 
@@ -105,14 +102,11 @@ class PerformanceService {
     }
 
     // Send to analytics
-    analyticsService.trackEvent({
-      event_type: 'performance',
-      event_data: {
-        metric_type: 'memory_usage',
-        used_mb: used,
-        total_mb: total,
-        percentage
-      }
+    analyticsService.trackEvent('PERFORMANCE', {
+      metric_type: 'memory_usage',
+      used_mb: used,
+      total_mb: total,
+      percentage
     });
   }
 
@@ -151,14 +145,11 @@ class PerformanceService {
     }
 
     // Send to analytics
-    analyticsService.trackEvent({
-      event_type: 'performance',
-      event_data: {
-        metric_type: 'api_response_time',
-        endpoint,
-        duration_ms: duration,
-        average_ms: Math.round(average)
-      }
+    analyticsService.trackEvent('PERFORMANCE', {
+      metric_type: 'api_response_time',
+      endpoint,
+      duration_ms: duration,
+      average_ms: Math.round(average)
     });
   }
 
@@ -193,15 +184,12 @@ class PerformanceService {
     }
 
     // Send to analytics
-    analyticsService.trackEvent({
-      event_type: 'performance',
-      event_data: {
-        metric_type: 'error_rate',
-        error_type: errorType,
-        context: context || 'general',
-        count: currentCount + 1,
-        message: error.message
-      }
+    analyticsService.trackEvent('PERFORMANCE', {
+      metric_type: 'error_rate',
+      error_type: errorType,
+      context: context || 'general',
+      count: currentCount + 1,
+      message: error.message
     });
   }
 

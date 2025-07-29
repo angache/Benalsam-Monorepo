@@ -17,6 +17,7 @@ import { useCreateListingStore } from '../stores';
 import { useAuthStore } from '../stores';
 import { Button } from '../components';
 import { createListing } from '../services/listingService';
+import analyticsService from '../services/analyticsService';
 
 const { width } = Dimensions.get('window');
 
@@ -133,6 +134,19 @@ const CreateListingConfirmScreen = () => {
       if (!result.data || !result.data.id) {
         throw new Error('İlan yayınlanırken bir hata oluştu - ' + (result.error?.message || 'Bilinmeyen hata'));
       }
+
+      // Track form submit event
+      analyticsService.trackEvent('FORM_SUBMIT', {
+        form_name: 'create_listing',
+        form_id: 'listing_creation',
+        listing_id: result.data?.id || '',
+        listing_title: listingData.title,
+        listing_category: listingData.category,
+        listing_price: listingData.budget,
+        listing_location: listingData.location,
+        form_duration: Date.now() - Date.now(), // Simplified duration
+        form_completion_rate: 100
+      });
 
       Alert.alert(
         'Başarılı!',

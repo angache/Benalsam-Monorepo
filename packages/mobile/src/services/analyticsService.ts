@@ -12,6 +12,9 @@ import {
 } from '@benalsam/shared-types';
 import Constants from 'expo-constants';
 
+// Admin Backend URL
+const ADMIN_BACKEND_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://localhost:3002';
+
 // Legacy interface for backward compatibility
 export interface UserBehaviorEvent {
   user_id: string;
@@ -161,38 +164,70 @@ class AnalyticsService {
     eventName: string,
     properties: Record<string, any> = {}
   ): Promise<boolean> {
+    console.log('🔍 AnalyticsService.trackEvent called');
+    console.log('🔍 eventName:', eventName);
+    console.log('🔍 properties:', properties);
+    
+    // Get user from auth store directly
+    const { user } = useAuthStore.getState();
+    if (!user || !this.sessionId) {
+      console.warn('⚠️ Analytics: User not logged in or session not started. Event not tracked.');
+      console.log('🔍 user:', user);
+      console.log('🔍 sessionId:', this.sessionId);
+      return false;
+    }
+
     try {
-      const { user } = useAuthStore.getState();
-      if (!user) {
-        console.warn('Analytics: No user found, skipping event tracking');
+      console.log('🔍 About to send request to admin backend');
+      console.log('🔍 ADMIN_BACKEND_URL:', ADMIN_BACKEND_URL);
+      
+      console.log('🔍 user data:', user);
+
+      // Send to Admin Backend
+      const requestBody = {
+        event_type: eventName,
+        event_data: {
+          ...properties,
+          event_timestamp: new Date().toISOString()
+        },
+        user_profile: {
+          id: user.id,
+          email: user.email || user.user_metadata?.email || user.username + '@example.com',
+          name: user.user_metadata?.name || user.user_metadata?.full_name || user.username || 'Unknown User',
+          avatar: user.avatar_url || user.user_metadata?.avatar_url || null
+        },
+        session_id: this.sessionId,
+        device_info: this.getDeviceInfo()
+      };
+      
+      console.log('🔍 Request body:', JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/v1/analytics/track-behavior`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 Response error text:', errorText);
+        console.error('Analytics: Failed to track event:', errorText);
         return false;
       }
 
-      // Send to Supabase
-      const { error } = await supabase
-        .from('user_behavior_events')
-        .insert([{
-          user_id: user.id,
-          event_type: eventName,
-          event_data: {
-            ...properties,
-            event_timestamp: new Date().toISOString()
-          },
-          timestamp: new Date().toISOString(),
-          session_id: this.sessionId,
-          device_info: this.getDeviceInfo()
-        }]);
-
-      if (error) {
-        console.error('Analytics: Failed to track event:', error);
-        return false;
-      }
+      const responseData = await response.json();
+      console.log('🔍 Response data:', responseData);
 
       this.eventsCount++;
-      console.log(`Analytics: Tracked ${eventName} event successfully`);
+      console.log(`🔍 Analytics: Tracked ${eventName} event successfully`);
       return true;
     } catch (error) {
-      console.error('Analytics: Error tracking event:', error);
+      console.error('🔍 Analytics: Error tracking event:', error);
       return false;
     }
   }
@@ -608,66 +643,11 @@ class AnalyticsService {
   }
 
   // Track user behavior event
+  // DISABLED: This function sends event_type as object, causing Elasticsearch errors
+  // Use trackEvent() instead for proper string event_type format
   async trackEventLegacy(event: Omit<UserBehaviorEvent, 'user_id' | 'timestamp' | 'session_id' | 'device_info'>): Promise<boolean> {
-    try {
-      const user = useAuthStore.getState().user;
-      if (!user) {
-        console.log('⚠️ No user found for analytics tracking');
-        return false;
-      }
-      console.log('🔐 User found for analytics tracking:', user);
-      // Use existing user data from auth store
-      const userProfile = {
-        id: user.id,
-        email: user.email || user.user_metadata?.email || 'user@example.com',
-        name: user.username || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-        avatar: user.avatar_url || null
-      };
-
-      const fullEvent: UserBehaviorEvent = {
-        ...event,
-        user_id: user.id,
-        timestamp: new Date().toISOString(),
-        session_id: this.sessionId,
-        device_info: this.getDeviceInfo()
-      };
-
-      // Send to Elasticsearch via admin-backend
-      try {
-        const authToken = await this.getAuthToken();
-        console.log('🔐 Auth token for analytics:', authToken ? 'Token exists' : 'No token');
-        
-        const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL}/api/v1/analytics/track-behavior`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            event_type: fullEvent.event_type,
-            event_data: fullEvent.event_data,
-            session_id: fullEvent.session_id,
-            device_info: fullEvent.device_info,
-            user_profile: userProfile
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Failed to track analytics to Elasticsearch:', errorText);
-          return false;
-        }
-
-        console.log(`📊 Analytics tracked to Elasticsearch: ${event.event_type}`);
-        return true;
-      } catch (error) {
-        console.error('❌ Elasticsearch analytics error:', error);
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ Error tracking analytics:', error);
-      return false;
-    }
+    console.warn('⚠️ trackEventLegacy is DISABLED - use trackEvent() instead');
+    return false;
   }
 
   // Track screen view
@@ -675,14 +655,15 @@ class AnalyticsService {
     // End previous screen session
     if (this.currentScreen && this.screenStartTime) {
       const timeSpent = Math.floor((Date.now() - this.screenStartTime) / 1000);
-      await this.trackEventLegacy({
-        event_type: 'view',
-        event_data: {
-          screen_name: this.currentScreen,
-          time_spent: timeSpent,
-          scroll_depth: this.scrollDepth
-        }
-      });
+      // Disable legacy tracking to prevent format issues
+      // await this.trackEventLegacy({
+      //   event_type: 'view',
+      //   event_data: {
+      //     screen_name: this.currentScreen,
+      //     time_spent: timeSpent,
+      //     scroll_depth: this.scrollDepth
+      //   }
+      // });
     }
 
     // Start new screen session
@@ -727,13 +708,11 @@ class AnalyticsService {
     this.scrollTimeout = setTimeout(async () => {
       this.lastScrollTime = Date.now();
       
-      await this.trackEventLegacy({
-        event_type: 'scroll',
-        event_data: {
-          screen_name: this.currentScreen,
-          section_name: sectionName,
-          scroll_depth: depth
-        }
+      // Use new format instead of legacy
+      await this.trackEvent('SCROLL', {
+        screen_name: this.currentScreen,
+        section_name: sectionName,
+        scroll_depth: depth
       });
     }, this.scrollDebounceMs);
   }
@@ -744,85 +723,64 @@ class AnalyticsService {
       this.sectionsEngaged[sectionName].interactions++;
     }
 
-    await this.trackEventLegacy({
-      event_type: 'click',
-      event_data: {
-        screen_name: this.currentScreen,
-        section_name: sectionName,
-        listing_id: listingId,
-        category_id: categoryId
-      }
+    await this.trackEvent('BUTTON_CLICK', {
+      screen_name: this.currentScreen,
+      section_name: sectionName,
+      listing_id: listingId,
+      category_id: categoryId
     });
   }
 
   // Track search
   async trackSearchLegacy(searchTerm: string): Promise<void> {
-    await this.trackEventLegacy({
-      event_type: 'search',
-      event_data: {
-        screen_name: this.currentScreen,
-        search_term: searchTerm
-      }
+    await this.trackEvent('SEARCH', {
+      screen_name: this.currentScreen,
+      search_term: searchTerm
     });
   }
 
   // Track favorite
   async trackFavorite(listingId: string, action: 'add' | 'remove'): Promise<void> {
-    await this.trackEventLegacy({
-      event_type: 'favorite',
-      event_data: {
-        screen_name: this.currentScreen,
-        listing_id: listingId,
-        action: action
-      }
+    await this.trackEvent('FAVORITE_ADDED', {
+      screen_name: this.currentScreen,
+      listing_id: listingId,
+      action: action
     });
   }
 
   // Track listing view
   async trackListingViewLegacy(listingId: string, categoryId?: string): Promise<void> {
-    await this.trackEventLegacy({
-      event_type: 'view',
-      event_data: {
-        screen_name: this.currentScreen,
-        listing_id: listingId,
-        category_id: categoryId
-      }
+    await this.trackEvent('LISTING_VIEW', {
+      screen_name: this.currentScreen,
+      listing_id: listingId,
+      category_id: categoryId
     });
   }
 
   // Track share
   async trackShare(listingId: string, method: string): Promise<void> {
-    await this.trackEventLegacy({
-      event_type: 'share',
-      event_data: {
-        screen_name: this.currentScreen,
-        listing_id: listingId,
-        method: method
-      }
+    await this.trackEvent('SHARE', {
+      screen_name: this.currentScreen,
+      listing_id: listingId,
+      method: method
     });
   }
 
   // Track message
   async trackMessage(listingId: string, conversationId: string): Promise<void> {
-    await this.trackEventLegacy({
-      event_type: 'message',
-      event_data: {
-        screen_name: this.currentScreen,
-        listing_id: listingId,
-        conversation_id: conversationId
-      }
+    await this.trackEvent('MESSAGE_SENT', {
+      screen_name: this.currentScreen,
+      listing_id: listingId,
+      conversation_id: conversationId
     });
   }
 
   // Track offer
   async trackOffer(listingId: string, offerAmount: number): Promise<void> {
-    await this.trackEventLegacy({
-      event_type: 'offer',
-      event_data: {
-        screen_name: this.currentScreen,
-        listing_id: listingId,
-        offer_amount: offerAmount
-      }
+    await this.trackEvent('OFFER_SENT', {
+      screen_name: this.currentScreen,
+      listing_id: listingId,
+      offer_amount: offerAmount
     });
   }
 
@@ -835,13 +793,10 @@ class AnalyticsService {
       // End current screen session
       if (this.currentScreen && this.screenStartTime) {
         const timeSpent = Math.floor((Date.now() - this.screenStartTime) / 1000);
-        await this.trackEventLegacy({
-          event_type: 'view',
-          event_data: {
-            screen_name: this.currentScreen,
-            time_spent: timeSpent,
-            scroll_depth: this.scrollDepth
-          }
+        await this.trackEvent('SCREEN_VIEW', {
+          screen_name: this.currentScreen,
+          time_spent: timeSpent,
+          scroll_depth: this.scrollDepth
         });
       }
 
@@ -913,87 +868,56 @@ class AnalyticsService {
   async trackAnalyticsEvent(eventName: typeof AnalyticsEventType[keyof typeof AnalyticsEventType], eventProperties: Record<string, any> = {}): Promise<boolean> {
     try {
       const user = useAuthStore.getState().user;
-      if (!user) {
-        console.warn('⚠️ No user found for analytics tracking');
+      if (!user || !this.sessionId) {
+        console.warn('⚠️ Analytics: User not logged in or session not started. Event not tracked.');
         return false;
       }
 
-      // Increment event count
-      this.eventsCount++;
+      console.log('🔍 trackAnalyticsEvent called with:', eventName, eventProperties);
 
-      // Create analytics user object with enhanced data
-      const analyticsUser: AnalyticsUser = {
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.name || user.email || 'Unknown User',
-        avatar: user.user_metadata?.avatar_url || undefined,
-        properties: {
-          registration_date: user.created_at,
-          subscription_type: this.userProfile?.subscription_type || 'free',
-          last_login: new Date().toISOString(),
-          trust_score: this.userProfile?.trust_score || 0,
-          verification_status: this.userProfile?.verification_status || 'unverified'
-        }
-      };
-
-      // Create analytics session object with enhanced tracking
-      const analyticsSession: AnalyticsSession = {
-        id: this.sessionId || this.generateSessionId(),
-        start_time: new Date(this.sessionStartTime || Date.now()).toISOString(),
-        duration: this.sessionStartTime ? Date.now() - this.sessionStartTime : undefined,
-        page_views: this.pageViews,
-        events_count: this.eventsCount
-      };
-
-      // Create analytics device object with enhanced data
-      const { width, height } = Dimensions.get('screen');
-      const analyticsDevice: AnalyticsDevice = {
-        platform: Platform.OS as 'ios' | 'android',
-        version: Platform.Version?.toString(),
-        model: Device.modelName || undefined,
-        screen_resolution: `${width}x${height}`,
-        app_version: this.appVersion,
-        os_version: Device.osVersion || undefined,
-        user_agent: `BenAlsam-Mobile/${Platform.OS}/${Device.osVersion || 'unknown'}`
-      };
-
-      // Create analytics context object with enhanced data
-      const analyticsContext: AnalyticsContext = {
-        language: this.language,
-        timezone: this.timezone
-      };
-
-      // Create analytics event
-      const analyticsEvent: AnalyticsEvent = {
-        event_id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        event_name: eventName,
-        event_timestamp: new Date().toISOString(),
-        event_properties: {
+      // Use the same format as trackEvent
+      const requestBody = {
+        event_type: eventName,
+        event_data: {
           ...eventProperties,
-          screen_name: this.currentScreen,
-          session_duration: analyticsSession.duration
+          event_timestamp: new Date().toISOString()
         },
-        user: analyticsUser,
-        session: analyticsSession,
-        device: analyticsDevice,
-        context: analyticsContext
+        user_profile: {
+          id: user.id,
+          email: user.email || '',
+          name: user.user_metadata?.name || user.email?.split('@')[0] || 'Unknown User',
+          avatar: user.user_metadata?.avatar_url || null
+        },
+        session_id: this.sessionId,
+        device_info: this.getDeviceInfo()
       };
 
-      // Send to backend
-      const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL}/api/v1/analytics/track-event`, {
+      console.log('🔍 Request body:', JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL}/api/v1/analytics/track-behavior`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(analyticsEvent)
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('🔍 Response error text:', errorText);
+        console.error('Analytics: Failed to track event:', errorText);
+        return false;
       }
 
-      const result = await response.json();
-      return result.success;
+      const responseData = await response.json();
+      console.log('🔍 Response data:', responseData);
+
+      this.eventsCount++;
+      console.log(`🔍 Analytics: Tracked ${eventName} event successfully`);
+      return true;
     } catch (error) {
       console.error('❌ Error tracking analytics event:', error);
       return false;

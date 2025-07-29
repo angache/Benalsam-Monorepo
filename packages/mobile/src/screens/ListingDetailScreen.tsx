@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -31,6 +31,7 @@ import { useListing } from '../hooks/queries/useListings';
 import { useToggleFavorite } from '../hooks/queries/useFavorites';
 import { ListingWithUser } from '../services/listingService/core';
 import { UseQueryResult } from '@tanstack/react-query';
+import analyticsService from '../services/analyticsService';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -63,6 +64,40 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
   } = useListing(listingId) as UseQueryResult<ExtendedListingWithUser, Error>;
   
   const { toggleFavorite } = useToggleFavorite();
+
+  // Track listing view when screen loads
+  useEffect(() => {
+    console.log('🔍 ListingDetailScreen useEffect triggered');
+    console.log('🔍 listing:', listing);
+    console.log('🔍 listingId:', listingId);
+    
+    if (listing) {
+      console.log('🔍 About to track LISTING_VIEW event');
+      console.log('🔍 Event data:', {
+        listing_id: listingId,
+        listing_title: listing.title,
+        listing_category: listing.category,
+        listing_price: listing.budget,
+        listing_location: listing.location,
+        user_id: listing.user_id
+      });
+      
+      analyticsService.trackEvent('LISTING_VIEW', {
+        listing_id: listingId,
+        listing_title: listing.title,
+        listing_category: listing.category,
+        listing_price: listing.budget,
+        listing_location: listing.location,
+        user_id: listing.user_id
+      }).then(success => {
+        console.log('🔍 LISTING_VIEW tracking result:', success);
+      }).catch(error => {
+        console.error('🔍 LISTING_VIEW tracking error:', error);
+      });
+    } else {
+      console.log('🔍 No listing data available for tracking');
+    }
+  }, [listing, listingId]); // Dependencies for useEffect
 
   const handleProfilePress = () => {
     if (!listing?.user_id) return;
@@ -98,6 +133,16 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
       return;
     }
 
+    // Track offer sent event
+    analyticsService.trackEvent('OFFER_SENT', {
+      listing_id: listingId,
+      listing_title: listing.title,
+      listing_category: listing.category,
+      listing_price: listing.budget,
+      listing_location: listing.location,
+      recipient_id: listing.user_id
+    });
+
     navigation.navigate('MakeOffer', { 
       listingId: listing.id,
       userId: user.id,
@@ -124,6 +169,17 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
 
     try {
       await toggleFavorite(listingId);
+      
+      // Track favorite added event
+      analyticsService.trackEvent('FAVORITE_ADDED', {
+        listing_id: listingId,
+        listing_title: listing?.title,
+        listing_category: listing?.category,
+        listing_price: listing?.budget,
+        listing_location: listing?.location,
+        user_id: listing?.user_id
+      });
+      
       refetch();
     } catch (error) {
       Alert.alert('Hata', 'Favorilere eklenirken bir hata oluştu.');
@@ -134,6 +190,64 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
     navigation.navigate('EditListing', { 
       listingId: listing?.id,
       listingTitle: listing?.title
+    });
+  };
+
+  const handleMessagePress = () => {
+    console.log('🔍 handleMessagePress called');
+    
+    if (!user) {
+      console.log('❌ User not logged in');
+      Alert.alert(
+        'Giriş Yapın',
+        'Mesaj göndermek için önce giriş yapmalısınız.',
+        [
+          { text: 'Vazgeç', style: 'cancel' },
+          { 
+            text: 'Giriş Yap', 
+            onPress: () => navigation.navigate('Auth', { screen: 'Login' })
+          }
+        ]
+      );
+      return;
+    }
+
+    if (!listing) {
+      console.log('❌ Listing not available');
+      Alert.alert('Hata', 'İlan bilgileri yüklenemedi.');
+      return;
+    }
+
+    if (user.id === listing.user_id) {
+      console.log('❌ User trying to message their own listing');
+      Alert.alert('Uyarı', 'Kendi ilanınıza mesaj gönderemezsiniz.');
+      return;
+    }
+
+    console.log('✅ About to track MESSAGE_SENT event');
+    console.log('✅ Event data:', {
+      listing_id: listingId,
+      listing_title: listing.title,
+      listing_category: listing.category,
+      recipient_id: listing.user_id,
+      message_type: 'text'
+    });
+
+    // Track message sent event
+    analyticsService.trackEvent('MESSAGE_SENT', {
+      listing_id: listingId,
+      listing_title: listing.title,
+      listing_category: listing.category,
+      recipient_id: listing.user_id,
+      message_type: 'text'
+    });
+
+    console.log('✅ MESSAGE_SENT event tracked, navigating to Chat');
+
+    navigation.navigate('Chat', { 
+      recipientId: listing.user_id,
+      listingId: listing.id,
+      listingTitle: listing.title
     });
   };
 
@@ -177,7 +291,10 @@ const ListingDetailScreen = ({ route, navigation }: NavigationProps) => {
         <Text style={[styles.headerText, { color: colors.primary }]}>İlanlara Geri Dön</Text>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Image */}
         <View style={styles.imageContainer}>
           <PinchToZoom
@@ -454,8 +571,7 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopWidth: 0,
   },
   actionButton: {
     height: 48,

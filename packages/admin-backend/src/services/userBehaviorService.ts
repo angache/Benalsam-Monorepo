@@ -4,7 +4,7 @@ import { AnalyticsEvent, AnalyticsEventType, AnalyticsUser, AnalyticsSession, An
 
 export interface UserBehaviorEvent {
   user_id: string;
-  event_type: 'click' | 'scroll' | 'search' | 'favorite' | 'view' | 'share' | 'message' | 'offer';
+  event_type: 'click' | 'scroll' | 'search' | 'favorite' | 'view' | 'share' | 'message' | 'offer' | 'performance' | 'LISTING_VIEW' | 'FAVORITE_ADDED' | 'OFFER_SENT' | 'MESSAGE_SENT' | 'FORM_SUBMIT' | 'BUTTON_CLICK' | 'SCREEN_VIEW';
   event_data: {
     screen_name?: string;
     section_name?: string;
@@ -189,7 +189,15 @@ export class UserBehaviorService {
 
   async trackUserBehavior(event: UserBehaviorEvent): Promise<boolean> {
     try {
-      await this.client.index({
+      logger.info('🔍 trackUserBehavior called');
+      logger.info('🔍 Event object:', JSON.stringify(event, null, 2));
+      logger.info('🔍 Event type:', event.event_type);
+      logger.info('🔍 User ID:', event.user_id);
+      
+      logger.info('🔍 About to index to Elasticsearch');
+      logger.info('🔍 Index name:', this.behaviorIndex);
+      
+      const result = await this.client.index({
         index: this.behaviorIndex,
         body: {
           ...event,
@@ -197,10 +205,15 @@ export class UserBehaviorService {
         }
       });
       
+      logger.info('🔍 Elasticsearch index result:', JSON.stringify(result, null, 2));
       logger.info(`📊 User behavior tracked: ${event.event_type} for user ${event.user_id}`);
       return true;
     } catch (error) {
       logger.error('❌ Error tracking user behavior:', error);
+      if (error instanceof Error) {
+        logger.error('❌ Error message:', error.message);
+        logger.error('❌ Error stack:', error.stack);
+      }
       return false;
     }
   }
@@ -767,25 +780,25 @@ export class UserBehaviorService {
       };
 
       if (event_type) {
-        query.bool.must.push({ term: { event_name: event_type } });
+        query.bool.must.push({ term: { event_type: event_type } });
       }
 
       if (user_id) {
-        query.bool.must.push({ term: { 'user.id': user_id } });
+        query.bool.must.push({ term: { user_id: user_id } });
       }
 
       if (start_date || end_date) {
         const range: any = {};
         if (start_date) range.gte = start_date;
         if (end_date) range.lte = end_date;
-        query.bool.must.push({ range: { event_timestamp: range } });
+        query.bool.must.push({ range: { timestamp: range } });
       }
 
       const response = await this.client.search({
         index: this.behaviorIndex,
         body: {
           query,
-          sort: [{ event_timestamp: { order: 'desc' } }],
+          sort: [{ timestamp: { order: 'desc' } }],
           from,
           size: limit
         }

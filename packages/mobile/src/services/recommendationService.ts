@@ -2,6 +2,9 @@ import { supabase } from './supabaseClient';
 import { ApiResponse } from '../types';
 import { ListingWithUser } from './listingService/core';
 
+// Admin Backend URL
+const ADMIN_BACKEND_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://localhost:3002';
+
 // Error types
 class ValidationError extends Error {
   constructor(message: string) {
@@ -97,19 +100,41 @@ export const trackUserBehavior = async (
       ...metadata,
     };
 
-    // User behavior'ı kaydet (user_behaviors tablosu)
-    const { error } = await supabase
-      .from('user_behaviors')
-      .insert({
-        user_id: userId,
-        listing_id: listingId,
-        action: action,
-        category: behavior.category,
-        price: behavior.price,
-        created_at: behavior.timestamp.toISOString(),
+    // User behavior'ı admin backend'e gönder
+    try {
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/v1/analytics/track-behavior`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event_type: action,
+          event_data: {
+            listing_id: listingId,
+            category: behavior.category,
+            price: behavior.price,
+            action: action,
+            timestamp: behavior.timestamp.toISOString()
+          },
+          user_profile: {
+            id: userId,
+            email: 'user@example.com', // TODO: Get from auth
+            name: 'User',
+            avatar: null
+          },
+          session_id: `session_${Date.now()}`,
+          device_info: {
+            platform: 'mobile',
+            version: '1.0.0'
+          }
+        })
       });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error tracking user behavior:', await response.text());
+        // Analytics hatası kritik değil, devam et
+      }
+    } catch (error) {
       console.error('Error tracking user behavior:', error);
       // Analytics hatası kritik değil, devam et
     }

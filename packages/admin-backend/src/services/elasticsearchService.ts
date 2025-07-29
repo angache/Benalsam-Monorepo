@@ -300,8 +300,13 @@ export class AdminElasticsearchService {
       const response = await client.search({
         index: indexName,
         size: options.size || 10,
+        body: {
           query: {
             match_all: {}
+          },
+          sort: [
+            { timestamp: { order: 'desc' } }
+          ]
         }
       });
       

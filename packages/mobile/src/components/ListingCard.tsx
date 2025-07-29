@@ -118,45 +118,36 @@ const ListingCard: React.FC<ListingCardProps> = React.memo(({
 
   // Analytics tracking functions
   const trackCardClick = useCallback(() => {
-    analyticsService.trackEvent({
-      event_type: 'click',
-      event_data: {
-        screen_name: screenName,
-        section_name: sectionName,
-        listing_id: cardData.id,
-        action: 'view_listing',
-        listing_title: cardData.title,
-        listing_category: cardData.category,
-        listing_price: cardData.price,
-      }
+    analyticsService.trackEvent('BUTTON_CLICK', {
+      screen_name: screenName,
+      section_name: sectionName,
+      listing_id: cardData.id,
+      action: 'view_listing',
+      listing_title: cardData.title,
+      listing_category: cardData.category,
+      listing_price: cardData.price,
     });
   }, [screenName, sectionName, cardData]);
 
   const trackFavoriteAction = useCallback((action: 'add' | 'remove') => {
-    analyticsService.trackEvent({
-      event_type: 'favorite',
-      event_data: {
-        screen_name: screenName,
-        section_name: sectionName,
-        listing_id: cardData.id,
-        action: action,
-        listing_title: cardData.title,
-        listing_category: cardData.category,
-      }
+    analyticsService.trackEvent('FAVORITE_ADDED', {
+      screen_name: screenName,
+      section_name: sectionName,
+      listing_id: cardData.id,
+      action: action,
+      listing_title: cardData.title,
+      listing_category: cardData.category,
     });
   }, [screenName, sectionName, cardData]);
 
   const trackLongPressAction = useCallback((action: 'share' | 'save' | 'report') => {
-    analyticsService.trackEvent({
-      event_type: 'click',
-      event_data: {
-        screen_name: screenName,
-        section_name: sectionName,
-        listing_id: cardData.id,
-        action: `long_press_${action}`,
-        listing_title: cardData.title,
-        listing_category: cardData.category,
-      }
+    analyticsService.trackEvent('BUTTON_CLICK', {
+      screen_name: screenName,
+      section_name: sectionName,
+      listing_id: cardData.id,
+      action: `long_press_${action}`,
+      listing_title: cardData.title,
+      listing_category: cardData.category,
     });
   }, [screenName, sectionName, cardData]);
 

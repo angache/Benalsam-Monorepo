@@ -190,15 +190,12 @@ export const searchListings = async (params: SearchParams): Promise<SearchRespon
   try {
     // Track search analytics
     if (params.query?.trim()) {
-      analyticsService.trackEvent({
-        event_type: 'search',
-        event_data: {
-          search_term: params.query,
-          screen_name: 'SearchScreen',
-          section_name: 'Search Results',
-          filters: params.filters,
-          sort: params.sort,
-        }
+      analyticsService.trackEvent('SEARCH', {
+        search_term: params.query,
+        screen_name: 'SearchScreen',
+        section_name: 'Search Results',
+        filters: params.filters,
+        sort: params.sort,
       });
     }
 

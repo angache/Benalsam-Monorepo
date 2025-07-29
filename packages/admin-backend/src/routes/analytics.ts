@@ -24,7 +24,28 @@ router.post('/initialize', async (req, res) => {
 // Track user behavior event
 router.post('/track-behavior', async (req, res) => {
   try {
+    logger.info('🔍 /track-behavior endpoint called');
+    logger.info('🔍 Request body:', JSON.stringify(req.body, null, 2));
+    
     const { event_type, event_data, session_id, device_info, user_profile } = req.body;
+    
+    logger.info('🔍 Parsed data:');
+    logger.info('🔍 event_type:', event_type);
+    logger.info('🔍 event_data:', JSON.stringify(event_data, null, 2));
+    logger.info('🔍 session_id:', session_id);
+    logger.info('🔍 device_info:', JSON.stringify(device_info, null, 2));
+    logger.info('🔍 user_profile:', JSON.stringify(user_profile, null, 2));
+    
+    // Validate required fields
+    if (!event_type) {
+      logger.error('❌ Missing event_type');
+      return res.status(400).json({ success: false, message: 'Missing event_type' });
+    }
+    
+    if (!user_profile?.id) {
+      logger.error('❌ Missing user_profile.id');
+      return res.status(400).json({ success: false, message: 'Missing user_profile.id' });
+    }
     
     // Create event with user profile information
     const event = {
@@ -41,6 +62,8 @@ router.post('/track-behavior', async (req, res) => {
       device_info
     };
     
+    logger.info('🔍 Created event object:', JSON.stringify(event, null, 2));
+    
     // Debug: Log user profile information
     logger.info(`🔍 Debug - User Profile:`, {
       id: user_profile?.id,
@@ -49,17 +72,24 @@ router.post('/track-behavior', async (req, res) => {
       avatar: user_profile?.avatar
     });
     
+    logger.info('🔍 About to call userBehaviorService.trackUserBehavior');
     const success = await userBehaviorService.trackUserBehavior(event);
+    logger.info('🔍 userBehaviorService.trackUserBehavior result:', success);
     
     if (success) {
-      res.json({ success: true, message: 'User behavior tracked successfully' });
+      logger.info('✅ User behavior tracked successfully');
+      return res.json({ success: true, message: 'User behavior tracked successfully' });
     } else {
-      res.status(500).json({ success: false, message: 'Failed to track user behavior' });
+      logger.error('❌ userBehaviorService.trackUserBehavior returned false');
+      return res.status(500).json({ success: false, message: 'Failed to track user behavior' });
     }
-  } catch (error) {
-    logger.error('Error tracking user behavior:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
+      } catch (error) {
+      logger.error('❌ Error tracking user behavior:', error);
+      if (error instanceof Error) {
+        logger.error('❌ Error stack:', error.stack);
+      }
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
 });
 
 // Track user analytics
@@ -75,6 +105,23 @@ router.post('/track-analytics', authenticateToken, async (req, res) => {
     }
   } catch (error) {
     logger.error('Error tracking user analytics:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Track analytics event (new format)
+router.post('/track-event', async (req, res) => {
+  try {
+    const analyticsEvent = req.body;
+    const success = await userBehaviorService.trackAnalyticsEvent(analyticsEvent);
+    
+    if (success) {
+      res.json({ success: true, message: 'Analytics event tracked successfully' });
+    } else {
+      res.status(500).json({ success: false, message: 'Failed to track analytics event' });
+    }
+  } catch (error) {
+    logger.error('Error tracking analytics event:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
