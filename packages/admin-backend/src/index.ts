@@ -16,6 +16,8 @@ import monitoringRoutes from './routes/monitoring';
 import elasticsearchRoutes from './routes/elasticsearch';
 import adminManagementRoutes from './routes/admin-management';
 import analyticsRoutes from './routes/analytics';
+import performanceRoutes from './routes/performance';
+import userJourneyRoutes from './routes/userJourney';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -130,6 +132,8 @@ app.use('/api/v1/monitoring', monitoringRoutes);
 app.use('/api/v1/elasticsearch', elasticsearchRoutes);
 app.use('/api/v1/admin-management', authenticateToken, adminManagementRoutes);
 app.use('/api/v1/analytics', analyticsRoutes); // Analytics aktif edildi
+app.use('/api/v1/performance', performanceRoutes); // Performance monitoring aktif edildi
+app.use('/api/v1/user-journey', userJourneyRoutes); // User Journey tracking aktif edildi
 
 // Global error handler
 app.use(errorHandler);

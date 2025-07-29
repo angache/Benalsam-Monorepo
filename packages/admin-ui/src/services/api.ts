@@ -56,7 +56,7 @@ export const apiService = {
     console.log('🔐 Login response:', response.data);
     
     // Admin backend returns { success: true, data: { admin, token, refreshToken }, message }
-    const loginData = response.data.data;
+    const loginData = response.data.data!;
     return {
       token: loginData.token,
       refreshToken: loginData.refreshToken,
@@ -83,7 +83,7 @@ export const apiService = {
 
   async getListing(id: string): Promise<Listing> {
     const response = await apiClient.get<ApiResponse<Listing>>(`/listings/${id}`);
-    return response.data.data;
+    return response.data.data!;
   },
 
   async moderateListing(id: string, action: 'approve' | 'reject', reason?: string): Promise<void> {
@@ -262,7 +262,7 @@ export const apiService = {
     return response.data;
   },
 
-  async getUserJourney(userId: string, days: number = 7): Promise<any> {
+  async getAnalyticsUserJourney(userId: string, days: number = 7): Promise<any> {
     const response = await apiClient.get<ApiResponse<any>>(`/analytics/user-journey/${userId}?days=${days}`);
     return response.data;
   },
@@ -329,5 +329,79 @@ export const apiService = {
   async trackAnalyticsEvent(event: any): Promise<any> {
     const response = await apiClient.post('/analytics/track-event', event);
     return response.data;
+  },
+
+  // Performance Monitoring
+  async getPerformanceDashboard(): Promise<any> {
+    const response = await apiClient.get('/performance/dashboard');
+    return response.data.data;
+  },
+
+  async getSystemMetrics(): Promise<any> {
+    const response = await apiClient.get('/performance/system');
+    return response.data.data;
+  },
+
+  async getElasticsearchMetrics(): Promise<any> {
+    const response = await apiClient.get('/performance/elasticsearch');
+    return response.data.data;
+  },
+
+  async getAPIMetrics(minutes: number = 5): Promise<any> {
+    const response = await apiClient.get('/performance/api', { params: { minutes } });
+    return response.data.data;
+  },
+
+
+
+  async checkPerformanceAlerts(): Promise<any> {
+    const response = await apiClient.post('/performance/alerts/check');
+    return response.data.data;
+  },
+
+  async trackSystemMetrics(): Promise<any> {
+    const response = await apiClient.post('/performance/track/system');
+    return response.data;
+  },
+
+  async trackElasticsearchMetrics(): Promise<any> {
+    const response = await apiClient.post('/performance/track/elasticsearch');
+    return response.data;
+  },
+
+  // User Journey Tracking
+  async initializeUserJourney(): Promise<any> {
+    const response = await apiClient.post('/user-journey/initialize');
+    return response.data.data!;
+  },
+
+  async trackJourneyEvent(eventData: any): Promise<any> {
+    const response = await apiClient.post('/user-journey/track-event', eventData);
+    return response.data.data!;
+  },
+
+  async getJourneyAnalysis(days: number = 7): Promise<any> {
+    const response = await apiClient.get('/user-journey/analysis', { params: { days } });
+    return response.data.data!;
+  },
+
+  async getJourneyOptimization(days: number = 7): Promise<any> {
+    const response = await apiClient.get('/user-journey/optimization', { params: { days } });
+    return response.data.data!;
+  },
+
+  async getUserJourney(userId: string, days: number = 7): Promise<any> {
+    const response = await apiClient.get(`/user-journey/user/${userId}`, { params: { days } });
+    return response.data.data!;
+  },
+
+  async getRealTimeJourneyMetrics(): Promise<any> {
+    const response = await apiClient.get('/user-journey/realtime');
+    return response.data.data!;
+  },
+
+  async getJourneyDashboard(days: number = 7): Promise<any> {
+    const response = await apiClient.get('/user-journey/dashboard', { params: { days } });
+    return response.data.data!;
   }
 }; 
