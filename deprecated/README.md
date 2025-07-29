@@ -6,18 +6,25 @@ Bu klasör, artık kullanılmayan veya eski versiyonları olan dosyaları içeri
 
 ### 🔧 **scripts/**
 Eski script dosyaları:
+- `admin-status.sh` - Eski admin durum kontrol script'i (PM2 kullanmıyor)
 - `check-offers.js` - Test script'i
 - `copy-env-to-packages.sh` - Eski environment copy script'i
 - `copy-env-to-vps.sh` - Eski VPS deployment script'i
+- `deploy-cleanup.sh` - Eski VPS cleanup deployment script'i
 - `deploy.sh` - Eski deployment script'i
 - `deploy-vps.sh` - Eski VPS deployment script'i
 - `generate-fake-listings.js` - Test verisi oluşturma script'i
 - `remove_inventory_item_id.sql` - Tek seferlik SQL script'i
+- `start-admin-all.sh` - Eski admin başlatma script'i (npm kullanıyor)
+- `start-admin-backend.sh` - Eski backend başlatma script'i (npm kullanıyor)
+- `start-admin-ui.sh` - Eski UI başlatma script'i (npm kullanıyor)
 - `start-local.sh` - Eski local deployment script'i
 - `start-vm.sh` - Eski VM deployment script'i
 - `start-vps.sh` - Eski VPS deployment script'i
+- `stop-admin-all.sh` - Eski admin durdurma script'i (npm kullanıyor)
 - `update-mobile-imports.js` - Geçici import düzeltme script'i
 - `validate-config.sh` - Eski config validation script'i
+- `vps-cleanup.sh` - Eski VPS cleanup script'i
 
 ### ⚙️ **ecosystem/**
 Eski PM2 ecosystem dosyaları:
@@ -68,4 +75,4 @@ pm2 start ecosystem.config.js --only admin-ui
 
 **Son Güncelleme:** 2025-01-09  
 **Sebep:** Proje temizliği ve organizasyon  
-**Toplam Dosya:** 20 dosya 
+**Toplam Dosya:** 29 dosya 
