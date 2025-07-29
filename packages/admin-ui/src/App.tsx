@@ -16,6 +16,7 @@ import ElasticsearchDashboardPage from './pages/ElasticsearchDashboardPage';
 import RealTimeAnalyticsPage from './pages/RealTimeAnalyticsPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import DataExportPage from './pages/DataExportPage';
+import PerformanceTestPage from './pages/PerformanceTestPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -181,6 +182,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <DataExportPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/performance-test"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PerformanceTestPage />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -23,6 +23,7 @@ import {
   Shield,
   Database,
   FileDown,
+  Activity,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -91,6 +92,13 @@ const navigationItems = [
     title: 'Data Export',
     path: '/data-export',
     icon: FileDown,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'performance-test',
+    title: 'Performance Test',
+    path: '/performance-test',
+    icon: Activity,
     permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   {

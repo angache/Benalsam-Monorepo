@@ -5,6 +5,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import Redis from 'ioredis';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -180,6 +181,22 @@ const startServer = async () => {
       logger.info('✅ Queue processor started');
     } catch (error) {
       logger.error('❌ Queue processor failed to start:', error);
+    }
+
+    // Test Redis connection
+    try {
+      const redis = new Redis({
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD,
+        maxRetriesPerRequest: 3
+      });
+      
+      await redis.ping();
+      logger.info('✅ Redis connection verified');
+      redis.disconnect();
+    } catch (error) {
+      logger.warn('⚠️ Redis connection failed:', error);
     }
 
     app.listen(PORT, () => {

@@ -2,6 +2,8 @@ import express, { IRouter } from 'express';
 import { redis } from '../config/redis';
 import { elasticsearchClient } from '../services/elasticsearchService';
 import { supabase } from '../config/supabase';
+import Redis from 'ioredis';
+import logger from '../config/logger';
 
 const router: IRouter = express.Router();
 
@@ -266,6 +268,166 @@ router.get('/redis', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      service: 'redis',
+      error: (error as Error).message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Detaylı Redis test endpoint
+router.get('/redis/test', async (req, res) => {
+  try {
+    logger.info('🔍 Starting detailed Redis test...');
+    
+    const testResults = {
+      status: 'healthy',
+      service: 'redis',
+      timestamp: new Date().toISOString(),
+      tests: {
+        ping: { status: 'unknown', responseTime: 0, details: '' },
+        set: { status: 'unknown', responseTime: 0, details: '' },
+        get: { status: 'unknown', responseTime: 0, details: '' },
+        delete: { status: 'unknown', responseTime: 0, details: '' },
+        info: { status: 'unknown', responseTime: 0, details: {} }
+      }
+    };
+
+    // Test 1: Ping
+    try {
+      const start = Date.now();
+      const pingResponse = await redis.ping();
+      const responseTime = Date.now() - start;
+      
+      testResults.tests.ping = {
+        status: 'success',
+        responseTime,
+        details: `Response: ${pingResponse}`
+      };
+      logger.info('✅ Redis ping test passed');
+    } catch (error) {
+      testResults.tests.ping = {
+        status: 'failed',
+        responseTime: 0,
+        details: (error as Error).message
+      };
+      logger.error('❌ Redis ping test failed:', error);
+    }
+
+    // Test 2: Set
+    try {
+      const start = Date.now();
+      await redis.set('test_key', 'test_value', 'EX', 60);
+      const responseTime = Date.now() - start;
+      
+      testResults.tests.set = {
+        status: 'success',
+        responseTime,
+        details: 'Key set successfully with 60s expiration'
+      };
+      logger.info('✅ Redis set test passed');
+    } catch (error) {
+      testResults.tests.set = {
+        status: 'failed',
+        responseTime: 0,
+        details: (error as Error).message
+      };
+      logger.error('❌ Redis set test failed:', error);
+    }
+
+    // Test 3: Get
+    try {
+      const start = Date.now();
+      const value = await redis.get('test_key');
+      const responseTime = Date.now() - start;
+      
+      testResults.tests.get = {
+        status: 'success',
+        responseTime,
+        details: `Retrieved value: ${value}`
+      };
+      logger.info('✅ Redis get test passed');
+    } catch (error) {
+      testResults.tests.get = {
+        status: 'failed',
+        responseTime: 0,
+        details: (error as Error).message
+      };
+      logger.error('❌ Redis get test failed:', error);
+    }
+
+    // Test 4: Delete
+    try {
+      const start = Date.now();
+      const deleted = await redis.del('test_key');
+      const responseTime = Date.now() - start;
+      
+      testResults.tests.delete = {
+        status: 'success',
+        responseTime,
+        details: `Deleted ${deleted} key(s)`
+      };
+      logger.info('✅ Redis delete test passed');
+    } catch (error) {
+      testResults.tests.delete = {
+        status: 'failed',
+        responseTime: 0,
+        details: (error as Error).message
+      };
+      logger.error('❌ Redis delete test failed:', error);
+    }
+
+    // Test 5: Info
+    try {
+      const start = Date.now();
+      const info = await redis.info();
+      const responseTime = Date.now() - start;
+      
+      // Parse Redis info
+      const infoLines = info.split('\r\n');
+      const infoObj: any = {};
+      infoLines.forEach(line => {
+        if (line.includes(':')) {
+          const [key, value] = line.split(':');
+          infoObj[key] = value;
+        }
+      });
+      
+      testResults.tests.info = {
+        status: 'success',
+        responseTime,
+        details: {
+          version: infoObj.redis_version,
+          uptime: infoObj.uptime_in_seconds,
+          connected_clients: infoObj.connected_clients,
+          used_memory: infoObj.used_memory_human,
+          total_commands_processed: infoObj.total_commands_processed
+        }
+      };
+      logger.info('✅ Redis info test passed');
+    } catch (error) {
+      testResults.tests.info = {
+        status: 'failed',
+        responseTime: 0,
+        details: (error as Error).message
+      };
+      logger.error('❌ Redis info test failed:', error);
+    }
+
+    // Determine overall status
+    const failedTests = Object.values(testResults.tests).filter(test => test.status === 'failed').length;
+    if (failedTests > 0) {
+      testResults.status = 'degraded';
+    }
+
+    const statusCode = testResults.status === 'healthy' ? 200 : 503;
+    logger.info(`🔍 Redis test completed with status: ${testResults.status}`);
+    
+    res.status(statusCode).json(testResults);
+  } catch (error) {
+    logger.error('❌ Redis test failed:', error);
     res.status(503).json({
       status: 'unhealthy',
       service: 'redis',
