@@ -483,9 +483,9 @@ export const apiService = {
     return response.data.data!;
   },
 
-  // Data Export System
+  // Data Export System V2
   async initializeDataExport(): Promise<any> {
-    const response = await apiClient.post('/data-export/initialize');
+    const response = await apiClient.post('/data-export-v2/initialize');
     return response.data.data!;
   },
 
@@ -504,34 +504,34 @@ export const apiService = {
       days?: string[];
     };
   }): Promise<any> {
-    const response = await apiClient.post('/data-export/requests', requestData);
+    const response = await apiClient.post('/data-export-v2/requests', requestData);
     return response.data.data!;
   },
 
   async getExportRequests(params?: { user_id?: string; status?: string }): Promise<any> {
-    const response = await apiClient.get('/data-export/requests', { params });
+    const response = await apiClient.get('/data-export-v2/requests', { params });
     return response.data.data!;
   },
 
   async processExport(exportId: string): Promise<any> {
-    const response = await apiClient.post(`/data-export/process/${exportId}`);
+    const response = await apiClient.post(`/data-export-v2/process/${exportId}`);
     return response.data.data!;
   },
 
   async downloadExport(exportId: string): Promise<Blob> {
-    const response = await apiClient.get(`/data-export/download/${exportId}`, {
+    const response = await apiClient.get(`/data-export-v2/download/${exportId}`, {
       responseType: 'blob'
     });
     return response.data;
   },
 
   async deleteExport(exportId: string): Promise<any> {
-    const response = await apiClient.delete(`/data-export/requests/${exportId}`);
+    const response = await apiClient.delete(`/data-export-v2/requests/${exportId}`);
     return response.data.data!;
   },
 
   async getExportStatistics(): Promise<any> {
-    const response = await apiClient.get('/data-export/statistics');
+    const response = await apiClient.get('/data-export-v2/statistics');
     return response.data.data!;
   },
 
@@ -545,17 +545,17 @@ export const apiService = {
       custom_dimensions?: Record<string, any>;
     };
   }): Promise<any> {
-    const response = await apiClient.post('/data-export/quick-export', requestData);
+    const response = await apiClient.post('/data-export-v2/requests', requestData);
     return response.data.data!;
   },
 
   async getExportFormats(): Promise<any> {
-    const response = await apiClient.get('/data-export/formats');
+    const response = await apiClient.get('/data-export-v2/formats');
     return response.data.data!;
   },
 
   async getExportDataTypes(): Promise<any> {
-    const response = await apiClient.get('/data-export/data-types');
+    const response = await apiClient.get('/data-export-v2/data-types');
     return response.data.data!;
   }
 }; 

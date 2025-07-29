@@ -20,6 +20,7 @@ import performanceRoutes from './routes/performance';
 import userJourneyRoutes from './routes/userJourney';
 import analyticsAlertsRoutes from './routes/analyticsAlerts';
 import dataExportRoutes from './routes/dataExport';
+import dataExportV2Routes from './routes/dataExportV2';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -138,6 +139,7 @@ app.use('/api/v1/performance', performanceRoutes); // Performance monitoring akt
 app.use('/api/v1/user-journey', userJourneyRoutes); // User Journey tracking aktif edildi
 app.use('/api/v1/analytics-alerts', analyticsAlertsRoutes); // Analytics Alerts sistemi aktif edildi
 app.use('/api/v1/data-export', dataExportRoutes); // Data Export sistemi aktif edildi
+app.use('/api/v1/data-export-v2', dataExportV2Routes); // Data Export V2 sistemi aktif edildi
 
 // Global error handler
 app.use(errorHandler);
