@@ -442,8 +442,8 @@ export interface EnhancedListing extends Listing {
 - [x] `ListingUserTrust` interface'i oluştur
 - [x] Tüm paketlerde build test edildi ✅
 
-### 2. Event Türleri Standardizasyonu
-- [ ] Core Events tanımla:
+### 2. Event Türleri Standardizasyonu ✅ TAMAMLANDI
+- [x] Core Events tanımla:
   - `page_view`
   - `screen_view`
   - `button_click`
@@ -453,16 +453,58 @@ export interface EnhancedListing extends Listing {
   - `listing_create`
   - `offer_sent`
   - `message_sent`
-- [ ] Performance Events tanımla:
+  - `scroll`
+  - `tap`
+  - `swipe`
+- [x] Performance Events tanımla:
   - `app_load`
+  - `app_start`
+  - `screen_load`
   - `api_call`
+  - `api_success`
+  - `api_error`
   - `error_occurred`
   - `crash`
-- [ ] Business Events tanımla:
+  - `memory_warning`
+  - `battery_low`
+  - `network_change`
+- [x] Business Events tanımla:
   - `user_registered`
   - `user_logged_in`
+  - `user_logged_out`
+  - `user_profile_updated`
   - `premium_upgraded`
+  - `premium_cancelled`
   - `payment_completed`
+  - `payment_failed`
+  - `subscription_renewed`
+  - `subscription_expired`
+- [x] Engagement Events tanımla:
+  - `notification_received`
+  - `notification_opened`
+  - `push_enabled`
+  - `push_disabled`
+  - `deep_link_opened`
+  - `app_opened_from_background`
+- [x] Feature Usage Events tanımla:
+  - `filter_applied`
+  - `sort_changed`
+  - `category_selected`
+  - `location_selected`
+  - `image_uploaded`
+  - `image_deleted`
+  - `contact_shown`
+  - `report_submitted`
+  - `feedback_submitted`
+- [x] Event Property Standards tanımla:
+  - CoreEventProperties
+  - PerformanceEventProperties
+  - BusinessEventProperties
+  - EngagementEventProperties
+  - AnalyticsEventProperties (combined)
+- [x] Mobile App Analytics Service güncellendi
+- [x] Backward compatibility korundu
+- [x] TypeScript build successful
 
 ### 3. Elasticsearch Mapping Güncellemeleri ✅ TAMAMLANDI
 - [x] **Basit ve Esnek Attribute Sistemi**: Karmaşık category_attributes yapısı yerine `attributes: Record<string, any>` kullanımı

@@ -8,10 +8,11 @@ import {
   AnalyticsUser, 
   AnalyticsSession, 
   AnalyticsDevice, 
-  AnalyticsContext 
+  AnalyticsContext
 } from '@benalsam/shared-types';
 import Constants from 'expo-constants';
 
+// Legacy interface for backward compatibility
 export interface UserBehaviorEvent {
   user_id: string;
   event_type: 'click' | 'scroll' | 'search' | 'favorite' | 'view' | 'share' | 'message' | 'offer' | 'performance';
@@ -149,8 +150,465 @@ class AnalyticsService {
     }
   }
 
+  // ===========================
+  // STANDARDIZED EVENT TRACKING METHODS
+  // ===========================
+
+  /**
+   * Track any analytics event with standardized format
+   */
+  async trackEvent(
+    eventName: string,
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    try {
+      const { user } = useAuthStore.getState();
+      if (!user) {
+        console.warn('Analytics: No user found, skipping event tracking');
+        return false;
+      }
+
+      // Send to Supabase
+      const { error } = await supabase
+        .from('user_behavior_events')
+        .insert([{
+          user_id: user.id,
+          event_type: eventName,
+          event_data: {
+            ...properties,
+            event_timestamp: new Date().toISOString()
+          },
+          timestamp: new Date().toISOString(),
+          session_id: this.sessionId,
+          device_info: this.getDeviceInfo()
+        }]);
+
+      if (error) {
+        console.error('Analytics: Failed to track event:', error);
+        return false;
+      }
+
+      this.eventsCount++;
+      console.log(`Analytics: Tracked ${eventName} event successfully`);
+      return true;
+    } catch (error) {
+      console.error('Analytics: Error tracking event:', error);
+      return false;
+    }
+  }
+
+  // ===== CORE EVENTS =====
+
+  /**
+   * Track page/screen view
+   */
+  async trackPageView(pageName: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackEvent('PAGE_VIEW', {
+      page_name: pageName,
+      ...properties
+    });
+  }
+
+  /**
+   * Track screen view (mobile specific)
+   */
+  async trackScreenView(screenName: string, properties: Record<string, any> = {}): Promise<boolean> {
+    return this.trackEvent('SCREEN_VIEW', {
+      screen_name: screenName,
+      ...properties
+    });
+  }
+
+  /**
+   * Track button click
+   */
+  async trackButtonClick(
+    buttonName: string, 
+    buttonId?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('BUTTON_CLICK', {
+      button_name: buttonName,
+      button_id: buttonId,
+      ...properties
+    });
+  }
+
+  /**
+   * Track form submission
+   */
+  async trackFormSubmit(
+    formName: string, 
+    formId?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('FORM_SUBMIT', {
+      form_name: formName,
+      form_id: formId,
+      ...properties
+    });
+  }
+
+  /**
+   * Track search
+   */
+  async trackSearch(
+    searchQuery: string, 
+    resultsCount?: number, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('SEARCH', {
+      search_query: searchQuery,
+      search_results_count: resultsCount,
+      ...properties
+    });
+  }
+
+  /**
+   * Track listing view
+   */
+  async trackListingView(
+    listingId: string, 
+    category?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('LISTING_VIEW', {
+      listing_id: listingId,
+      listing_category: category,
+      ...properties
+    });
+  }
+
+  /**
+   * Track listing creation
+   */
+  async trackListingCreate(
+    listingId: string, 
+    category?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('LISTING_CREATE', {
+      listing_id: listingId,
+      listing_category: category,
+      ...properties
+    });
+  }
+
+  /**
+   * Track offer sent
+   */
+  async trackOfferSent(
+    offerId: string, 
+    listingId?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('OFFER_SENT', {
+      offer_id: offerId,
+      listing_id: listingId,
+      ...properties
+    });
+  }
+
+  /**
+   * Track message sent
+   */
+  async trackMessageSent(
+    messageId: string, 
+    recipientId?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('MESSAGE_SENT', {
+      message_id: messageId,
+      recipient_id: recipientId,
+      ...properties
+    });
+  }
+
+  /**
+   * Track scroll
+   */
+  async trackScroll(
+    scrollDepth: number, 
+    direction?: 'up' | 'down' | 'left' | 'right', 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('SCROLL', {
+      scroll_depth: scrollDepth,
+      scroll_direction: direction,
+      ...properties
+    });
+  }
+
+  /**
+   * Track tap
+   */
+  async trackTap(
+    elementName: string, 
+    coordinates?: { x: number; y: number }, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('TAP', {
+      button_name: elementName,
+      ...properties
+    });
+  }
+
+  /**
+   * Track swipe
+   */
+  async trackSwipe(
+    direction: 'up' | 'down' | 'left' | 'right', 
+    elementName?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('SWIPE', {
+      swipe_direction: direction,
+      button_name: elementName,
+      ...properties
+    });
+  }
+
+  // ===== PERFORMANCE EVENTS =====
+
+  /**
+   * Track app load
+   */
+  async trackAppLoad(
+    loadTimeMs: number, 
+    coldStart: boolean = false, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('APP_LOAD', {
+      app_load_time_ms: loadTimeMs,
+      cold_start: coldStart,
+      ...properties
+    });
+  }
+
+  /**
+   * Track screen load
+   */
+  async trackScreenLoad(
+    screenName: string, 
+    loadTimeMs: number, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('SCREEN_LOAD', {
+      screen_name: screenName,
+      screen_load_time_ms: loadTimeMs,
+      ...properties
+    });
+  }
+
+  /**
+   * Track API call
+   */
+  async trackApiCall(
+    endpoint: string, 
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE', 
+    responseTimeMs: number, 
+    statusCode?: number, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('API_CALL', {
+      api_endpoint: endpoint,
+      api_method: method,
+      api_response_time_ms: responseTimeMs,
+      api_status_code: statusCode,
+      ...properties
+    });
+  }
+
+  /**
+   * Track error
+   */
+  async trackError(
+    errorType: string, 
+    errorMessage: string, 
+    errorStack?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('ERROR_OCCURRED', {
+      error_type: errorType,
+      error_message: errorMessage,
+      error_stack: errorStack,
+      ...properties
+    });
+  }
+
+  // ===== BUSINESS EVENTS =====
+
+  /**
+   * Track user registration
+   */
+  async trackUserRegistered(
+    registrationMethod: 'email' | 'google' | 'apple' | 'facebook', 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('USER_REGISTERED', {
+      registration_method: registrationMethod,
+      user_type: 'new',
+      ...properties
+    });
+  }
+
+  /**
+   * Track user login
+   */
+  async trackUserLoggedIn(
+    loginMethod: 'email' | 'google' | 'apple' | 'facebook', 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('USER_LOGGED_IN', {
+      registration_method: loginMethod,
+      user_type: 'returning',
+      ...properties
+    });
+  }
+
+  /**
+   * Track premium upgrade
+   */
+  async trackPremiumUpgraded(
+    plan: 'premium' | 'lifetime', 
+    price: number, 
+    currency: string = 'TRY', 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('PREMIUM_UPGRADED', {
+      subscription_plan: plan,
+      subscription_price: price,
+      subscription_currency: currency,
+      ...properties
+    });
+  }
+
+  /**
+   * Track payment completion
+   */
+  async trackPaymentCompleted(
+    amount: number, 
+    currency: string = 'TRY', 
+    method: 'credit_card' | 'paypal' | 'apple_pay' | 'google_pay', 
+    transactionId?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('PAYMENT_COMPLETED', {
+      payment_amount: amount,
+      payment_currency: currency,
+      payment_method: method,
+      payment_status: 'success',
+      transaction_id: transactionId,
+      ...properties
+    });
+  }
+
+  // ===== ENGAGEMENT EVENTS =====
+
+  /**
+   * Track notification received
+   */
+  async trackNotificationReceived(
+    notificationType: 'push' | 'email' | 'sms', 
+    title?: string, 
+    category?: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('NOTIFICATION_RECEIVED', {
+      notification_type: notificationType,
+      notification_title: title,
+      notification_category: category,
+      ...properties
+    });
+  }
+
+  /**
+   * Track filter applied
+   */
+  async trackFilterApplied(
+    filterType: string, 
+    filterValues: Record<string, any>, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('FILTER_APPLIED', {
+      filter_type: filterType,
+      filter_values: filterValues,
+      ...properties
+    });
+  }
+
+  /**
+   * Track category selection
+   */
+  async trackCategorySelected(
+    categoryId: string, 
+    categoryName: string, 
+    properties: Record<string, any> = {}
+  ): Promise<boolean> {
+    return this.trackEvent('CATEGORY_SELECTED', {
+      category_id: categoryId,
+      category_name: categoryName,
+      ...properties
+    });
+  }
+
+  // ===========================
+  // HELPER METHODS
+  // ===========================
+
+  private generateEventId(): string {
+    return `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private buildAnalyticsUser(user: any): AnalyticsUser {
+    return {
+      id: user.id,
+      email: user.email || '',
+      name: user.name || user.username || '',
+      avatar: user.avatar_url,
+      properties: {
+        registration_date: user.created_at,
+        subscription_type: user.subscription_type || 'free',
+        last_login: new Date().toISOString(),
+        trust_score: user.trust_score || 0,
+        verification_status: user.verification_status || 'unverified'
+      }
+    };
+  }
+
+  private buildAnalyticsSession(): AnalyticsSession {
+    return {
+      id: this.sessionId || '',
+      start_time: new Date(this.sessionStartTime || Date.now()).toISOString(),
+      duration: this.sessionStartTime ? Date.now() - this.sessionStartTime : 0,
+      page_views: this.pageViews,
+      events_count: this.eventsCount
+    };
+  }
+
+  private buildAnalyticsDevice(): AnalyticsDevice {
+    const deviceInfo = this.getDeviceInfo();
+    return {
+      platform: Platform.OS as 'ios' | 'android' | 'web' | 'desktop',
+      version: deviceInfo.version,
+      model: deviceInfo.model,
+      screen_resolution: `${Dimensions.get('window').width}x${Dimensions.get('window').height}`,
+      app_version: this.appVersion,
+      os_version: Platform.Version?.toString() || '',
+      browser: undefined,
+      user_agent: undefined
+    };
+  }
+
+  private buildAnalyticsContext(): AnalyticsContext {
+    return {
+      language: this.language,
+      timezone: this.timezone
+    };
+  }
+
   // Track user behavior event
-  async trackEvent(event: Omit<UserBehaviorEvent, 'user_id' | 'timestamp' | 'session_id' | 'device_info'>): Promise<boolean> {
+  async trackEventLegacy(event: Omit<UserBehaviorEvent, 'user_id' | 'timestamp' | 'session_id' | 'device_info'>): Promise<boolean> {
     try {
       const user = useAuthStore.getState().user;
       if (!user) {
@@ -213,11 +671,11 @@ class AnalyticsService {
   }
 
   // Track screen view
-  async trackScreenView(screenName: string): Promise<void> {
+  async trackScreenViewLegacy(screenName: string): Promise<void> {
     // End previous screen session
     if (this.currentScreen && this.screenStartTime) {
       const timeSpent = Math.floor((Date.now() - this.screenStartTime) / 1000);
-      await this.trackEvent({
+      await this.trackEventLegacy({
         event_type: 'view',
         event_data: {
           screen_name: this.currentScreen,
@@ -269,7 +727,7 @@ class AnalyticsService {
     this.scrollTimeout = setTimeout(async () => {
       this.lastScrollTime = Date.now();
       
-      await this.trackEvent({
+      await this.trackEventLegacy({
         event_type: 'scroll',
         event_data: {
           screen_name: this.currentScreen,
@@ -286,7 +744,7 @@ class AnalyticsService {
       this.sectionsEngaged[sectionName].interactions++;
     }
 
-    await this.trackEvent({
+    await this.trackEventLegacy({
       event_type: 'click',
       event_data: {
         screen_name: this.currentScreen,
@@ -298,8 +756,8 @@ class AnalyticsService {
   }
 
   // Track search
-  async trackSearch(searchTerm: string): Promise<void> {
-    await this.trackEvent({
+  async trackSearchLegacy(searchTerm: string): Promise<void> {
+    await this.trackEventLegacy({
       event_type: 'search',
       event_data: {
         screen_name: this.currentScreen,
@@ -310,7 +768,7 @@ class AnalyticsService {
 
   // Track favorite
   async trackFavorite(listingId: string, action: 'add' | 'remove'): Promise<void> {
-    await this.trackEvent({
+    await this.trackEventLegacy({
       event_type: 'favorite',
       event_data: {
         screen_name: this.currentScreen,
@@ -321,8 +779,8 @@ class AnalyticsService {
   }
 
   // Track listing view
-  async trackListingView(listingId: string, categoryId?: string): Promise<void> {
-    await this.trackEvent({
+  async trackListingViewLegacy(listingId: string, categoryId?: string): Promise<void> {
+    await this.trackEventLegacy({
       event_type: 'view',
       event_data: {
         screen_name: this.currentScreen,
@@ -334,7 +792,7 @@ class AnalyticsService {
 
   // Track share
   async trackShare(listingId: string, method: string): Promise<void> {
-    await this.trackEvent({
+    await this.trackEventLegacy({
       event_type: 'share',
       event_data: {
         screen_name: this.currentScreen,
@@ -346,7 +804,7 @@ class AnalyticsService {
 
   // Track message
   async trackMessage(listingId: string, conversationId: string): Promise<void> {
-    await this.trackEvent({
+    await this.trackEventLegacy({
       event_type: 'message',
       event_data: {
         screen_name: this.currentScreen,
@@ -358,7 +816,7 @@ class AnalyticsService {
 
   // Track offer
   async trackOffer(listingId: string, offerAmount: number): Promise<void> {
-    await this.trackEvent({
+    await this.trackEventLegacy({
       event_type: 'offer',
       event_data: {
         screen_name: this.currentScreen,
@@ -377,7 +835,7 @@ class AnalyticsService {
       // End current screen session
       if (this.currentScreen && this.screenStartTime) {
         const timeSpent = Math.floor((Date.now() - this.screenStartTime) / 1000);
-        await this.trackEvent({
+        await this.trackEventLegacy({
           event_type: 'view',
           event_data: {
             screen_name: this.currentScreen,

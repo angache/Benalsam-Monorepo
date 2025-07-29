@@ -11,6 +11,7 @@ const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = require("dotenv");
 const supabase_js_1 = require("@supabase/supabase-js");
+const ioredis_1 = __importDefault(require("ioredis"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const listings_1 = require("./routes/listings");
 const users_1 = require("./routes/users");
@@ -23,7 +24,10 @@ const analytics_1 = __importDefault(require("./routes/analytics"));
 const performance_1 = __importDefault(require("./routes/performance"));
 const userJourney_1 = __importDefault(require("./routes/userJourney"));
 const analyticsAlerts_1 = __importDefault(require("./routes/analyticsAlerts"));
+const alerts_1 = __importDefault(require("./routes/alerts"));
 const dataExport_1 = __importDefault(require("./routes/dataExport"));
+const dataExportV2_1 = __importDefault(require("./routes/dataExportV2"));
+const loadTesting_1 = __importDefault(require("./routes/loadTesting"));
 const elasticsearchService_1 = require("./services/elasticsearchService");
 const queueProcessorService_1 = __importDefault(require("./services/queueProcessorService"));
 const auth_2 = require("./middleware/auth");
@@ -106,7 +110,10 @@ app.use('/api/v1/analytics', analytics_1.default);
 app.use('/api/v1/performance', performance_1.default);
 app.use('/api/v1/user-journey', userJourney_1.default);
 app.use('/api/v1/analytics-alerts', analyticsAlerts_1.default);
+app.use('/api/v1/alerts', alerts_1.default);
 app.use('/api/v1/data-export', dataExport_1.default);
+app.use('/api/v1/data-export-v2', dataExportV2_1.default);
+app.use('/api/v1/load-testing', loadTesting_1.default);
 app.use(errorHandler_1.errorHandler);
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -136,6 +143,20 @@ const startServer = async () => {
         }
         catch (error) {
             logger_1.default.error('❌ Queue processor failed to start:', error);
+        }
+        try {
+            const redis = new ioredis_1.default({
+                host: process.env.REDIS_HOST || 'localhost',
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                password: process.env.REDIS_PASSWORD,
+                maxRetriesPerRequest: 3
+            });
+            await redis.ping();
+            logger_1.default.info('✅ Redis connection verified');
+            redis.disconnect();
+        }
+        catch (error) {
+            logger_1.default.warn('⚠️ Redis connection failed:', error);
         }
         app.listen(PORT, () => {
             logger_1.default.info(`🚀 Admin Backend API running on port ${PORT}`);
