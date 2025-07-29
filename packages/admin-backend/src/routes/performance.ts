@@ -203,4 +203,118 @@ router.post('/track/api', async (req, res) => {
   }
 });
 
+// Get database metrics
+router.get('/database', authenticateToken, async (req, res) => {
+  try {
+    const metrics = await performanceService.getDatabaseMetrics();
+    res.json({
+      success: true,
+      data: metrics
+    });
+  } catch (error) {
+    logger.error('Failed to get database metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get database metrics'
+    });
+  }
+});
+
+// Track database metrics (manual trigger)
+router.post('/track/database', authenticateToken, async (req, res) => {
+  try {
+    const success = await performanceService.trackDatabaseMetrics();
+    res.json({
+      success,
+      message: success ? 'Database metrics tracked successfully' : 'Failed to track database metrics'
+    });
+  } catch (error) {
+    logger.error('Failed to track database metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to track database metrics'
+    });
+  }
+});
+
+// Track all metrics (comprehensive monitoring)
+router.post('/track/all', authenticateToken, async (req, res) => {
+  try {
+    const success = await performanceService.trackAllMetrics();
+    res.json({
+      success,
+      message: success ? 'All metrics tracked successfully' : 'Failed to track some metrics'
+    });
+  } catch (error) {
+    logger.error('Failed to track all metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to track all metrics'
+    });
+  }
+});
+
+// Track frontend metrics
+router.post('/track/frontend', async (req, res) => {
+  try {
+    const {
+      componentName,
+      renderTime,
+      mountTime,
+      pageLoadTime,
+      userInteractions,
+      memoryUsage,
+      bundleSize,
+      url,
+      timestamp
+    } = req.body;
+
+    const success = await performanceService.trackFrontendMetrics({
+      componentName,
+      renderTime,
+      mountTime,
+      pageLoadTime,
+      userInteractions,
+      memoryUsage,
+      bundleSize,
+      url,
+      timestamp: timestamp || new Date().toISOString()
+    });
+
+    res.json({
+      success,
+      message: success ? 'Frontend metrics tracked successfully' : 'Failed to track frontend metrics'
+    });
+  } catch (error) {
+    logger.error('Failed to track frontend metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to track frontend metrics'
+    });
+  }
+});
+
+// Get frontend metrics
+router.get('/frontend', authenticateToken, async (req, res) => {
+  try {
+    const { componentName, startDate, endDate, limit } = req.query;
+    const metrics = await performanceService.getFrontendMetrics({
+      componentName: componentName as string,
+      startDate: startDate as string,
+      endDate: endDate as string,
+      limit: limit ? parseInt(limit as string) : undefined
+    });
+    res.json({
+      success: true,
+      data: metrics
+    });
+  } catch (error) {
+    logger.error('Failed to get frontend metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get frontend metrics'
+    });
+  }
+});
+
 export default router; 

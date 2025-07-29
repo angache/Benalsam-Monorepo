@@ -39,6 +39,7 @@ import {
   Description as DescriptionIcon
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
+import { usePerformanceMonitoring } from '../hooks/usePerformanceMonitoring';
 
 interface ExportRequest {
   id: string;
@@ -82,6 +83,9 @@ interface DataType {
 }
 
 const DataExportPage: React.FC = () => {
+  // Performance monitoring
+  const { startMonitoring, stopMonitoring } = usePerformanceMonitoring('DataExportPage');
+  
   const [exportRequests, setExportRequests] = useState<ExportRequest[]>([]);
   const [formats, setFormats] = useState<ExportFormat[]>([]);
   const [dataTypes, setDataTypes] = useState<DataType[]>([]);

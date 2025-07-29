@@ -554,8 +554,34 @@ export const apiService = {
     return response.data.data!;
   },
 
-  async getExportDataTypes(): Promise<any> {
-    const response = await apiClient.get('/data-export-v2/data-types');
-    return response.data.data!;
-  }
-}; 
+              async getExportDataTypes(): Promise<any> {
+              const response = await apiClient.get('/data-export-v2/data-types');
+              return response.data.data!;
+            },
+
+            // Frontend Performance Monitoring
+            async trackFrontendMetrics(metrics: {
+              componentName: string;
+              renderTime: number;
+              mountTime: number;
+              pageLoadTime: number;
+              userInteractions: any[];
+              memoryUsage?: number;
+              bundleSize?: number;
+              url: string;
+              timestamp: string;
+            }): Promise<any> {
+              const response = await apiClient.post('/performance/track/frontend', metrics);
+              return response.data;
+            },
+
+            async getFrontendMetrics(params?: {
+              componentName?: string;
+              startDate?: string;
+              endDate?: string;
+              limit?: number;
+            }): Promise<any> {
+              const response = await apiClient.get('/performance/frontend', { params });
+              return response.data.data!;
+            }
+          }; 
