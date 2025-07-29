@@ -55,10 +55,16 @@ router.post('/requests', authenticateToken, async (req, res) => {
 router.get('/requests', authenticateToken, async (req, res) => {
   try {
     const { user_id, status } = req.query;
+    logger.info(`DataExport Route: Getting export requests for user_id: ${user_id}, status: ${status}`);
+    logger.info(`DataExport Route: dataExportService instance: ${typeof dataExportService}`);
+    logger.info(`DataExport Route: About to call getExportRequests method`);
+    
     const requests = await dataExportService.getExportRequests(
       user_id as string,
       status as string
     );
+
+    logger.info(`DataExport Route: Found ${requests.length} export requests`);
 
     res.json({
       success: true,

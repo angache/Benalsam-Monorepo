@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+import { AdminElasticsearchService } from './elasticsearchService';
 
 // Interfaces
 export interface ExportRequest {
@@ -47,18 +48,22 @@ export class DataExportService {
   private exportsDir: string = path.join(__dirname, '../../exports');
 
   constructor() {
-    this.client = new Client({
-      node: process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200',
-      auth: {
-        username: process.env.ELASTICSEARCH_USERNAME || '',
-        password: process.env.ELASTICSEARCH_PASSWORD || ''
-      }
-    });
+    logger.info('DataExportService: Constructor called');
+    
+    // Use the same Elasticsearch client configuration as other services
+    // Pass the correct URL from environment variables
+    const elasticsearchUrl = process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200';
+    logger.info(`DataExportService: Using Elasticsearch URL: ${elasticsearchUrl}`);
+    
+    const elasticsearchService = new AdminElasticsearchService(elasticsearchUrl);
+    this.client = elasticsearchService.getClient();
+    logger.info('DataExportService: Elasticsearch client initialized');
 
     // Create exports directory if it doesn't exist
     if (!fs.existsSync(this.exportsDir)) {
       fs.mkdirSync(this.exportsDir, { recursive: true });
     }
+    logger.info('DataExportService: Constructor completed');
   }
 
   async initializeIndexes(): Promise<void> {
@@ -122,6 +127,7 @@ export class DataExportService {
   }
 
   async getExportRequests(userId?: string, status?: string): Promise<ExportRequest[]> {
+    let response: any = null;
     try {
       const query: any = {
         bool: {
@@ -137,22 +143,50 @@ export class DataExportService {
         query.bool.must.push({ term: { status: status } });
       }
 
-      const response = await this.client.search({
-        index: this.exportsIndex,
-        body: {
-          query,
-          sort: [{ created_at: { order: 'desc' } }],
-          size: 100
-        }
-      });
+      logger.info(`DataExportService: Searching index: ${this.exportsIndex}`);
+      logger.info(`DataExportService: Query: ${JSON.stringify(query)}`);
 
-      return (response as any).body.hits.hits.map((hit: any) => ({
+                        response = await this.client.search({
+                    index: this.exportsIndex,
+                    body: {
+                      query,
+                      sort: [{ created_at: { order: 'desc' } }],
+                      size: 100
+                    }
+                  });
+
+                  logger.info('DataExportService: Response received, type: ' + typeof response);
+                  logger.info('DataExportService: Response is null: ' + (response === null));
+                  logger.info('DataExportService: Response is undefined: ' + (response === undefined));
+
+                  // Save response to file for detailed analysis
+                  try {
+                    const responseFilePath = '/tmp/es_export_requests_response.json';
+                    const responseString = JSON.stringify(response, null, 2);
+                    fs.writeFileSync(responseFilePath, responseString);
+                    logger.info(`DataExportService: Response saved to file: ${responseFilePath}, size: ${responseString.length} chars`);
+                  } catch (fileError) {
+                    logger.error('DataExportService: Error saving response to file: ' + fileError);
+                  }
+
+                  logger.info('DataExportService: Raw response: ' + JSON.stringify(response, null, 2));
+
+      // Check if response exists and has the expected structure
+      if (!response || !(response as any).body || !(response as any).body.hits) {
+        logger.warn('No export requests found or invalid response structure: ' + JSON.stringify(response, null, 2));
+        return [];
+      }
+
+      const hits = (response as any).body.hits.hits;
+      logger.info(`DataExportService: Found ${hits.length} export requests`);
+
+      return hits.map((hit: any) => ({
         ...hit._source,
         created_at: new Date(hit._source.created_at),
         completed_at: hit._source.completed_at ? new Date(hit._source.completed_at) : undefined
       }));
     } catch (error: any) {
-      logger.error('Error getting export requests:', error);
+      logger.error('Error getting export requests: ' + (error?.message || error) + ' | Response: ' + (response ? JSON.stringify(response, null, 2) : 'null'));
       throw error;
     }
   }
@@ -254,6 +288,12 @@ export class DataExportService {
       }
     });
 
+    // Check if response exists and has the expected structure
+    if (!response || !(response as any).body || !(response as any).body.hits) {
+      logger.warn('No user analytics data found or invalid response structure');
+      return [];
+    }
+
     return (response as any).body.hits.hits.map((hit: any) => hit._source);
   }
 
@@ -284,6 +324,12 @@ export class DataExportService {
         size: 1000
       }
     });
+
+    // Check if response exists and has the expected structure
+    if (!response || !(response as any).body || !(response as any).body.hits) {
+      logger.warn('No performance metrics data found or invalid response structure');
+      return [];
+    }
 
     return (response as any).body.hits.hits.map((hit: any) => hit._source);
   }
@@ -556,4 +602,15 @@ export class DataExportService {
   }
 }
 
-export default new DataExportService(); 
+// Create a singleton instance with lazy initialization
+let dataExportServiceInstance: DataExportService | null = null;
+
+const getDataExportService = (): DataExportService => {
+  if (!dataExportServiceInstance) {
+    logger.info('DataExportService: Creating new instance');
+    dataExportServiceInstance = new DataExportService();
+  }
+  return dataExportServiceInstance;
+};
+
+export default getDataExportService(); 

@@ -15,6 +15,7 @@ import AdminManagementPage from './pages/AdminManagementPage';
 import ElasticsearchDashboardPage from './pages/ElasticsearchDashboardPage';
 import RealTimeAnalyticsPage from './pages/RealTimeAnalyticsPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+import DataExportPage from './pages/DataExportPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -170,6 +171,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <AnalyticsDashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-export"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <DataExportPage />
                   </Layout>
                 </ProtectedRoute>
               }

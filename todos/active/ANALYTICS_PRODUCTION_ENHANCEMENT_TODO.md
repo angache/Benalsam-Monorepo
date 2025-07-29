@@ -136,46 +136,46 @@ Bu TODO, analytics sisteminin production-ready hale getirilmesi ve geliştirilme
   - [x] Threshold optimization
   - [x] Alert correlation
 
-### 📊 **Phase 4: Data Export System** ✅ **TAMAMLANDI**
+### 📊 **Phase 4: Data Export System**
 
-#### 4.1 Export Formats ✅
-- [x] **File Formats**
-  - [x] CSV export
-  - [x] JSON export
-  - [x] Excel export
-  - [x] PDF reports
+#### 4.1 Export Formats
+- [ ] **File Formats**
+  - [ ] CSV export
+  - [ ] JSON export
+  - [ ] Excel export
+  - [ ] PDF reports
 
-- [x] **Data Types**
-  - [x] User analytics export
-  - [x] Performance metrics export
-  - [x] Business metrics export
-  - [x] Custom report generation
+- [ ] **Data Types**
+  - [ ] User analytics export
+  - [ ] Performance metrics export
+  - [ ] Business metrics export
+  - [ ] Custom report generation
 
-#### 4.2 Export Features ✅
-- [x] **Scheduled Exports**
-  - [x] Daily reports
-  - [x] Weekly summaries
-  - [x] Monthly analytics
-  - [x] Custom schedules
+#### 4.2 Export Features
+- [ ] **Scheduled Exports**
+  - [ ] Daily reports
+  - [ ] Weekly summaries
+  - [ ] Monthly analytics
+  - [ ] Custom schedules
 
-- [x] **Filtering & Customization**
-  - [x] Date range selection
-  - [x] Metric selection
-  - [x] User segment filtering
-  - [x] Custom dimensions
+- [ ] **Filtering & Customization**
+  - [ ] Date range selection
+  - [ ] Metric selection
+  - [ ] User segment filtering
+  - [ ] Custom dimensions
 
-#### 4.3 Export Management ✅
-- [x] **Export Dashboard**
-  - [x] Export history
-  - [x] Download management
-  - [x] Export scheduling
-  - [x] Storage management
+#### 4.3 Export Management
+- [ ] **Export Dashboard**
+  - [ ] Export history
+  - [ ] Download management
+  - [ ] Export scheduling
+  - [ ] Storage management
 
-- [x] **Data Security**
-  - [x] Access control
-  - [x] Data encryption
-  - [x] Audit logging
-  - [x] Compliance checks
+- [ ] **Data Security**
+  - [ ] Access control
+  - [ ] Data encryption
+  - [ ] Audit logging
+  - [ ] Compliance checks
 
 ## 🛠️ **Implementation Plan**
 

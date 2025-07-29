@@ -22,6 +22,7 @@ import {
   Folder,
   Shield,
   Database,
+  FileDown,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -83,6 +84,13 @@ const navigationItems = [
     title: 'Analytics Dashboard',
     path: '/analytics-dashboard',
     icon: BarChart3,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'data-export',
+    title: 'Data Export',
+    path: '/data-export',
+    icon: FileDown,
     permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   {
