@@ -9,11 +9,17 @@ Proje ile ilgili ana dokümantasyon:
 - `PROJECT_STANDARDS.md` - Proje standartları ve kurallar
 - `PROJECT_SUMMARY.md` - Proje özeti ve genel bakış
 - `PRIVACY_POLICY.md` - Gizlilik politikası
+- `CHANGELOG.md` - Proje değişiklik geçmişi
 
 ### 📖 **guides/**
 Geliştirme rehberleri ve nasıl yapılır dokümantasyonu:
 - `DOCKER_GUIDE.md` - Docker kullanım rehberi
 - `PM2_SETUP.md` - PM2 kurulum ve kullanım
+- `PM2_DEVELOPMENT_GUIDE.md` - PM2 geliştirme rehberi
+- `QUICK_START.md` - Hızlı başlangıç rehberi
+- `LERNA_PNPM_MONOREPO.md` - Lerna ve pnpm monorepo rehberi
+- `ENV_QUICK_REFERENCE.md` - Environment hızlı referans
+- `ENVIRONMENT_CONFIGURATION.md` - Environment konfigürasyonu
 - `ERROR_BOUNDARY_README.md` - Error boundary kullanımı
 - `FIREBASE_DISTRIBUTION.md` - Firebase dağıtım rehberi
 - `MIGRATION_GUIDE.md` - Migration rehberi
@@ -29,6 +35,7 @@ TODO dosyaları ve planlama dokümantasyonu:
 - `AI_USAGE_SYSTEM_CHANGES.md` - AI kullanım sistemi değişiklikleri
 - `CACHE_SYSTEM_TODO.md` - Cache sistemi TODO
 - `RESPONSIVE_TODO.md` - Responsive tasarım TODO
+- `TODO.md` - Genel TODO listesi
 
 ### 🏛️ **architecture/**
 Mimari dokümantasyonu:
@@ -47,6 +54,10 @@ Deployment dokümantasyonu:
 - `DOCKER_SETUP_HOWTO.md` - Docker kurulum nasıl yapılır
 - `PRODUCTION_DEPLOYMENT_GUIDE.md` - Production deployment
 - `VPS_DEPLOYMENT_COMPLETE_GUIDE.md` - VPS deployment tam rehber
+- `VPS_ENVIRONMENT_SETUP.md` - VPS environment kurulumu
+- `VPS_PM2_SETUP.md` - VPS PM2 kurulumu
+- `VPS_PNPM_SETUP.md` - VPS pnpm kurulumu
+- `VPS_QUICK_START.md` - VPS hızlı başlangıç
 - `vps-migration/` - VPS migration dosyaları
 
 ### 🔧 **api/**
@@ -63,6 +74,7 @@ API dokümantasyonu:
 - `ELASTICSEARCH_IMPLEMENTATION_GUIDE.md` - Elasticsearch implementasyon rehberi
 - `ELASTICSEARCH_INTEGRATION_STRATEGY.md` - Elasticsearch entegrasyon stratejisi
 - `ELASTICSEARCH_PRODUCTION_DEPLOYMENT_GUIDE.md` - Elasticsearch production deployment
+- `ELASTICSEARCH_SEARCH_SYSTEM_GUIDE.md` - Elasticsearch arama sistemi rehberi
 - `ELASTICSEARCH_SEARCH_SYSTEM_REPORT.md` - Elasticsearch arama sistemi raporu
 - `ELASTICSEARCH_TURKISH_SEARCH_INTEGRATION.md` - Elasticsearch Türkçe arama entegrasyonu
 - `ELASTICSEARCH_USAGE_EXAMPLES.md` - Elasticsearch kullanım örnekleri
@@ -105,5 +117,5 @@ Eski dokümantasyon (artık kullanılmıyor):
 ---
 
 **Son Güncelleme:** 2025-01-09  
-**Toplam Doküman:** 50+ dosya  
+**Toplam Doküman:** 69 dosya  
 **Kategoriler:** 8 ana kategori
