@@ -1,7 +1,7 @@
 # 🏗️ Benalsam Projesi - Standartlar ve Kurallar
 
 > **Son Güncelleme:** 2025-01-09  
-> **Versiyon:** 1.0.0  
+> **Versiyon:** 1.1.0  
 > **Durum:** Aktif
 
 Bu doküman, Benalsam projesinde **MUTLAKA UYULMASI GEREKEN** standartları ve kuralları tanımlar.
@@ -212,6 +212,19 @@ git commit -m "refactor(admin-backend): improve error handling"
 - `.env.example` dosyaları oluşturulacak
 - Production'da environment variables kullanılacak
 
+### **API URL Configuration**
+- **Web-based projeler (admin-ui, web):** `localhost` kullanılacak
+  ```typescript
+  // ✅ DOĞRU - Web projeleri için
+  const apiUrl = 'http://localhost:3002/api/v1';
+  ```
+- **Mobile projeler:** Hardcoded IP adresi kullanılacak
+  ```typescript
+  // ✅ DOĞRU - Mobile projeleri için
+  const apiUrl = 'http://192.168.1.6:3002/api/v1';
+  ```
+- **Sebep:** Mobile cihazlar localhost'a erişemez, web projeleri development'ta localhost kullanabilir
+
 ### **API Security**
 - JWT token authentication
 - Role-based access control (RBAC)
@@ -264,6 +277,11 @@ pm2 monit
 - ❌ Missing semicolons
 - ❌ Inconsistent naming
 
+### **API URL Configuration**
+- ❌ Web projelerinde hardcoded IP adresi kullanma
+- ❌ Mobile projelerinde localhost kullanma
+- ❌ Environment variable olmadan API URL tanımlama
+
 ---
 
 ## 📋 **Checklist**
@@ -274,6 +292,7 @@ pm2 monit
 - [ ] Type consistency kontrolü
 - [ ] Commit message formatı
 - [ ] Environment variables kontrolü
+- [ ] API URL configuration kontrolü (web: localhost, mobile: IP)
 
 ### **Her Feature Öncesi**
 - [ ] Shared-types güncelle (gerekirse)
@@ -314,6 +333,6 @@ Bu doküman güncellenirken:
 ---
 
 **Son Güncelleme:** 2025-01-09  
-**Versiyon:** 1.0.0  
+**Versiyon:** 1.1.0  
 **Güncelleyen:** AI Assistant  
 **Onaylayan:** Project Team 
