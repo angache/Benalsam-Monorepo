@@ -24,6 +24,8 @@ import {
   Database,
   FileDown,
   Activity,
+  Route,
+  Bell,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -99,6 +101,20 @@ const navigationItems = [
     title: 'Performance Test',
     path: '/performance-test',
     icon: Activity,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'user-journey',
+    title: 'User Journey',
+    path: '/user-journey',
+    icon: Route,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'alerts',
+    title: 'Alert System',
+    path: '/alerts',
+    icon: Bell,
     permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   {

@@ -17,6 +17,8 @@ import RealTimeAnalyticsPage from './pages/RealTimeAnalyticsPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import DataExportPage from './pages/DataExportPage';
 import PerformanceTestPage from './pages/PerformanceTestPage';
+import UserJourneyPage from './pages/UserJourneyPage';
+import AlertSystemPage from './pages/AlertSystemPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -192,6 +194,26 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <PerformanceTestPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user-journey"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UserJourneyPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/alerts"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AlertSystemPage />
                   </Layout>
                 </ProtectedRoute>
               }

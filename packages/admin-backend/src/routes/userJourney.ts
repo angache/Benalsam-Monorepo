@@ -1,130 +1,113 @@
 import express from 'express';
+import userJourneyService, { UserJourneyEvent } from '../services/userJourneyService';
 import { authenticateToken } from '../middleware/auth';
-import userJourneyService from '../services/userJourneyService';
 import logger from '../config/logger';
 
 const router: express.Router = express.Router();
 
-// Initialize user journey indexes
+// Track user journey event
+router.post('/track', async (req, res) => {
+  try {
+    const event: UserJourneyEvent = req.body;
+    
+    // Validate required fields
+    if (!event.userId || !event.sessionId || !event.eventType || !event.page) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: userId, sessionId, eventType, page'
+      });
+    }
+
+    const success = await userJourneyService.trackEvent(event);
+    
+    return res.json({
+      success,
+      message: success ? 'Event tracked successfully' : 'Failed to track event'
+    });
+  } catch (error) {
+    logger.error('Failed to track user journey event:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to track user journey event'
+    });
+  }
+});
+
+// Get user journey metrics
+router.get('/metrics', authenticateToken, async (req, res) => {
+  try {
+    const days = parseInt(req.query.days as string) || 7;
+    const metrics = await userJourneyService.getJourneyMetrics(days);
+    
+    return res.json({
+      success: true,
+      data: metrics
+    });
+  } catch (error) {
+    logger.error('Failed to get user journey metrics:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get user journey metrics'
+    });
+  }
+});
+
+// Get optimization recommendations
+router.get('/recommendations', authenticateToken, async (req, res) => {
+  try {
+    const days = parseInt(req.query.days as string) || 7;
+    const metrics = await userJourneyService.getJourneyMetrics(days);
+    const recommendations = await userJourneyService.getOptimizationRecommendations(metrics);
+    
+    return res.json({
+      success: true,
+      data: {
+        metrics,
+        recommendations
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get optimization recommendations:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get optimization recommendations'
+    });
+  }
+});
+
+// Initialize user journey tracking
 router.post('/initialize', authenticateToken, async (req, res) => {
   try {
-    const success = await userJourneyService.initializeIndexes();
-    if (success) {
-      res.json({ success: true, message: 'User journey indexes initialized successfully' });
-    } else {
-      res.status(500).json({ success: false, message: 'Failed to initialize indexes' });
-    }
-  } catch (error: any) {
-    logger.error('Error initializing user journey indexes:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-// Track user journey event
-router.post('/track-event', async (req, res) => {
-  try {
-    const { user_id, session_id, event_type, event_data, device_info, user_profile } = req.body;
-    
-    const event = {
-      user_id,
-      session_id,
-      event_type,
-      event_data,
-      timestamp: new Date().toISOString(),
-      device_info,
-      user_profile
-    };
-    
-    const success = await userJourneyService.trackJourneyEvent(event);
-    
-    if (success) {
-      res.json({ success: true, message: 'Journey event tracked successfully' });
-    } else {
-      res.status(500).json({ success: false, message: 'Failed to track journey event' });
-    }
-  } catch (error: any) {
-    logger.error('Error tracking journey event:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-// Get journey analysis
-router.get('/analysis', authenticateToken, async (req, res) => {
-  try {
-    const { days = 7 } = req.query;
-    
-    const analysis = await userJourneyService.analyzeUserJourneys(Number(days));
-    
-    res.json({ success: true, data: analysis });
-  } catch (error: any) {
-    logger.error('Error getting journey analysis:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-// Get journey optimization recommendations
-router.get('/optimization', authenticateToken, async (req, res) => {
-  try {
-    const { days = 7 } = req.query;
-    
-    const optimization = await userJourneyService.getJourneyOptimizationRecommendations(Number(days));
-    
-    res.json({ success: true, data: optimization });
-  } catch (error: any) {
-    logger.error('Error getting journey optimization:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-// Get specific user journey
-router.get('/user/:userId', authenticateToken, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { days = 7 } = req.query;
-    
-    const journeys = await userJourneyService.getUserJourney(userId, Number(days));
-    
-    res.json({ success: true, data: journeys });
-  } catch (error: any) {
-    logger.error('Error getting user journey:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-// Get real-time journey metrics
-router.get('/realtime', authenticateToken, async (req, res) => {
-  try {
-    const metrics = await userJourneyService.getRealTimeJourneyMetrics();
-    
-    res.json({ success: true, data: metrics });
-  } catch (error: any) {
-    logger.error('Error getting real-time journey metrics:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
-
-// Get journey dashboard
-router.get('/dashboard', authenticateToken, async (req, res) => {
-  try {
-    const { days = 7 } = req.query;
-    
-    const [analysis, optimization, realtimeMetrics] = await Promise.all([
-      userJourneyService.analyzeUserJourneys(Number(days)),
-      userJourneyService.getJourneyOptimizationRecommendations(Number(days)),
-      userJourneyService.getRealTimeJourneyMetrics()
-    ]);
-    
-    const dashboard = {
-      analysis,
-      optimization,
-      realtime: realtimeMetrics,
-      timestamp: new Date().toISOString()
-    };
-    
-    res.json({ success: true, data: dashboard });
-  } catch (error: any) {
-    logger.error('Error getting journey dashboard:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    // This would typically initialize tracking on the frontend
+    return res.json({
+      success: true,
+      message: 'User journey tracking initialized',
+      trackingScript: `
+        // User Journey Tracking Script
+        window.userJourneyTracker = {
+          trackEvent: function(eventType, page, metadata = {}) {
+            fetch('/api/v1/user-journey/track', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: window.currentUserId || 'anonymous',
+                sessionId: window.sessionId || Date.now().toString(),
+                eventType: eventType,
+                page: page,
+                timestamp: new Date().toISOString(),
+                metadata: metadata
+              })
+            });
+          }
+        };
+      `
+    });
+  } catch (error) {
+    logger.error('Failed to initialize user journey tracking:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to initialize user journey tracking'
+    });
   }
 });
 

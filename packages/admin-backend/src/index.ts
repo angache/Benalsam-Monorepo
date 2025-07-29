@@ -20,6 +20,7 @@ import analyticsRoutes from './routes/analytics';
 import performanceRoutes from './routes/performance';
 import userJourneyRoutes from './routes/userJourney';
 import analyticsAlertsRoutes from './routes/analyticsAlerts';
+import alertRoutes from './routes/alerts';
 import dataExportRoutes from './routes/dataExport';
 import dataExportV2Routes from './routes/dataExportV2';
 import loadTestingRoutes from './routes/loadTesting';
@@ -140,6 +141,7 @@ app.use('/api/v1/analytics', analyticsRoutes); // Analytics aktif edildi
 app.use('/api/v1/performance', performanceRoutes); // Performance monitoring aktif edildi
 app.use('/api/v1/user-journey', userJourneyRoutes); // User Journey tracking aktif edildi
 app.use('/api/v1/analytics-alerts', analyticsAlertsRoutes); // Analytics Alerts sistemi aktif edildi
+app.use('/api/v1/alerts', alertRoutes); // Alert System aktif edildi
 app.use('/api/v1/data-export', dataExportRoutes); // Data Export sistemi aktif edildi
 app.use('/api/v1/data-export-v2', dataExportV2Routes); // Data Export V2 sistemi aktif edildi
 app.use('/api/v1/load-testing', loadTestingRoutes); // Load Testing sistemi aktif edildi

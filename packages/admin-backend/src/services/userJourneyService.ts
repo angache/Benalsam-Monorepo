@@ -1,590 +1,152 @@
-import { Client } from '@elastic/elasticsearch';
+import { elasticsearchClient } from './elasticsearchService';
 import logger from '../config/logger';
 
 export interface UserJourneyEvent {
-  user_id: string;
-  session_id: string;
-  event_type: 'page_view' | 'click' | 'scroll' | 'search' | 'favorite' | 'message' | 'offer' | 'conversion' | 'drop_off';
-  event_data: {
-    page_name: string;
-    section_name?: string;
-    element_id?: string;
-    element_type?: string;
-    coordinates?: { x: number; y: number };
-    scroll_depth?: number;
-    time_spent?: number;
-    search_term?: string;
-    listing_id?: string;
-    category_id?: string;
-    conversion_value?: number;
-    drop_off_reason?: string;
-    [key: string]: any;
-  };
+  userId: string;
+  sessionId: string;
+  eventType: 'page_view' | 'click' | 'form_submit' | 'conversion' | 'drop_off';
+  page: string;
   timestamp: string;
-  device_info?: {
-    platform: string;
-    version: string;
-    model?: string;
-    screen_size?: string;
-  };
-  user_profile?: {
-    id: string;
-    email: string;
-    name: string;
-    registration_date: string;
-    subscription_type?: string;
-    location?: string;
+  metadata: {
+    referrer?: string;
+    userAgent?: string;
+    deviceType?: string;
+    duration?: number;
+    scrollDepth?: number;
+    clicks?: number;
+    formFields?: string[];
+    conversionValue?: number;
+    dropOffReason?: string;
   };
 }
 
-export interface UserJourney {
-  user_id: string;
-  session_id: string;
-  journey_id: string;
-  start_time: string;
-  end_time?: string;
-  duration: number; // seconds
-  events: UserJourneyEvent[];
-  conversion_achieved: boolean;
-  conversion_value?: number;
-  drop_off_point?: string;
-  drop_off_reason?: string;
-  engagement_score: number; // 0-100
-  path_efficiency: number; // 0-100
-}
-
-export interface JourneyAnalysis {
-  total_journeys: number;
-  conversion_rate: number;
-  average_duration: number;
-  drop_off_points: Array<{
-    page_name: string;
-    drop_off_count: number;
-    drop_off_rate: number;
-    common_reasons: string[];
-  }>;
-  popular_paths: Array<{
-    path: string[];
-    frequency: number;
-    conversion_rate: number;
-    average_duration: number;
-  }>;
-  user_segments: Array<{
-    segment_name: string;
-    user_count: number;
-    conversion_rate: number;
-    average_engagement: number;
-  }>;
-}
-
-export interface JourneyOptimization {
-  bottleneck_identification: Array<{
-    page_name: string;
-    issue_type: 'high_drop_off' | 'low_engagement' | 'slow_load' | 'poor_ux';
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    impact_score: number;
-    recommendations: string[];
-  }>;
-  conversion_optimization: Array<{
-    page_name: string;
-    current_conversion_rate: number;
-    target_conversion_rate: number;
-    optimization_opportunities: string[];
-    estimated_impact: number;
-  }>;
-  user_experience_improvements: Array<{
-    area: string;
-    current_score: number;
-    improvement_suggestions: string[];
-    priority: 'low' | 'medium' | 'high';
-  }>;
+export interface UserJourneyMetrics {
+  totalUsers: number;
+  totalSessions: number;
+  avgSessionDuration: number;
+  conversionRate: number;
+  dropOffRate: number;
+  engagementScore: number;
+  topPages: Array<{ page: string; views: number; conversionRate: number }>;
+  userFlow: Array<{ from: string; to: string; count: number; conversionRate: number }>;
 }
 
 export class UserJourneyService {
-  private client: Client;
-  private journeyIndex: string = 'user_journeys';
-  private analysisIndex: string = 'journey_analysis';
+  private readonly indexName = 'user_journey_events';
 
-  constructor(
-    node: string = process.env.ELASTICSEARCH_URL || 'http://209.227.228.96:9200',
-    username: string = process.env.ELASTICSEARCH_USERNAME || '',
-    password: string = process.env.ELASTICSEARCH_PASSWORD || ''
-  ) {
-    this.client = new Client({
-      node,
-      auth: username ? { username, password } : undefined
-    });
+  constructor() {
+    this.initializeIndex();
   }
 
-  async initializeIndexes(): Promise<boolean> {
+  private async initializeIndex() {
     try {
-      // User Journeys Index
-      await this.client.indices.create({
-        index: this.journeyIndex,
-        body: {
-          mappings: {
-            properties: {
-              journey_id: { type: 'keyword' },
-              user_id: { type: 'keyword' },
-              session_id: { type: 'keyword' },
-              start_time: { type: 'date' },
-              end_time: { type: 'date' },
-              duration: { type: 'long' },
-              conversion_achieved: { type: 'boolean' },
-              conversion_value: { type: 'float' },
-              drop_off_point: { type: 'keyword' },
-              drop_off_reason: { type: 'text' },
-              engagement_score: { type: 'float' },
-              path_efficiency: { type: 'float' },
-              events: {
-                type: 'nested',
-                properties: {
-                  event_type: { type: 'keyword' },
-                  timestamp: { type: 'date' },
-                  page_name: { type: 'keyword' },
-                  section_name: { type: 'keyword' },
-                  element_id: { type: 'keyword' },
-                  element_type: { type: 'keyword' },
-                  scroll_depth: { type: 'float' },
-                  time_spent: { type: 'long' },
-                  search_term: { type: 'text' },
-                  listing_id: { type: 'keyword' },
-                  category_id: { type: 'keyword' },
-                  conversion_value: { type: 'float' },
-                  drop_off_reason: { type: 'text' }
-                }
-              },
-              user_profile: {
-                type: 'object',
-                properties: {
-                  id: { type: 'keyword' },
-                  email: { type: 'keyword' },
-                  name: { type: 'text' },
-                  registration_date: { type: 'date' },
-                  subscription_type: { type: 'keyword' },
-                  location: { type: 'keyword' }
-                }
-              },
-              device_info: {
-                type: 'object',
-                properties: {
-                  platform: { type: 'keyword' },
-                  version: { type: 'keyword' },
-                  model: { type: 'keyword' },
-                  screen_size: { type: 'keyword' }
+      const indexExists = await elasticsearchClient.indices.exists({
+        index: this.indexName
+      });
+
+      if (!indexExists) {
+        await elasticsearchClient.indices.create({
+          index: this.indexName,
+          body: {
+            mappings: {
+              properties: {
+                userId: { type: 'keyword' },
+                sessionId: { type: 'keyword' },
+                eventType: { type: 'keyword' },
+                page: { type: 'keyword' },
+                timestamp: { type: 'date' },
+                metadata: {
+                  properties: {
+                    referrer: { type: 'keyword' },
+                    userAgent: { type: 'text' },
+                    deviceType: { type: 'keyword' },
+                    duration: { type: 'long' },
+                    scrollDepth: { type: 'float' },
+                    clicks: { type: 'long' },
+                    formFields: { type: 'keyword' },
+                    conversionValue: { type: 'float' },
+                    dropOffReason: { type: 'keyword' }
+                  }
                 }
               }
             }
           }
-        }
-      });
-
-      // Journey Analysis Index
-      await this.client.indices.create({
-        index: this.analysisIndex,
-        body: {
-          mappings: {
-            properties: {
-              analysis_id: { type: 'keyword' },
-              analysis_type: { type: 'keyword' },
-              timestamp: { type: 'date' },
-              date_range: {
-                type: 'object',
-                properties: {
-                  start_date: { type: 'date' },
-                  end_date: { type: 'date' }
-                }
-              },
-              metrics: { type: 'object', dynamic: true },
-              insights: { type: 'object', dynamic: true },
-              recommendations: { type: 'object', dynamic: true }
-            }
-          }
-        }
-      });
-
-      logger.info('User Journey indexes initialized successfully');
-      return true;
-    } catch (error: any) {
-      if (error.message.includes('resource_already_exists_exception')) {
-        logger.info('User Journey indexes already exist');
-        return true;
+        });
+        logger.info(`✅ User journey index created: ${this.indexName}`);
       }
-      logger.error('Error initializing user journey indexes:', error);
-      return false;
+    } catch (error) {
+      logger.error('Failed to initialize user journey index:', error);
     }
   }
 
-  async trackJourneyEvent(event: UserJourneyEvent): Promise<boolean> {
+  async trackEvent(event: UserJourneyEvent): Promise<boolean> {
     try {
-      const journeyId = `${event.user_id}_${event.session_id}`;
-      
-      // Check if journey exists
-      const existingJourney = await this.client.search({
-        index: this.journeyIndex,
-        body: {
-          query: {
-            bool: {
-              must: [
-                { term: { journey_id: journeyId } }
-              ]
-            }
-          },
-          size: 1
-        }
+      await elasticsearchClient.index({
+        index: this.indexName,
+        body: event
       });
 
-      if (existingJourney.hits.hits.length > 0) {
-        // Update existing journey
-        const journeyDoc = existingJourney.hits.hits[0];
-        const journey = journeyDoc._source as any;
-        
-        journey.events.push(event);
-        journey.end_time = event.timestamp;
-        journey.duration = Math.floor((new Date(event.timestamp).getTime() - new Date(journey.start_time).getTime()) / 1000);
-        
-        // Update conversion status
-        if (event.event_type === 'conversion') {
-          journey.conversion_achieved = true;
-          journey.conversion_value = event.event_data.conversion_value || 0;
-        }
-        
-        // Update drop-off point
-        if (event.event_type === 'drop_off') {
-          journey.drop_off_point = event.event_data.page_name;
-          journey.drop_off_reason = event.event_data.drop_off_reason;
-        }
-        
-        // Recalculate engagement score
-        journey.engagement_score = this.calculateEngagementScore(journey.events);
-        journey.path_efficiency = this.calculatePathEfficiency(journey.events);
-
-        await this.client.update({
-          index: this.journeyIndex,
-          id: journeyDoc._id!,
-          body: {
-            doc: journey
-          }
-        });
-      } else {
-        // Create new journey
-        const newJourney: UserJourney = {
-          journey_id: journeyId,
-          user_id: event.user_id,
-          session_id: event.session_id,
-          start_time: event.timestamp,
-          end_time: event.timestamp,
-          duration: 0,
-          events: [event],
-          conversion_achieved: event.event_type === 'conversion',
-          conversion_value: event.event_type === 'conversion' ? (event.event_data.conversion_value || 0) : undefined,
-          drop_off_point: event.event_type === 'drop_off' ? event.event_data.page_name : undefined,
-          drop_off_reason: event.event_type === 'drop_off' ? event.event_data.drop_off_reason : undefined,
-          engagement_score: this.calculateEngagementScore([event]),
-          path_efficiency: this.calculatePathEfficiency([event])
-        };
-
-        await this.client.index({
-          index: this.journeyIndex,
-          body: newJourney
-        });
-      }
-
+      logger.info(`✅ User journey event tracked: ${event.eventType} for user ${event.userId}`);
       return true;
-    } catch (error: any) {
-      logger.error('Error tracking journey event:', error);
+    } catch (error) {
+      logger.error('Failed to track user journey event:', error);
       return false;
     }
   }
 
-  private calculateEngagementScore(events: UserJourneyEvent[]): number {
-    let score = 0;
-    
-    events.forEach(event => {
-      switch (event.event_type) {
-        case 'page_view':
-          score += 1;
-          break;
-        case 'click':
-          score += 2;
-          break;
-        case 'scroll':
-          score += Math.min(event.event_data.scroll_depth || 0, 100) / 100 * 3;
-          break;
-        case 'search':
-          score += 5;
-          break;
-        case 'favorite':
-          score += 8;
-          break;
-        case 'message':
-          score += 10;
-          break;
-        case 'offer':
-          score += 15;
-          break;
-        case 'conversion':
-          score += 50;
-          break;
-      }
-      
-      // Time spent bonus
-      if (event.event_data.time_spent) {
-        score += Math.min(event.event_data.time_spent / 60, 10); // Max 10 points for time spent
-      }
-    });
-    
-    return Math.min(score, 100); // Cap at 100
-  }
-
-  private calculatePathEfficiency(events: UserJourneyEvent[]): number {
-    if (events.length < 2) return 100;
-    
-    const pageViews = events.filter(e => e.event_type === 'page_view');
-    const conversions = events.filter(e => e.event_type === 'conversion');
-    
-    if (conversions.length === 0) return 0;
-    
-    // Ideal path length (example: 3-5 pages for conversion)
-    const idealPathLength = 4;
-    const actualPathLength = pageViews.length;
-    
-    const efficiency = Math.max(0, 100 - Math.abs(actualPathLength - idealPathLength) * 10);
-    return Math.min(efficiency, 100);
-  }
-
-  async analyzeUserJourneys(days: number = 7): Promise<JourneyAnalysis> {
+  async getJourneyMetrics(days: number = 7): Promise<UserJourneyMetrics> {
     try {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
-      
-      const response = await this.client.search({
-        index: this.journeyIndex,
+
+      // Total users and sessions
+      const userStats = await elasticsearchClient.search({
+        index: this.indexName,
         body: {
           query: {
             range: {
-              start_time: {
+              timestamp: {
                 gte: startDate.toISOString()
               }
             }
           },
-          size: 1000,
           aggs: {
-            total_journeys: { value_count: { field: 'journey_id' } },
-            conversion_rate: {
-              filter: { term: { conversion_achieved: true } }
-            },
-            avg_duration: { avg: { field: 'duration' } },
-            drop_off_points: {
-              terms: { field: 'drop_off_point', size: 10 },
-              aggs: {
-                drop_off_rate: {
-                  bucket_script: {
-                    buckets_path: { count: '_count' },
-                    script: 'params.count / params.total * 100'
-                  }
-                }
+            unique_users: {
+              cardinality: {
+                field: 'userId'
               }
             },
-            popular_paths: {
-              nested: { path: 'events' },
-              aggs: {
-                page_sequences: {
-                  terms: { field: 'events.page_name', size: 20 }
-                }
+            unique_sessions: {
+              cardinality: {
+                field: 'sessionId'
               }
             }
           }
         }
       });
 
-      const totalJourneys = (response.aggregations?.total_journeys as any)?.value || 0;
-      const conversionCount = (response.aggregations?.conversion_rate as any)?.doc_count || 0;
-      const conversionRate = totalJourneys > 0 ? (conversionCount / totalJourneys) * 100 : 0;
-      const averageDuration = (response.aggregations?.avg_duration as any)?.value || 0;
-
-      // Process drop-off points
-      const dropOffPoints = ((response.aggregations?.drop_off_points as any)?.buckets || []).map((bucket: any) => ({
-        page_name: bucket.key,
-        drop_off_count: bucket.doc_count,
-        drop_off_rate: bucket.drop_off_rate?.value || 0,
-        common_reasons: [] // Would need additional analysis for reasons
-      }));
-
-      // Process popular paths (simplified)
-      const popularPaths = [
-        {
-          path: ['Home', 'Search', 'Listing', 'Contact'],
-          frequency: Math.floor(totalJourneys * 0.3),
-          conversion_rate: 25,
-          average_duration: 180
-        }
-      ];
-
-      // User segments (simplified)
-      const userSegments = [
-        {
-          segment_name: 'New Users',
-          user_count: Math.floor(totalJourneys * 0.4),
-          conversion_rate: 15,
-          average_engagement: 65
-        },
-        {
-          segment_name: 'Returning Users',
-          user_count: Math.floor(totalJourneys * 0.6),
-          conversion_rate: 35,
-          average_engagement: 85
-        }
-      ];
-
-      return {
-        total_journeys: totalJourneys,
-        conversion_rate: conversionRate,
-        average_duration: averageDuration,
-        drop_off_points: dropOffPoints,
-        popular_paths: popularPaths,
-        user_segments: userSegments
-      };
-    } catch (error: any) {
-      logger.error('Error analyzing user journeys:', error);
-      throw error;
-    }
-  }
-
-  async getJourneyOptimizationRecommendations(days: number = 7): Promise<JourneyOptimization> {
-    try {
-      const analysis = await this.analyzeUserJourneys(days);
-      
-      // Identify bottlenecks
-      const bottlenecks = analysis.drop_off_points.map(point => ({
-        page_name: point.page_name,
-        issue_type: 'high_drop_off' as const,
-        severity: point.drop_off_rate > 50 ? 'critical' as const : 
-                 point.drop_off_rate > 30 ? 'high' as const :
-                 point.drop_off_rate > 15 ? 'medium' as const : 'low' as const,
-        impact_score: point.drop_off_rate,
-        recommendations: [
-          'Improve page load speed',
-          'Simplify user interface',
-          'Add clear call-to-action buttons',
-          'Optimize mobile responsiveness'
-        ]
-      }));
-
-      // Conversion optimization
-      const conversionOptimization = [
-        {
-          page_name: 'Listing Detail',
-          current_conversion_rate: 25,
-          target_conversion_rate: 40,
-          optimization_opportunities: [
-            'Add trust indicators (reviews, ratings)',
-            'Improve contact form design',
-            'Add urgency elements',
-            'Show related listings'
-          ],
-          estimated_impact: 15
-        }
-      ];
-
-      // User experience improvements
-      const userExperienceImprovements = [
-        {
-          area: 'Navigation',
-          current_score: 75,
-          improvement_suggestions: [
-            'Add breadcrumb navigation',
-            'Improve search functionality',
-            'Add quick filters',
-            'Optimize menu structure'
-          ],
-          priority: 'high' as const
-        },
-        {
-          area: 'Mobile Experience',
-          current_score: 80,
-          improvement_suggestions: [
-            'Optimize touch targets',
-            'Improve loading times',
-            'Add swipe gestures',
-            'Enhance mobile forms'
-          ],
-          priority: 'medium' as const
-        }
-      ];
-
-      return {
-        bottleneck_identification: bottlenecks,
-        conversion_optimization: conversionOptimization,
-        user_experience_improvements: userExperienceImprovements
-      };
-    } catch (error: any) {
-      logger.error('Error getting journey optimization recommendations:', error);
-      throw error;
-    }
-  }
-
-  async getUserJourney(userId: string, days: number = 7): Promise<UserJourney[]> {
-    try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
-      
-      const response = await this.client.search({
-        index: this.journeyIndex,
-        body: {
-          query: {
-            bool: {
-              must: [
-                { term: { user_id: userId } },
-                {
-                  range: {
-                    start_time: {
-                      gte: startDate.toISOString()
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          sort: [{ start_time: { order: 'desc' } }],
-          size: 50
-        }
-      });
-
-      return response.hits.hits.map((hit: any) => hit._source as UserJourney);
-    } catch (error: any) {
-      logger.error('Error getting user journey:', error);
-      throw error;
-    }
-  }
-
-  async getRealTimeJourneyMetrics(): Promise<any> {
-    try {
-      const now = new Date();
-      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-      
-      const response = await this.client.search({
-        index: this.journeyIndex,
+      // Session duration
+      const sessionDuration = await elasticsearchClient.search({
+        index: this.indexName,
         body: {
           query: {
             range: {
-              start_time: {
-                gte: oneHourAgo.toISOString()
+              timestamp: {
+                gte: startDate.toISOString()
               }
             }
           },
-          size: 0,
           aggs: {
-            active_journeys: { value_count: { field: 'journey_id' } },
-            conversions_last_hour: {
-              filter: { term: { conversion_achieved: true } }
-            },
-            avg_engagement: { avg: { field: 'engagement_score' } },
-            top_pages: {
-              nested: { path: 'events' },
+            session_duration: {
+              terms: {
+                field: 'sessionId',
+                size: 10000
+              },
               aggs: {
-                page_views: {
-                  terms: { field: 'events.page_name', size: 5 }
+                duration_stats: {
+                  stats: {
+                    field: 'metadata.duration'
+                  }
                 }
               }
             }
@@ -592,19 +154,226 @@ export class UserJourneyService {
         }
       });
 
+      // Conversion and drop-off rates
+      const conversionStats = await elasticsearchClient.search({
+        index: this.indexName,
+        body: {
+          query: {
+            range: {
+              timestamp: {
+                gte: startDate.toISOString()
+              }
+            }
+          },
+          aggs: {
+            event_types: {
+              terms: {
+                field: 'eventType'
+              }
+            }
+          }
+        }
+      });
+
+      // Top pages
+      const topPages = await elasticsearchClient.search({
+        index: this.indexName,
+        body: {
+          query: {
+            range: {
+              timestamp: {
+                gte: startDate.toISOString()
+              }
+            }
+          },
+          aggs: {
+            pages: {
+              terms: {
+                field: 'page',
+                size: 10
+              },
+              aggs: {
+                conversion_rate: {
+                  filter: {
+                    term: {
+                      eventType: 'conversion'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // User flow
+      const userFlow = await this.getUserFlow(startDate);
+
+      const totalUsers = (userStats as any).aggregations?.unique_users?.value || 0;
+      const totalSessions = (userStats as any).aggregations?.unique_sessions?.value || 0;
+      
+      const conversionEvents = (conversionStats as any).aggregations?.event_types?.buckets?.find(
+        (b: any) => b.key === 'conversion'
+      )?.doc_count || 0;
+      const dropOffEvents = (conversionStats as any).aggregations?.event_types?.buckets?.find(
+        (b: any) => b.key === 'drop_off'
+      )?.doc_count || 0;
+
+      const avgSessionDuration = this.calculateAverageSessionDuration(sessionDuration);
+      const conversionRate = totalSessions > 0 ? (conversionEvents / totalSessions) * 100 : 0;
+      const dropOffRate = totalSessions > 0 ? (dropOffEvents / totalSessions) * 100 : 0;
+      const engagementScore = this.calculateEngagementScore(conversionRate, dropOffRate, avgSessionDuration);
+
       return {
-        active_journeys: (response.aggregations?.active_journeys as any)?.value || 0,
-        conversions_last_hour: (response.aggregations?.conversions_last_hour as any)?.doc_count || 0,
-        avg_engagement: (response.aggregations?.avg_engagement as any)?.value || 0,
-        top_pages: (((response.aggregations?.top_pages as any)?.page_views as any)?.buckets || []).map((bucket: any) => ({
-          page_name: bucket.key,
-          views: bucket.doc_count
-        }))
+        totalUsers,
+        totalSessions,
+        avgSessionDuration,
+        conversionRate,
+        dropOffRate,
+        engagementScore,
+        topPages: this.formatTopPages(topPages),
+        userFlow
       };
-    } catch (error: any) {
-      logger.error('Error getting real-time journey metrics:', error);
+    } catch (error) {
+      logger.error('Failed to get user journey metrics:', error);
       throw error;
     }
+  }
+
+  private async getUserFlow(startDate: Date): Promise<Array<{ from: string; to: string; count: number; conversionRate: number }>> {
+    try {
+      const response = await elasticsearchClient.search({
+        index: this.indexName,
+        body: {
+          query: {
+            range: {
+              timestamp: {
+                gte: startDate.toISOString()
+              }
+            }
+          },
+          aggs: {
+            sessions: {
+              terms: {
+                field: 'sessionId',
+                size: 1000
+              },
+              aggs: {
+                page_sequence: {
+                  date_histogram: {
+                    field: 'timestamp',
+                    calendar_interval: '1m'
+                  },
+                  aggs: {
+                    pages: {
+                      terms: {
+                        field: 'page',
+                        size: 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Process user flow from session data
+      const flow: { [key: string]: { [key: string]: number } } = {};
+      
+      (response as any).aggregations?.sessions?.buckets?.forEach((session: any) => {
+        const pages = session.page_sequence.buckets
+          .map((bucket: any) => bucket.pages.buckets[0]?.key)
+          .filter(Boolean);
+
+        for (let i = 0; i < pages.length - 1; i++) {
+          const from = pages[i];
+          const to = pages[i + 1];
+          const key = `${from}->${to}`;
+          
+          if (!flow[key]) {
+            flow[key] = { count: 0, conversions: 0 };
+          }
+          flow[key].count++;
+        }
+      });
+
+      return Object.entries(flow).map(([key, data]) => {
+        const [from, to] = key.split('->');
+        return {
+          from,
+          to,
+          count: data.count,
+          conversionRate: 0 // Would need additional logic to calculate
+        };
+      }).sort((a, b) => b.count - a.count).slice(0, 10);
+    } catch (error) {
+      logger.error('Failed to get user flow:', error);
+      return [];
+    }
+  }
+
+  private calculateAverageSessionDuration(sessionDuration: any): number {
+    try {
+      const sessions = (sessionDuration as any).aggregations?.session_duration?.buckets || [];
+      const totalDuration = sessions.reduce((sum: number, session: any) => {
+        return sum + (session.duration_stats.avg || 0);
+      }, 0);
+      return sessions.length > 0 ? totalDuration / sessions.length : 0;
+    } catch (error) {
+      logger.error('Failed to calculate average session duration:', error);
+      return 0;
+    }
+  }
+
+  private calculateEngagementScore(conversionRate: number, dropOffRate: number, avgSessionDuration: number): number {
+    // Simple engagement score calculation
+    const conversionScore = Math.min(conversionRate / 10, 1) * 40; // Max 40 points
+    const dropOffScore = Math.max(0, (100 - dropOffRate) / 100) * 30; // Max 30 points
+    const durationScore = Math.min(avgSessionDuration / 300, 1) * 30; // Max 30 points (5 minutes)
+    
+    return conversionScore + dropOffScore + durationScore;
+  }
+
+  private formatTopPages(topPages: any): Array<{ page: string; views: number; conversionRate: number }> {
+    try {
+      return (topPages as any).aggregations?.pages?.buckets?.map((bucket: any) => ({
+        page: bucket.key,
+        views: bucket.doc_count,
+        conversionRate: bucket.conversion_rate.doc_count > 0 ? 
+          (bucket.conversion_rate.doc_count / bucket.doc_count) * 100 : 0
+      })) || [];
+    } catch (error) {
+      logger.error('Failed to format top pages:', error);
+      return [];
+    }
+  }
+
+  async getOptimizationRecommendations(metrics: UserJourneyMetrics): Promise<string[]> {
+    const recommendations: string[] = [];
+
+    if (metrics.conversionRate < 15) {
+      recommendations.push('🚨 Conversion rate çok düşük! Funnel optimization gerekli.');
+    } else if (metrics.conversionRate < 25) {
+      recommendations.push('⚠️ Conversion rate iyileştirilebilir. A/B testing yapılmalı.');
+    }
+
+    if (metrics.dropOffRate > 30) {
+      recommendations.push('🚨 Drop-off rate çok yüksek! User experience iyileştirmesi gerekli.');
+    } else if (metrics.dropOffRate > 20) {
+      recommendations.push('⚠️ Drop-off rate dikkat edilmeli. Exit page analizi yapılmalı.');
+    }
+
+    if (metrics.avgSessionDuration < 120) {
+      recommendations.push('⚠️ Session duration kısa. Content engagement artırılmalı.');
+    }
+
+    if (metrics.engagementScore < 50) {
+      recommendations.push('🚨 Engagement score düşük! Kullanıcı deneyimi gözden geçirilmeli.');
+    }
+
+    return recommendations;
   }
 }
 

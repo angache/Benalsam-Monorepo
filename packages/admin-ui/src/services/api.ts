@@ -583,5 +583,83 @@ export const apiService = {
             }): Promise<any> {
               const response = await apiClient.get('/performance/frontend', { params });
               return response.data.data!;
+            },
+
+            // User Journey Methods
+            async getUserJourneyMetrics(days: number = 7): Promise<any> {
+              const response = await apiClient.get(`/user-journey/metrics?days=${days}`);
+              return response.data;
+            },
+
+            async getUserJourneyRecommendations(days: number = 7): Promise<any> {
+              const response = await apiClient.get(`/user-journey/recommendations?days=${days}`);
+              return response.data;
+            },
+
+            async initializeUserJourneyTracking(): Promise<any> {
+              const response = await apiClient.post('/user-journey/initialize');
+              return response.data;
+            },
+
+            async trackUserJourneyEvent(eventData: {
+              userId: string;
+              sessionId: string;
+              eventType: string;
+              page: string;
+              metadata?: any;
+            }): Promise<any> {
+              const response = await apiClient.post('/user-journey/track', eventData);
+              return response.data;
+            },
+
+            // Alert System Methods
+            async getAlertRules(): Promise<any> {
+              const response = await apiClient.get('/alerts/rules');
+              return response.data;
+            },
+
+            async createAlertRule(ruleData: any): Promise<any> {
+              const response = await apiClient.post('/alerts/rules', ruleData);
+              return response.data;
+            },
+
+            async updateAlertRule(id: string, updates: any): Promise<any> {
+              const response = await apiClient.put(`/alerts/rules/${id}`, updates);
+              return response.data;
+            },
+
+            async deleteAlertRule(id: string): Promise<any> {
+              const response = await apiClient.delete(`/alerts/rules/${id}`);
+              return response.data;
+            },
+
+            async getAlerts(status?: string, severity?: string, limit?: number): Promise<any> {
+              const params = new URLSearchParams();
+              if (status) params.append('status', status);
+              if (severity) params.append('severity', severity);
+              if (limit) params.append('limit', limit.toString());
+              
+              const response = await apiClient.get(`/alerts?${params.toString()}`);
+              return response.data;
+            },
+
+            async acknowledgeAlert(id: string, acknowledgedBy: string): Promise<any> {
+              const response = await apiClient.post(`/alerts/${id}/acknowledge`, { acknowledgedBy });
+              return response.data;
+            },
+
+            async resolveAlert(id: string): Promise<any> {
+              const response = await apiClient.post(`/alerts/${id}/resolve`);
+              return response.data;
+            },
+
+            async getAlertMetrics(days: number = 7): Promise<any> {
+              const response = await apiClient.get(`/alerts/metrics?days=${days}`);
+              return response.data;
+            },
+
+            async checkAlertConditions(): Promise<any> {
+              const response = await apiClient.post('/alerts/check');
+              return response.data;
             }
           }; 
