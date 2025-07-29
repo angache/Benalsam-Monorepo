@@ -167,8 +167,7 @@ const AnalyticsDashboardPage: React.FC = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // New analytics queries - commented out until backend endpoints are ready
-  /*
+  // New analytics queries - now active with backend endpoints
   const { data: analyticsEvents, isLoading: eventsLoading } = useQuery({
     queryKey: ['analytics-events', timeRange],
     queryFn: () => apiService.getAnalyticsEvents({ limit: 100, start_date: new Date(Date.now() - timeRange * 24 * 60 * 60 * 1000).toISOString() }),
@@ -186,7 +185,6 @@ const AnalyticsDashboardPage: React.FC = () => {
     queryFn: () => apiService.getAnalyticsEventTypes(timeRange),
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
-  */
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -381,6 +379,7 @@ const AnalyticsDashboardPage: React.FC = () => {
           <Tab label="Özellik Kullanımı" icon={<BarChartIcon />} />
           <Tab label="Kullanıcı Yolculuğu" icon={<MapIcon />} />
           <Tab label="Performans" icon={<SpeedIcon />} />
+          <Tab label="Real-time Analytics" icon={<TimelineIcon />} />
         </Tabs>
       </Paper>
 
@@ -667,6 +666,104 @@ const AnalyticsDashboardPage: React.FC = () => {
                       <Line type="monotone" dataKey="errorRate" stroke="#ff7300" />
                     </LineChart>
                   </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      {activeTab === 4 && (
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Real-time Analytics Dashboard
+          </Typography>
+          
+          <Grid container spacing={3}>
+            {/* Analytics Events Summary */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Analytics Events ({analyticsEvents?.data?.length || 0})
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {analyticsEvents?.data?.slice(0, 5).map((event: any, index: number) => (
+                      <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                          {event.event_name}
+                        </Typography>
+                        <Chip 
+                          label={event.user?.id || 'Unknown'} 
+                          size="small" 
+                          color="primary" 
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Performance Metrics */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Performance Metrics
+                  </Typography>
+                  {performanceMetrics?.data ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">App Load Time</Typography>
+                        <Typography variant="h6">
+                          {performanceMetrics.data.performance?.appLoad?.avgLoadTime?.toFixed(2) || 'N/A'}ms
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">API Response Time</Typography>
+                        <Typography variant="h6">
+                          {performanceMetrics.data.performance?.apiCalls?.avgDuration?.toFixed(2) || 'N/A'}ms
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">Total Errors</Typography>
+                        <Typography variant="h6" color="error">
+                          {performanceMetrics.data.performance?.errors?.totalErrors || 0}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Performance data loading...
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Event Types Distribution */}
+            <Grid item xs={12}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Event Types Distribution
+                  </Typography>
+                  {eventTypes?.data ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={eventTypes.data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="key" />
+                        <YAxis />
+                        <RechartsTooltip />
+                        <Bar dataKey="doc_count" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Event types data loading...
+                    </Typography>
+                  )}
                 </CardContent>
               </Card>
             </Grid>

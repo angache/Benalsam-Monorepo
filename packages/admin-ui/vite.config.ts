@@ -34,6 +34,6 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    'import.meta.env.VITE_API_URL': JSON.stringify('http://192.168.1.6:3002/api/v1'),
+    'import.meta.env.VITE_API_URL': JSON.stringify('http://localhost:3002/api/v1'),
   },
 })

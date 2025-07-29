@@ -269,7 +269,7 @@ export class AdminElasticsearchService {
   // Static methods for health checks
   static async getAllIndicesStats(): Promise<any> {
     try {
-      const client = new Client({
+      const client = new Client({ 
         node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
         auth: process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD ? {
           username: process.env.ELASTICSEARCH_USERNAME,
@@ -288,7 +288,7 @@ export class AdminElasticsearchService {
 
   static async searchIndexStatic(indexName: string, options: { size?: number } = {}): Promise<any> {
     try {
-      const client = new Client({
+      const client = new Client({ 
         node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
         auth: process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD ? {
           username: process.env.ELASTICSEARCH_USERNAME,
@@ -296,15 +296,15 @@ export class AdminElasticsearchService {
         } : undefined,
         tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
       });
-
+      
       const response = await client.search({
         index: indexName,
         size: options.size || 10,
-        query: {
-          match_all: {}
+          query: {
+            match_all: {}
         }
       });
-
+      
       return response;
     } catch (error) {
       logger.error(`Error searching index ${indexName}:`, error);
@@ -378,8 +378,8 @@ export class AdminElasticsearchService {
 
   async recreateIndex(indexName?: string, mapping?: any): Promise<boolean> {
     try {
-      const targetIndex = indexName || this.defaultIndexName;
-      await this.deleteIndex(targetIndex);
+    const targetIndex = indexName || this.defaultIndexName;
+    await this.deleteIndex(targetIndex);
       await this.createIndex(targetIndex, mapping);
       return true;
     } catch (error) {
@@ -478,8 +478,8 @@ export class AdminElasticsearchService {
       const response = await this.client.search({
         index: indexName,
         size: options.size || 10,
-        query: {
-          match_all: {}
+          query: {
+            match_all: {}
         }
       });
       return response;
@@ -517,8 +517,8 @@ export class AdminElasticsearchService {
       });
 
       // Elasticsearch'e bulk index
-      const success = await this.bulkIndex(documents);
-      
+        const success = await this.bulkIndex(documents);
+
       return {
         success,
         count: documents.length,
@@ -545,8 +545,8 @@ export class AdminElasticsearchService {
       const { query, filters, sort, page = 1, limit = 20 } = params;
       
       const searchQuery: any = {
-        bool: {
-          must: [],
+          bool: {
+            must: [],
           filter: []
         }
       };
@@ -565,7 +565,7 @@ export class AdminElasticsearchService {
 
       // Filters
       if (filters) {
-        if (filters.category) {
+      if (filters.category) {
           searchQuery.bool.filter.push({ term: { category: filters.category } });
         }
         if (filters.subcategory) {
@@ -574,7 +574,7 @@ export class AdminElasticsearchService {
         if (filters.location) {
           searchQuery.bool.filter.push({ term: { 'location.province': filters.location } });
         }
-        if (filters.minBudget || filters.maxBudget) {
+      if (filters.minBudget || filters.maxBudget) {
           const rangeQuery: any = { range: { 'budget.min': {} } };
           if (filters.minBudget) rangeQuery.range['budget.min'].gte = filters.minBudget;
           if (filters.maxBudget) rangeQuery.range['budget.min'].lte = filters.maxBudget;
@@ -648,8 +648,8 @@ export class AdminElasticsearchService {
       });
 
       const total = typeof response.hits.total === 'number' 
-        ? response.hits.total 
-        : response.hits.total?.value || 0;
+          ? response.hits.total
+          : response.hits.total?.value || 0;
 
       return {
         hits: response.hits.hits.map((hit: any) => ({
