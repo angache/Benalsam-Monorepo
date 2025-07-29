@@ -1,167 +1,109 @@
-# 📚 Benalsam Monorepo Dokümantasyonu
+# 📚 Benalsam Projesi - Dokümantasyon
 
-Bu klasör, Benalsam monorepo'su için kapsamlı dokümantasyon içerir.
+Bu klasör, Benalsam projesinin tüm dokümantasyonunu içerir.
 
-## 📖 Dokümantasyon Kategorileri
+## 📁 Klasör Yapısı
 
-### 🏗️ [Mimari Rehberleri](./architecture/)
-- [Monorepo Rehberi](./architecture/MONOREPO_GUIDE.md) - Monorepo yapısı ve best practices
-- [Shared-Types Rehberi](./architecture/SHARED_TYPES_GUIDE.md) - Shared-types paket kullanımı
-- [Shared-Types Entegrasyonu](./architecture/SHARED_TYPES_INTEGRATION.md) - Entegrasyon detayları
-- [Development Setup Guide](./architecture/DEVELOPMENT_SETUP_GUIDE.md) - Geliştirme ortamı kurulumu
-- [Database Schema Documentation](./architecture/DATABASE_SCHEMA_DOCUMENTATION.md) - Veritabanı şeması ve yapısı
-- [Mobile App Documentation](./architecture/MOBILE_APP_DOCUMENTATION.md) - Mobil uygulama dokümantasyonu
-- [Security Documentation](./architecture/SECURITY_DOCUMENTATION.md) - Güvenlik politikaları ve önlemler
+### 🏗️ **project/**
+Proje ile ilgili ana dokümantasyon:
+- `PROJECT_STANDARDS.md` - Proje standartları ve kurallar
+- `PROJECT_SUMMARY.md` - Proje özeti ve genel bakış
+- `PRIVACY_POLICY.md` - Gizlilik politikası
 
-### 🚀 [Deployment Rehberleri](./deployment/)
-- [Production Deployment](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) - Production deployment
-- [Admin Panel Deployment](./deployment/ADMIN_PANEL_DEPLOYMENT_GUIDE.md) - Admin panel deployment
-- [Docker Setup](./deployment/DOCKER_SETUP_HOWTO.md) - Docker kurulumu
-- [VPS Deployment Complete Guide](./deployment/VPS_DEPLOYMENT_COMPLETE_GUIDE.md) - VPS deployment tam rehberi
-- [VPS Migration](./deployment/vps-migration/) - VPS migration rehberleri
+### 📖 **guides/**
+Geliştirme rehberleri ve nasıl yapılır dokümantasyonu:
+- `DOCKER_GUIDE.md` - Docker kullanım rehberi
+- `PM2_SETUP.md` - PM2 kurulum ve kullanım
+- `ERROR_BOUNDARY_README.md` - Error boundary kullanımı
+- `FIREBASE_DISTRIBUTION.md` - Firebase dağıtım rehberi
+- `MIGRATION_GUIDE.md` - Migration rehberi
+- `MIGRATION_INSTRUCTIONS.md` - Migration talimatları
+- `TESTING_README.md` - Test yazma rehberi
 
-### 🔍 [Özellik Dokümantasyonu](./features/)
-- [Web Admin Integration](./features/web-admin-integration-documentation.md) - Web admin backend entegrasyonu
-- [Elasticsearch Integration](./features/elasticsearch-implementation-guide.md) - Elasticsearch implementasyonu
-- [Turkish Search](./features/elasticsearch-turkish-search-integration.md) - Turkish search entegrasyonu
-- [Admin RBAC](./features/admin-role-based-access-control.md) - Role-based access control
+### 📋 **todos/**
+TODO dosyaları ve planlama dokümantasyonu:
+- `ANALYTICS_REPORT_PLAN.md` - Analytics rapor planı
+- `ELASTICSEARCH_PRODUCTION_DEPLOYMENT_TODO.md` - Elasticsearch production TODO
+- `TODO_YARIN.md` - Yarınki TODO'lar
+- `TYPE_CONSISTENCY_TODO.md` - Type consistency TODO
+- `AI_USAGE_SYSTEM_CHANGES.md` - AI kullanım sistemi değişiklikleri
+- `CACHE_SYSTEM_TODO.md` - Cache sistemi TODO
+- `RESPONSIVE_TODO.md` - Responsive tasarım TODO
 
-### 📚 [API Dokümantasyonu](./api/)
-- [API Documentation](./api/API_DOCUMENTATION.md) - Genel API dokümantasyonu
-- [API Documentation (New)](./api/API_DOCUMENTATION_NEW.md) - Güncellenmiş API dokümantasyonu
-- [Elasticsearch API](./api/ELASTICSEARCH_API_ARCHITECTURE.md) - Elasticsearch API mimarisi
-- [Elasticsearch API Decision](./api/ELASTICSEARCH_API_DECISION.md) - Elasticsearch API kararları
+### 🏛️ **architecture/**
+Mimari dokümantasyonu:
+- `DATABASE_SCHEMA_DOCUMENTATION.md` - Veritabanı şeması
+- `DEVELOPMENT_SETUP_GUIDE.md` - Geliştirme kurulum rehberi
+- `MOBILE_APP_DOCUMENTATION.md` - Mobile app dokümantasyonu
+- `MONOREPO_GUIDE.md` - Monorepo rehberi
+- `SECURITY_DOCUMENTATION.md` - Güvenlik dokümantasyonu
+- `SHARED_TYPES_GUIDE.md` - Shared types rehberi
+- `SHARED_TYPES_INTEGRATION.md` - Shared types entegrasyonu
 
-### 🧪 [Testing](./testing/)
-- Testing rehberleri ve best practices
+### 🚀 **deployment/**
+Deployment dokümantasyonu:
+- `ADMIN_PANEL_DEPLOYMENT_GUIDE.md` - Admin panel deployment
+- `DEPLOYMENT_GUIDE.md` - Genel deployment rehberi
+- `DOCKER_SETUP_HOWTO.md` - Docker kurulum nasıl yapılır
+- `PRODUCTION_DEPLOYMENT_GUIDE.md` - Production deployment
+- `VPS_DEPLOYMENT_COMPLETE_GUIDE.md` - VPS deployment tam rehber
+- `vps-migration/` - VPS migration dosyaları
 
-### 📋 [Proje Yönetimi](./)
-- [TODO Listesi](./TODO.md) - Aktif projeler ve gelecek planlar
-- [Changelog](./CHANGELOG.md) - Proje değişiklik geçmişi
-- [Quick Start](./QUICK_START.md) - Hızlı başlangıç rehberi
+### 🔧 **api/**
+API dokümantasyonu:
+- `API_DOCUMENTATION_NEW.md` - Yeni API dokümantasyonu
+- `API_DOCUMENTATION.md` - API dokümantasyonu
+- `ELASTICSEARCH_API_ARCHITECTURE.md` - Elasticsearch API mimarisi
+- `ELASTICSEARCH_API_DECISION.md` - Elasticsearch API kararları
 
----
+### ⚡ **features/**
+Özellik dokümantasyonu:
+- `ADMIN_RBAC_QUICK_START.md` - Admin RBAC hızlı başlangıç
+- `ADMIN_ROLE_BASED_ACCESS_CONTROL.md` - Admin role-based access control
+- `ELASTICSEARCH_IMPLEMENTATION_GUIDE.md` - Elasticsearch implementasyon rehberi
+- `ELASTICSEARCH_INTEGRATION_STRATEGY.md` - Elasticsearch entegrasyon stratejisi
+- `ELASTICSEARCH_PRODUCTION_DEPLOYMENT_GUIDE.md` - Elasticsearch production deployment
+- `ELASTICSEARCH_SEARCH_SYSTEM_REPORT.md` - Elasticsearch arama sistemi raporu
+- `ELASTICSEARCH_TURKISH_SEARCH_INTEGRATION.md` - Elasticsearch Türkçe arama entegrasyonu
+- `ELASTICSEARCH_USAGE_EXAMPLES.md` - Elasticsearch kullanım örnekleri
+- `TODO_WEB_ADMIN_INTEGRATION.md` - Web admin entegrasyon TODO
+- `WEB_ADMIN_INTEGRATION_DOCUMENTATION.md` - Web admin entegrasyon dokümantasyonu
 
-## 🎯 Hızlı Başlangıç
+### 🧪 **testing/**
+Test dokümantasyonu:
+- `README.md` - Test dokümantasyonu ana sayfası
 
-### 1. Monorepo'yu Anlama
-- [Monorepo Rehberi](./architecture/monorepo-guide.md#genel-bakış) - Genel bakış ve yapı
-- [Kurulum](./architecture/monorepo-guide.md#kurulum) - İlk kurulum adımları
+### 🗑️ **deprecated/**
+Eski dokümantasyon (artık kullanılmıyor):
+- `CTO_TECHNICAL_AUDIT_REPORT.md` - CTO teknik audit raporu
+- `ELASTICSEARCH_SIMPLE_SCENARIO.md` - Elasticsearch basit senaryo
+- `ELASTICSEARCH_TIMING_ANALYSIS.md` - Elasticsearch zamanlama analizi
+- `ELASTICSEARCH_TODO.md` - Elasticsearch TODO
+- `README.md` - Deprecated dokümantasyon açıklaması
+- `TECHNOLOGY_BEST_PRACTICES_AUDIT.md` - Teknoloji en iyi uygulamalar audit'i
+- `TODO_COMPLETION_REPORT.md` - TODO tamamlama raporu
+- `VPS_ELASTICSEARCH_SETUP.md` - VPS Elasticsearch kurulumu
+- `WEB_ADMIN_BACKEND_INTEGRATION.md` - Web admin backend entegrasyonu
 
-### 2. Shared-Types Kullanımı
-- [Shared-Types Rehberi](./architecture/shared-types-guide.md#genel-bakış) - Paket hakkında genel bilgi
-- [Kullanım Örnekleri](./architecture/shared-types-guide.md#kullanım-örnekleri) - Pratik örnekler
+## 🔍 Hızlı Başlangıç
 
-### 3. Web Admin Integration
-- [Web Admin Integration](./features/web-admin-integration-documentation.md) - Tam entegrasyon rehberi
-- [Admin RBAC](./features/admin-role-based-access-control.md) - Yetkilendirme sistemi
+### Yeni Geliştirici İçin:
+1. `project/PROJECT_STANDARDS.md` - Proje kurallarını oku
+2. `project/PROJECT_SUMMARY.md` - Proje genel bakışını incele
+3. `architecture/DEVELOPMENT_SETUP_GUIDE.md` - Geliştirme ortamını kur
+4. `guides/PM2_SETUP.md` - PM2 kurulumunu yap
 
-### 4. Elasticsearch Entegrasyonu
-- [Turkish Search Rehberi](./features/elasticsearch-turkish-search-integration.md) - Turkish search ve queue sistemi
-- [Implementation Guide](./features/elasticsearch-implementation-guide.md) - Teknik implementasyon
+### Deployment İçin:
+1. `deployment/DEPLOYMENT_GUIDE.md` - Genel deployment rehberi
+2. `deployment/VPS_DEPLOYMENT_COMPLETE_GUIDE.md` - VPS deployment
+3. `guides/DOCKER_GUIDE.md` - Docker kullanımı
 
-### 5. Deployment
-- [Production Deployment](./deployment/production-deployment-guide.md) - Production deployment
-- [Docker Setup](./deployment/docker-setup-howto.md) - Docker kurulumu
-
----
-
-## 🚀 Hızlı Komutlar
-
-```bash
-# Monorepo kurulumu
-npm install
-
-# Web admin paneli başlatma
-cd packages/web && npm run dev
-
-# Admin backend başlatma
-cd packages/admin-backend && npm run dev
-
-# Elasticsearch ve queue sistemi başlatma
-docker-compose -f docker-compose.dev.yml up -d elasticsearch redis admin-backend
-
-# Turkish search testi
-curl -X POST "http://localhost:3002/api/v1/elasticsearch/search" \
-  -H "Content-Type: application/json" \
-  -d '{"query":"iphone","page":1,"limit":5}'
-
-# Geliştirme ortamını başlatma
-cd packages/shared-types && npm run dev &
-cd packages/web && npm run dev &
-cd packages/mobile && npx expo start
-```
-
----
-
-## 🔍 Aktif Projeler
-
-### ✅ **Tamamlanan Projeler**
-- **Web Admin Backend Integration** - Production ready ✅
-- **Elasticsearch Turkish Search** - Tamamlandı ✅
-- **Admin RBAC System** - Tamamlandı ✅
-- **Shared-Types Integration** - Tamamlandı ✅
-
-### 🚧 **Aktif Projeler**
-- **Mobile App Admin Integration** - Planlama aşamasında
-- **Performance Optimization** - Beklemede
-- **Advanced Analytics Dashboard** - Beklemede
-
-### 📋 **Gelecek Projeler**
-- **CI/CD Pipeline Enhancement** - Planlanıyor
-- **Security Audit** - Planlanıyor
-- **Monitoring & Observability** - Planlanıyor
+### API Geliştirme İçin:
+1. `api/API_DOCUMENTATION_NEW.md` - API dokümantasyonu
+2. `features/ELASTICSEARCH_IMPLEMENTATION_GUIDE.md` - Elasticsearch implementasyonu
 
 ---
 
-## 📊 Proje Durumu
-
-| Proje | Durum | Tamamlanma | Dokümantasyon |
-|-------|-------|------------|---------------|
-| Web Admin Integration | ✅ Production Ready | %100 | [📖 Detaylı](./features/web-admin-integration-documentation.md) |
-| Elasticsearch Integration | ✅ Tamamlandı | %100 | [📖 Detaylı](./features/elasticsearch-implementation-guide.md) |
-| Admin RBAC | ✅ Tamamlandı | %100 | [📖 Detaylı](./features/admin-role-based-access-control.md) |
-| Shared-Types | ✅ Tamamlandı | %100 | [📖 Detaylı](./architecture/shared-types-guide.md) |
-
----
-
-## 🔧 Teknik Stack
-
-### Frontend
-- **Web**: React 18 + TypeScript + Vite
-- **Mobile**: React Native + Expo
-- **UI**: Tailwind CSS + Lucide React
-
-### Backend
-- **Admin Backend**: Node.js + Express + Prisma
-- **Database**: PostgreSQL + Supabase
-- **Search**: Elasticsearch
-- **Cache**: Redis
-
-### DevOps
-- **Containerization**: Docker + Docker Compose
-- **CI/CD**: GitHub Actions
-- **Monitoring**: Sentry + Performance Monitoring
-
----
-
-## 📞 Destek
-
-Dokümantasyonla ilgili sorularınız için:
-- **GitHub Issues**: Proje sorunları ve öneriler
-- **Pull Request**: Dokümantasyon iyileştirmeleri
-- **Slack**: #benalsam-dev (geliştirici soruları)
-
----
-
-## 📝 Katkıda Bulunma
-
-1. **Dokümantasyon Güncelleme**: Pull request ile katkıda bulunun
-2. **Hata Bildirimi**: GitHub Issues kullanın
-3. **Öneriler**: Feature request olarak bildirin
-
----
-
-**Son Güncelleme**: 2024-01-XX  
-**Versiyon**: 2.0.0  
-**Durum**: Production Ready ✅
+**Son Güncelleme:** 2025-01-09  
+**Toplam Doküman:** 50+ dosya  
+**Kategoriler:** 8 ana kategori

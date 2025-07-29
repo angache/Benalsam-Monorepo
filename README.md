@@ -108,9 +108,14 @@ benalsam-monorepo/
 ├── .github/workflows/        # CI/CD pipelines
 │   └── deploy-admin.yml     # GitHub Actions workflow
 ├── docs/                    # Documentation
-│   ├── API_DOCUMENTATION.md
-│   ├── DEPLOYMENT_GUIDE.md
-│   └── ELASTICSEARCH_PRODUCTION_DEPLOYMENT_GUIDE.md
+│   ├── project/            # Project documentation
+│   ├── guides/             # Development guides
+│   ├── todos/              # TODO documentation
+│   ├── architecture/       # Architecture docs
+│   ├── deployment/         # Deployment guides
+│   ├── api/               # API documentation
+│   ├── features/          # Feature guides
+│   └── deprecated/        # Old documentation
 └── docker-compose files     # Docker configurations
 ```
 
@@ -362,10 +367,13 @@ npm run format
 
 ## 📚 **DOCUMENTATION**
 
-### **Available Documentation**
-- [API Documentation](./docs/API_DOCUMENTATION.md) - Complete API reference
-- [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md) - Production deployment guide
-- [Elasticsearch Guide](./docs/ELASTICSEARCH_PRODUCTION_DEPLOYMENT_GUIDE.md) - Elasticsearch integration guide
+### **📖 Available Documentation**
+- [📚 Docs Overview](./docs/README.md) - Complete documentation index
+- [🏗️ Project Standards](./docs/project/PROJECT_STANDARDS.md) - Project rules and standards
+- [🚀 Development Setup](./docs/architecture/DEVELOPMENT_SETUP_GUIDE.md) - Development environment setup
+- [🔧 API Documentation](./docs/api/API_DOCUMENTATION_NEW.md) - Complete API reference
+- [⚡ Features Guide](./docs/features/ELASTICSEARCH_IMPLEMENTATION_GUIDE.md) - Elasticsearch integration guide
+- [📋 Active TODOs](./todos/README.md) - Current tasks and planning
 
 ### **Architecture**
 - **Monorepo Structure**: Shared types, backend, and frontend in single repository
