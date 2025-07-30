@@ -26,6 +26,50 @@ interface AuthState {
   reset: () => void;
 }
 
+// Enterprise Session Logger Service
+const sessionLoggerService = {
+  async logSessionActivity(action: 'login' | 'logout' | 'activity', metadata = {}) {
+    try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.warn('⚠️ No active session found for logging');
+        return false;
+      }
+
+      // Call Edge Function for session logging
+      const response = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/session-logger`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          action,
+          metadata: {
+            ...metadata,
+            platform: 'mobile',
+            timestamp: new Date().toISOString()
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Enterprise Session Logger: Failed to log session activity', errorData);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('✅ Enterprise Session Logger: Session activity logged successfully', result);
+      return true;
+    } catch (error) {
+      console.error('❌ Enterprise Session Logger Error:', error);
+      return false;
+    }
+  }
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -65,6 +109,13 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('Login successful but no session created');
           }
 
+          // Enterprise Session Logging
+          console.log('🔐 Enterprise Session: Logging login activity...');
+          await sessionLoggerService.logSessionActivity(
+            'login',
+            { user_id: data.session.user.id }
+          );
+
           console.log('🟢 [AuthStore] Auth successful, fetching profile...');
           await get().fetchUserProfile(data.session.user.id);
           
@@ -96,7 +147,14 @@ export const useAuthStore = create<AuthState>()(
           });
           if (error) throw error;
 
-          if (data.user) {
+          if (data.user && data.session) {
+            // Enterprise Session Logging for signup
+            console.log('🔐 Enterprise Session: Logging signup activity...');
+            await sessionLoggerService.logSessionActivity(
+              'login',
+              { user_id: data.user.id }
+            );
+
             const { error: profileError } = await supabase
               .from('profiles')
               .insert([
@@ -122,16 +180,35 @@ export const useAuthStore = create<AuthState>()(
           console.log('🟡 [AuthStore] Starting sign out process...');
           set({ loading: true });
           
-          const { error } = await supabase.auth.signOut();
-          if (error) {
-            console.error('🔴 [AuthStore] Error during signOut:', error);
-            throw error;
+          // Get current user info before signing out
+          const currentUser = get().user;
+          
+          // Try to log session activity first (if we have user info)
+          if (currentUser?.id) {
+            try {
+              console.log('🔐 Enterprise Session: Logging logout activity...');
+              await sessionLoggerService.logSessionActivity(
+                'logout',
+                { user_id: currentUser.id }
+              );
+            } catch (sessionError) {
+              console.warn('⚠️ Session logging failed, continuing with logout:', sessionError);
+            }
+          }
+          
+          // Try to sign out from Supabase (but don't fail if it errors)
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              console.warn('⚠️ Supabase signOut failed:', error);
+            }
+          } catch (signOutError) {
+            console.warn('⚠️ Supabase signOut threw error:', signOutError);
           }
           
           console.log('🟢 [AuthStore] Successfully signed out, resetting state...');
           
           // FCM token'ı temizle
-          const currentUser = get().user;
           if (currentUser) {
             console.log('🔔 [AuthStore] Cleaning up FCM token...');
             await fcmTokenService.onUserLogout(currentUser.id);

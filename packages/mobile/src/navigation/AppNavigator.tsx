@@ -53,6 +53,8 @@ import ModerationScreen from '../screens/ModerationScreen';
 import AnalyticsDashboardScreen from '../screens/AnalyticsDashboardScreen';
 import AnalyticsTestScreen from '../screens/AnalyticsTestScreen';
 import ElasticsearchTestScreen from '../screens/ElasticsearchTestScreen';
+import DopingScreen from '../screens/DopingScreen';
+import LeaveReviewScreen from '../screens/LeaveReviewScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();

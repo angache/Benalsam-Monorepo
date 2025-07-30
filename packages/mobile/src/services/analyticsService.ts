@@ -71,6 +71,7 @@ export interface UserAnalytics {
 class AnalyticsService {
   private sessionId: string | undefined = undefined;
   private sessionStartTime: number | undefined = undefined;
+  private enterpriseSessionId: string | undefined = undefined;
   private screenStartTime: number | undefined = undefined;
   private currentScreen: string | undefined = undefined;
   private scrollDepth: number = 0;
@@ -94,6 +95,7 @@ class AnalyticsService {
     this.sessionId = this.generateSessionId();
     this.sessionStartTime = Date.now();
     this.initializeAnalytics();
+    // Enterprise session ID will be loaded when needed
   }
 
   private async initializeAnalytics(): Promise<void> {
@@ -114,6 +116,61 @@ class AnalyticsService {
     } catch (error) {
       console.error('❌ Error initializing analytics:', error);
     }
+  }
+
+  private async loadEnterpriseSessionId(): Promise<string | undefined> {
+    try {
+      console.log('🔍 Analytics: Loading enterprise session ID...');
+      
+      // Get current session from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔍 Analytics: Supabase session:', session ? 'exists' : 'not found');
+      
+      if (session) {
+        console.log('🔍 Analytics: User ID:', session.user.id);
+        
+        // Get active session from user_session_logs
+        const { data: sessionData, error } = await supabase
+          .from('user_session_logs')
+          .select('session_id')
+          .eq('user_id', session.user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        console.log('🔍 Analytics: Session data:', sessionData);
+        console.log('🔍 Analytics: Session error:', error);
+        
+        if (sessionData?.session_id) {
+          this.enterpriseSessionId = sessionData.session_id;
+          console.log('🔐 Analytics: Enterprise session ID loaded:', this.enterpriseSessionId);
+          return this.enterpriseSessionId;
+        } else {
+          console.log('⚠️ Analytics: No active session found in database');
+        }
+      } else {
+        console.log('⚠️ Analytics: No Supabase session found');
+      }
+    } catch (error) {
+      console.warn('⚠️ Analytics: Could not load enterprise session ID:', error);
+    }
+    return undefined;
+  }
+
+  private async getEnterpriseSessionId(): Promise<string | undefined> {
+    console.log('🔍 Analytics: Getting enterprise session ID...');
+    console.log('🔍 Analytics: Cached enterprise session ID:', this.enterpriseSessionId);
+    
+    if (this.enterpriseSessionId) {
+      console.log('🔐 Analytics: Using cached enterprise session ID:', this.enterpriseSessionId);
+      return this.enterpriseSessionId;
+    }
+    
+    console.log('🔍 Analytics: Loading enterprise session ID from database...');
+    const sessionId = await this.loadEnterpriseSessionId();
+    console.log('🔍 Analytics: Loaded enterprise session ID:', sessionId);
+    return sessionId;
   }
 
   private async loadUserProfile(userId: string): Promise<void> {
@@ -183,20 +240,19 @@ class AnalyticsService {
       
       console.log('🔍 user data:', user);
 
+      // Get enterprise session ID
+      const enterpriseSessionId = await this.getEnterpriseSessionId();
+      console.log('🔍 Analytics: Final enterprise session ID for request:', enterpriseSessionId);
+      console.log('🔍 Analytics: Fallback session ID:', this.sessionId);
+      
       // Send to Admin Backend
       const requestBody = {
+        session_id: enterpriseSessionId || this.sessionId, // ✅ Sadece session ID
         event_type: eventName,
         event_data: {
           ...properties,
           event_timestamp: new Date().toISOString()
         },
-        user_profile: {
-          id: user.id,
-          email: user.email || user.user_metadata?.email || user.username + '@example.com',
-          name: user.user_metadata?.name || user.user_metadata?.full_name || user.username || 'Unknown User',
-          avatar: user.avatar_url || user.user_metadata?.avatar_url || null
-        },
-        session_id: this.sessionId,
         device_info: this.getDeviceInfo()
       };
       
@@ -611,9 +667,10 @@ class AnalyticsService {
     };
   }
 
-  private buildAnalyticsSession(): AnalyticsSession {
+  private async buildAnalyticsSession(): Promise<AnalyticsSession> {
+    const enterpriseSessionId = await this.getEnterpriseSessionId();
     return {
-      id: this.sessionId || '',
+      id: enterpriseSessionId || this.sessionId || '', // ✅ Enterprise session ID kullanılıyor
       start_time: new Date(this.sessionStartTime || Date.now()).toISOString(),
       duration: this.sessionStartTime ? Date.now() - this.sessionStartTime : 0,
       page_views: this.pageViews,
@@ -875,6 +932,10 @@ class AnalyticsService {
 
       console.log('🔍 trackAnalyticsEvent called with:', eventName, eventProperties);
 
+      // Get enterprise session ID
+      const enterpriseSessionId = await this.getEnterpriseSessionId();
+      console.log('🔍 Analytics: Final enterprise session ID for trackAnalyticsEvent:', enterpriseSessionId);
+      
       // Use the same format as trackEvent
       const requestBody = {
         event_type: eventName,
@@ -882,13 +943,7 @@ class AnalyticsService {
           ...eventProperties,
           event_timestamp: new Date().toISOString()
         },
-        user_profile: {
-          id: user.id,
-          email: user.email || '',
-          name: user.user_metadata?.name || user.email?.split('@')[0] || 'Unknown User',
-          avatar: user.user_metadata?.avatar_url || null
-        },
-        session_id: this.sessionId,
+        session_id: enterpriseSessionId || this.sessionId, // ✅ Sadece session ID
         device_info: this.getDeviceInfo()
       };
 

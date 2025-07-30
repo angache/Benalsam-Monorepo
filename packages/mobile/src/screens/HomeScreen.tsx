@@ -831,7 +831,8 @@ const HomeScreen = () => {
     <SkeletonSectionHeader />
   ), []);
 
-  const keyExtractor = useCallback((item: ListingWithUser) => item.id.toString(), []);
+  const keyExtractor = useCallback((item: ListingWithUser, index: number) => 
+    `${item.id}_${index}`, []);
 
   const getItemLayout = useCallback((data: any, index: number) => ({
     length: 280, // Approximate card height + margin

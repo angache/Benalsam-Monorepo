@@ -27,14 +27,13 @@ router.post('/track-behavior', async (req, res) => {
     logger.info('🔍 /track-behavior endpoint called');
     logger.info('🔍 Request body:', JSON.stringify(req.body, null, 2));
     
-    const { event_type, event_data, session_id, device_info, user_profile } = req.body;
+    const { event_type, event_data, session_id, device_info } = req.body;
     
     logger.info('🔍 Parsed data:');
     logger.info('🔍 event_type:', event_type);
     logger.info('🔍 event_data:', JSON.stringify(event_data, null, 2));
     logger.info('🔍 session_id:', session_id);
     logger.info('🔍 device_info:', JSON.stringify(device_info, null, 2));
-    logger.info('🔍 user_profile:', JSON.stringify(user_profile, null, 2));
     
     // Validate required fields
     if (!event_type) {
@@ -42,20 +41,16 @@ router.post('/track-behavior', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing event_type' });
     }
     
-    if (!user_profile?.id) {
-      logger.error('❌ Missing user_profile.id');
-      return res.status(400).json({ success: false, message: 'Missing user_profile.id' });
+    if (!session_id) {
+      logger.error('❌ Missing session_id');
+      return res.status(400).json({ success: false, message: 'Missing session_id' });
     }
     
-    // Create event with user profile information
+    // Create event with session-based tracking (no user profile)
     const event = {
-      user_id: user_profile?.id || 'unknown',
       event_type,
       event_data: {
-        ...event_data,
-        user_email: user_profile?.email || 'unknown@example.com',
-        user_name: user_profile?.name || 'Unknown User',
-        user_avatar: user_profile?.avatar || null
+        ...event_data
       },
       timestamp: new Date().toISOString(),
       session_id,
@@ -63,14 +58,6 @@ router.post('/track-behavior', async (req, res) => {
     };
     
     logger.info('🔍 Created event object:', JSON.stringify(event, null, 2));
-    
-    // Debug: Log user profile information
-    logger.info(`🔍 Debug - User Profile:`, {
-      id: user_profile?.id,
-      email: user_profile?.email,
-      name: user_profile?.name,
-      avatar: user_profile?.avatar
-    });
     
     logger.info('🔍 About to call userBehaviorService.trackUserBehavior');
     const success = await userBehaviorService.trackUserBehavior(event);

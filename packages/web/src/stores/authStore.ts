@@ -14,6 +14,50 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
+// Enterprise Session Logger Service
+const sessionLoggerService = {
+  async logSessionActivity(action: 'login' | 'logout' | 'activity', metadata = {}) {
+    try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.warn('⚠️ No active session found for logging');
+        return false;
+      }
+
+      // Call Edge Function for session logging
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-logger`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          action,
+          metadata: {
+            ...metadata,
+            platform: 'web',
+            timestamp: new Date().toISOString()
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Enterprise Session Logger: Failed to log session activity', errorData);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('✅ Enterprise Session Logger: Session activity logged successfully', result);
+      return true;
+    } catch (error) {
+      console.error('❌ Enterprise Session Logger Error:', error);
+      return false;
+    }
+  }
+};
+
 export const useAuthStore = create<AuthState>((set, get) => {
   // Auto-initialize on store creation
   const initializeStore = async () => {
@@ -81,7 +125,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
           return { error: error.message };
         }
 
-        if (data.user) {
+        if (data.user && data.session) {
+          // Enterprise Session Logging
+          console.log('🔐 Enterprise Session: Logging login activity...');
+          await sessionLoggerService.logSessionActivity(
+            'login',
+            { user_id: data.user.id, email: data.user.email }
+          );
+
           const basicUser = {
             id: data.user.id,
             email: data.user.email,
@@ -124,7 +175,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
           return { error: error.message };
         }
 
-        if (data.user) {
+        if (data.user && data.session) {
+          // Enterprise Session Logging for signup
+          console.log('🔐 Enterprise Session: Logging signup activity...');
+          await sessionLoggerService.logSessionActivity(
+            'login',
+            { user_id: data.user.id, email: data.user.email }
+          );
+
           // Update profile with avatar_url
           const { error: profileError } = await supabase
             .from('profiles')
@@ -163,6 +221,18 @@ export const useAuthStore = create<AuthState>((set, get) => {
     signOut: async () => {
       set({ loading: true });
       try {
+        // Get current session before signing out
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Enterprise Session Logging for logout
+          console.log('🔐 Enterprise Session: Logging logout activity...');
+          await sessionLoggerService.logSessionActivity(
+            'logout',
+            { user_id: session.user.id, email: session.user.email }
+          );
+        }
+
         await supabase.auth.signOut();
         set({ user: null, currentUser: null, loading: false });
       } catch (error) {

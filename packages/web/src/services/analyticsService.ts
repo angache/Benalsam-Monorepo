@@ -12,13 +12,35 @@ import type {
 interface AnalyticsEvent {
   event_type: string;
   event_data: Record<string, any>;
-  user_id?: string | null;
   session_id: string;
   created_at?: string;
 }
 
 // Session management helper
-const getSessionId = (): string => {
+const getSessionId = async (): Promise<string> => {
+  try {
+    // Try to get enterprise session ID first
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: sessionData } = await supabase
+        .from('user_session_logs')
+        .select('session_id')
+        .eq('user_id', session.user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (sessionData?.session_id) {
+        console.log('🔐 Web Analytics: Enterprise session ID loaded:', sessionData.session_id);
+        return sessionData.session_id;
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Web Analytics: Could not load enterprise session ID:', error);
+  }
+  
+  // Fallback to local session ID
   let sessionId = localStorage.getItem('user_session_id');
   if (!sessionId) {
     sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -35,8 +57,7 @@ const handleAnalyticsError = (error: any, eventType: string): void => {
 
 export const trackEvent = async (
   eventType: string, 
-  eventData: Record<string, any> = {}, 
-  userId: string | null = null
+  eventData: Record<string, any> = {}
 ): Promise<void> => {
   if (!eventType) {
     console.error('trackEvent called without eventType');
@@ -47,8 +68,7 @@ export const trackEvent = async (
     const event: AnalyticsEvent = {
       event_type: eventType,
       event_data: eventData,
-      user_id: userId,
-      session_id: getSessionId(),
+      session_id: await getSessionId(),
       created_at: new Date().toISOString(),
     };
 
@@ -62,162 +82,134 @@ export const trackEvent = async (
   }
 };
 
-export const trackPageView = async (pageName: string, userId: string | null = null): Promise<void> => {
-  await trackEvent('page_view', { page_name: pageName }, userId);
+export const trackPageView = async (pageName: string): Promise<void> => {
+  await trackEvent('page_view', { page_name: pageName });
 };
 
 export const trackUserAction = async (
   action: string, 
-  details: Record<string, any> = {}, 
-  userId: string | null = null
+  details: Record<string, any> = {}
 ): Promise<void> => {
-  await trackEvent('user_action', { action, ...details }, userId);
+  await trackEvent('user_action', { action, ...details });
 };
 
 export const trackError = async (
   errorType: string, 
-  errorMessage: string, 
-  userId: string | null = null
+  errorMessage: string
 ): Promise<void> => {
-  await trackEvent('error', { error_type: errorType, error_message: errorMessage }, userId);
+  await trackEvent('error', { error_type: errorType, error_message: errorMessage });
 };
 
 // Additional analytics functions
 export const trackListingView = async (
   listingId: string, 
   listingTitle: string, 
-  category: string, 
-  userId: string | null = null
+  category: string
 ): Promise<void> => {
   await trackEvent('listing_view', {
     listing_id: listingId,
     listing_title: listingTitle,
     category: category
-  }, userId);
+  });
 };
 
 export const trackOfferCreated = async (
   offerId: string, 
   listingId: string, 
-  amount: number, 
-  userId: string | null = null
+  amount: number
 ): Promise<void> => {
   await trackEvent('offer_created', {
     offer_id: offerId,
     listing_id: listingId,
     amount: amount
-  }, userId);
+  });
 };
 
 export const trackUserRegistration = async (
-  userId: string, 
   registrationMethod: string
 ): Promise<void> => {
   await trackEvent('user_registration', {
     registration_method: registrationMethod
-  }, userId);
+  });
 };
 
 export const trackUserLogin = async (
-  userId: string, 
   loginMethod: string
 ): Promise<void> => {
   await trackEvent('user_login', {
     login_method: loginMethod
-  }, userId);
+  });
 };
 
 export const trackSearchQuery = async (
   query: string, 
   filters: Record<string, any>, 
-  resultsCount: number, 
-  userId: string | null = null
+  resultsCount: number
 ): Promise<void> => {
   await trackEvent('search_query', {
     query: query,
     filters: filters,
     results_count: resultsCount
-  }, userId);
+  });
 };
 
 export const trackCategoryView = async (
   category: string, 
-  subcategory?: string, 
-  userId: string | null = null
+  subcategory?: string
 ): Promise<void> => {
   await trackEvent('category_view', {
     category: category,
     subcategory: subcategory
-  }, userId);
+  });
 };
 
 export const trackPremiumUpgrade = async (
-  userId: string, 
   plan: string, 
   amount: number
 ): Promise<void> => {
   await trackEvent('premium_upgrade', {
     plan: plan,
     amount: amount
-  }, userId);
+  });
 };
 
 export const trackConversationStarted = async (
   conversationId: string, 
-  listingId: string, 
-  userId: string | null = null
+  listingId: string
 ): Promise<void> => {
   await trackEvent('conversation_started', {
     conversation_id: conversationId,
     listing_id: listingId
-  }, userId);
+  });
 };
 
 export const trackFavoriteAdded = async (
-  listingId: string, 
-  userId: string | null = null
+  listingId: string
 ): Promise<void> => {
   await trackEvent('favorite_added', {
     listing_id: listingId
-  }, userId);
+  });
 };
 
 export const trackProfileView = async (
-  profileId: string, 
-  viewerId: string | null = null
+  profileId: string
 ): Promise<void> => {
   await trackEvent('profile_view', {
     profile_id: profileId
-  }, viewerId);
+  });
 };
 
 // Enhanced analytics methods with standardized format
 export const trackAnalyticsEvent = async (
   eventName: keyof typeof AnalyticsEventType,
-  eventProperties: Record<string, any> = {},
-  userId: string | null = null
+  eventProperties: Record<string, any> = {}
 ): Promise<boolean> => {
   try {
-    // Get user data
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // Create analytics user object
-    const analyticsUser: AnalyticsUser = {
-      id: user?.id || 'anonymous',
-      email: user?.email || '',
-      name: user?.user_metadata?.name || user?.email || 'Anonymous User',
-      avatar: user?.user_metadata?.avatar_url || undefined,
-      properties: {
-        registration_date: user?.created_at,
-        subscription_type: 'free', // TODO: Get from user profile
-        last_login: new Date().toISOString(),
-        trust_score: 0, // TODO: Calculate trust score
-        verification_status: 'unverified' // TODO: Get from user profile
-      }
-    };
+    // Get session ID
+    const sessionId = await getSessionId();
 
     // Create analytics session object
-    const sessionId = getSessionId();
+    const sessionId = await getSessionId();
     const analyticsSession: AnalyticsSession = {
       id: sessionId,
       start_time: new Date().toISOString(),

@@ -3,7 +3,7 @@ import logger from '../config/logger';
 import { AnalyticsEvent, AnalyticsEventType, AnalyticsUser, AnalyticsSession, AnalyticsDevice, AnalyticsContext } from '@benalsam/shared-types';
 
 export interface UserBehaviorEvent {
-  user_id: string;
+  user_id?: string; // ✅ Optional for session-based tracking
   event_type: 'click' | 'scroll' | 'search' | 'favorite' | 'view' | 'share' | 'message' | 'offer' | 'performance' | 'LISTING_VIEW' | 'FAVORITE_ADDED' | 'OFFER_SENT' | 'MESSAGE_SENT' | 'FORM_SUBMIT' | 'BUTTON_CLICK' | 'SCREEN_VIEW';
   event_data: {
     screen_name?: string;
