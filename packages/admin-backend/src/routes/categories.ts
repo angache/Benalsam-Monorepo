@@ -1,6 +1,7 @@
 import { Router, IRouter } from 'express';
 import { categoriesController } from '../controllers/categoriesController';
 import { authMiddleware } from '../middleware/auth';
+import apiCacheService from '../services/apiCacheService';
 
 const router: IRouter = Router();
 

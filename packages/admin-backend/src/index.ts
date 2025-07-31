@@ -26,6 +26,14 @@ import dataExportV2Routes from './routes/dataExportV2';
 import loadTestingRoutes from './routes/loadTesting';
 import sessionManagementRoutes from './routes/sessionManagement';
 import cacheRoutes from './routes/cache';
+import searchRoutes from './routes/search';
+import apiCacheRoutes from './routes/apiCache';
+import testRoutes from './routes/test';
+import cacheAnalyticsRoutes from './routes/cacheAnalytics';
+import predictiveCacheRoutes from './routes/predictiveCache';
+import geographicCacheRoutes from './routes/geographicCache';
+import smartInvalidationRoutes from './routes/smartInvalidation';
+import cacheCompressionRoutes from './routes/cacheCompression';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -150,6 +158,14 @@ app.use('/api/v1/data-export-v2', dataExportV2Routes); // Data Export V2 sistemi
 app.use('/api/v1/load-testing', loadTestingRoutes); // Load Testing sistemi aktif edildi
 app.use('/api/v1/session-management', sessionManagementRoutes); // Session Management sistemi aktif edildi
 app.use('/api/v1/cache', cacheRoutes); // Cache Management sistemi aktif edildi
+app.use('/api/v1/search', searchRoutes); // Search Cache sistemi aktif edildi
+app.use('/api/v1/api-cache', apiCacheRoutes); // API Cache sistemi aktif edildi
+app.use('/api/v1/test', testRoutes); // Test routes aktif edildi
+app.use('/api/v1/cache-analytics', cacheAnalyticsRoutes); // Cache Analytics sistemi aktif edildi
+app.use('/api/v1/predictive-cache', predictiveCacheRoutes); // Predictive Cache sistemi aktif edildi
+app.use('/api/v1/geographic-cache', geographicCacheRoutes); // Geographic Cache sistemi aktif edildi
+app.use('/api/v1/smart-invalidation', smartInvalidationRoutes); // Smart Invalidation sistemi aktif edildi
+app.use('/api/v1/cache-compression', cacheCompressionRoutes); // Cache Compression sistemi aktif edildi
 
 // Global error handler
 app.use(errorHandler);

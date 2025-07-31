@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { searchService, SearchParams } from '../services/searchService';
+import searchCacheService from '../services/searchCacheService';
 import logger from '../config/logger';
 
 export class SearchController {
@@ -54,9 +55,12 @@ export class SearchController {
         attributes
       };
 
+      // Get session ID for cache
+      const sessionId = req.headers['x-session-id'] as string;
+
       logger.info('Search request:', searchParams);
 
-      const result = await searchService.searchListings(searchParams);
+      const result = await searchService.searchListings(searchParams, sessionId);
 
       return res.status(200).json({
         success: true,

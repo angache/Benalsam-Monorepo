@@ -1,5 +1,7 @@
 import express, { Router } from 'express';
 import cacheService from '../services/cacheService';
+import cacheManager from '../services/cacheManager';
+import memoryCacheService from '../services/memoryCacheService';
 import logger from '../config/logger';
 
 const router: Router = express.Router();
@@ -27,7 +29,8 @@ router.post('/get', async (req, res) => {
       });
     }
     
-    const cachedData = await cacheService.getCachedResponse(key, sessionId);
+    // Use Cache Manager for intelligent routing
+    const cachedData = await cacheManager.get(key, sessionId);
     
     return res.json({
       success: true,
@@ -54,11 +57,12 @@ router.post('/set', async (req, res) => {
       });
     }
     
-    await cacheService.cacheResponse(key, data.data, data.serviceUsed, sessionId);
+    // Use Cache Manager for intelligent routing
+    const success = await cacheManager.set(key, data, undefined, sessionId);
     
     return res.json({
       success: true,
-      message: 'Cache verisi kaydedildi'
+      message: success ? 'Cache verisi kaydedildi' : 'Cache verisi kaydedilemedi'
     });
   } catch (error) {
     logger.error('❌ Cache set error:', error);
@@ -175,6 +179,74 @@ router.post('/check-size', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: 'Cache boyut kontrolü başarısız'
+    });
+  }
+});
+
+// Cache Manager stats
+router.get('/manager/stats', async (req, res) => {
+  try {
+    const stats = await cacheManager.getStats();
+    
+    return res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    logger.error('❌ Cache manager stats error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Cache manager istatistikleri alınamadı'
+    });
+  }
+});
+
+// Memory cache stats
+router.get('/memory/stats', async (req, res) => {
+  try {
+    const stats = memoryCacheService.getStats();
+    
+    return res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    logger.error('❌ Memory cache stats error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Memory cache istatistikleri alınamadı'
+    });
+  }
+});
+
+// Cache warming
+router.post('/warm', async (req, res) => {
+  try {
+    const { keys, dataProvider } = req.body;
+    
+    if (!keys || !Array.isArray(keys)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cache warming için keys array gerekli'
+      });
+    }
+    
+    // Simple data provider for testing
+    const simpleDataProvider = (key: string) => Promise.resolve({ key, data: `warmed_${key}` });
+    
+    await cacheManager.warmCache(keys, simpleDataProvider);
+    
+    return res.json({
+      success: true,
+      data: {
+        message: `${keys.length} adet cache key warmed`
+      }
+    });
+  } catch (error) {
+    logger.error('❌ Cache warming error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Cache warming başarısız'
     });
   }
 });

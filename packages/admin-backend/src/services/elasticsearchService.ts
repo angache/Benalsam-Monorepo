@@ -1,6 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from '../config/logger';
 import { SearchOptimizedListing } from '@benalsam/shared-types';
+import searchCacheService from './searchCacheService';
 
 export class AdminElasticsearchService {
   protected client: Client;
@@ -545,10 +546,24 @@ export class AdminElasticsearchService {
     sort?: any;
     page?: number;
     limit?: number;
+    sessionId?: string;
   }): Promise<any> {
     try {
-      const { query, filters, sort, page = 1, limit = 20 } = params;
+      const { query, filters, sort, page = 1, limit = 20, sessionId } = params;
       
+      // Try to get from cache first
+      const cachedResults = await searchCacheService.getCachedSearch(params, sessionId);
+      if (cachedResults) {
+        logger.info('🎯 Search results served from cache');
+        return {
+          success: true,
+          data: cachedResults.results,
+          total: cachedResults.total,
+          aggregations: cachedResults.aggregations,
+          fromCache: true
+        };
+      }
+
       const searchQuery: any = {
           bool: {
             must: [],
@@ -656,17 +671,29 @@ export class AdminElasticsearchService {
           ? response.hits.total
           : response.hits.total?.value || 0;
 
+      const results = response.hits.hits.map((hit: any) => ({
+        id: hit._id,
+        score: hit._score,
+        ...hit._source
+      }));
+
+      // Cache the search results
+      await searchCacheService.cacheSearchResults(
+        params,
+        results,
+        total,
+        response.aggregations,
+        sessionId
+      );
+
       return {
-        hits: response.hits.hits.map((hit: any) => ({
-          id: hit._id,
-          score: hit._score,
-          ...hit._source
-        })),
+        hits: results,
         total,
         aggregations: response.aggregations,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit),
+        fromCache: false
       };
     } catch (error) {
       logger.error('Search listings error:', error);

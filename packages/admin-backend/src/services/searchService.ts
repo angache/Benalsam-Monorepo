@@ -89,12 +89,12 @@ export class SearchService {
   /**
    * Main search method with fallback
    */
-  async searchListings(params: SearchParams): Promise<SearchResult> {
+  async searchListings(params: SearchParams, sessionId?: string): Promise<SearchResult> {
     const startTime = Date.now();
     
     try {
       // Check cache first
-      const cached = await this.getCachedResult(params);
+      const cached = await this.getCachedResult(params, sessionId);
       if (cached) {
         return {
           ...cached,
@@ -120,7 +120,7 @@ export class SearchService {
 
       // Fallback to Supabase
       const result = await this.supabaseSearch(params);
-      await this.cacheResult(params, result);
+      await this.cacheResult(params, result, sessionId);
       
       return {
         ...result,
@@ -256,7 +256,7 @@ export class SearchService {
   /**
    * Get cached search result
    */
-  private async getCachedResult(params: SearchParams): Promise<SearchResult | null> {
+  private async getCachedResult(params: SearchParams, sessionId?: string): Promise<SearchResult | null> {
     if (!this.redisClient) return null;
 
     try {
@@ -272,7 +272,7 @@ export class SearchService {
   /**
    * Cache search result
    */
-  private async cacheResult(params: SearchParams, result: SearchResult): Promise<void> {
+  private async cacheResult(params: SearchParams, result: SearchResult, sessionId?: string): Promise<void> {
     if (!this.redisClient) return;
 
     try {
