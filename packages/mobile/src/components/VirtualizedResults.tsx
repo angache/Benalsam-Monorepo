@@ -8,7 +8,8 @@ import {
   Text 
 } from 'react-native';
 import { useThemeColors } from '../stores/themeStore';
-import { ListingCard, ListingListItem } from './index';
+import ListingCard from './ListingCard';
+import ListingListItem from './ListingListItem';
 
 interface VirtualizedResultsProps {
   data: any[];

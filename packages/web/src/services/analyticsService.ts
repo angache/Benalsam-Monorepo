@@ -209,7 +209,6 @@ export const trackAnalyticsEvent = async (
     const sessionId = await getSessionId();
 
     // Create analytics session object
-    const sessionId = await getSessionId();
     const analyticsSession: AnalyticsSession = {
       id: sessionId,
       start_time: new Date().toISOString(),
@@ -238,13 +237,13 @@ export const trackAnalyticsEvent = async (
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 
-    // Create standardized analytics event
+    // Create standardized analytics event (KVKK compliant - no user data)
     const analyticsEvent: StandardizedAnalyticsEvent = {
       event_id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       event_name: AnalyticsEventType[eventName],
       event_timestamp: new Date().toISOString(),
       event_properties: eventProperties,
-      user: analyticsUser,
+      user: undefined, // KVKK: No user data in analytics
       session: analyticsSession,
       device: analyticsDevice,
       context: analyticsContext

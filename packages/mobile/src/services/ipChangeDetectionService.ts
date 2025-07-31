@@ -20,6 +20,8 @@ class IPChangeDetectionService {
   private lastKnownIP: string | null = null;
   private lastNetworkType: string | null = null;
   private isInitialized = false;
+  private lastCheckTime: number = 0;
+  private readonly CHECK_INTERVAL = 30000; // 30 saniye minimum interval
 
   async initialize() {
     if (this.isInitialized) return;
@@ -68,17 +70,12 @@ class IPChangeDetectionService {
 
   private async getCurrentIP(): Promise<string> {
     try {
-      // Test modu - Expo Go'da farklı IP'ler simüle et
+      // Test modu - Expo Go'da sabit IP kullan (rate limiting'i önlemek için)
       if (__DEV__) {
-        const testIPs = [
-          '192.168.1.100', // WiFi
-          '185.123.45.67',  // Mobil
-          '203.0.113.1',    // VPN
-          '10.0.0.1'        // Office
-        ];
-        const randomIP = testIPs[Math.floor(Math.random() * testIPs.length)];
-        console.log('🧪 IP Change Detection: Test IP (DEV):', randomIP);
-        return randomIP;
+        // DEV modunda sabit IP kullan, sadece gerçek IP değişikliklerini test et
+        const testIP = '192.168.1.100'; // Sabit test IP
+        console.log('🧪 IP Change Detection: Test IP (DEV):', testIP);
+        return testIP;
       }
       
       const response = await fetch('https://api.ipify.org?format=json');
@@ -93,6 +90,14 @@ class IPChangeDetectionService {
 
   private async checkIPChange() {
     try {
+      // Rate limiting - çok sık kontrol etme
+      const now = Date.now();
+      if (now - this.lastCheckTime < this.CHECK_INTERVAL) {
+        console.log('⏱️ IP Change Detection: Rate limited, skipping check');
+        return;
+      }
+      this.lastCheckTime = now;
+      
       const currentIP = await this.getCurrentIP();
       
       if (!this.lastKnownIP) {
