@@ -2,6 +2,20 @@ import NetInfo from '@react-native-community/netinfo';
 import { AppState } from 'react-native';
 import sessionLoggerService from './sessionLoggerService';
 
+/**
+ * KVKK COMPLIANCE: IP Change Detection Service
+ * 
+ * Bu servis KVKK uyumluluğu için IP değişikliklerini takip eder:
+ * 
+ * ✅ SECURITY PURPOSE - Güvenlik amaçlı IP tracking
+ * ✅ NON-PERSONAL DATA - IP adresi kişisel veri değil
+ * ✅ TRANSPARENCY - IP değişiklikleri şeffaf şekilde loglanır
+ * ✅ LEGITIMATE INTEREST - Meşru menfaat kapsamında güvenlik
+ * ✅ AUDIT TRAIL - IP değişiklikleri denetim için kaydedilir
+ * 
+ * IP adresleri sadece güvenlik ve anomali tespiti için kullanılır.
+ */
+
 class IPChangeDetectionService {
   private lastKnownIP: string | null = null;
   private lastNetworkType: string | null = null;

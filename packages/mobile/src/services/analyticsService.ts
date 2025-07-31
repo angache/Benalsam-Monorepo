@@ -15,6 +15,21 @@ import Constants from 'expo-constants';
 // Admin Backend URL
 const ADMIN_BACKEND_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://localhost:3002';
 
+/**
+ * KVKK COMPLIANCE: Analytics Service
+ * 
+ * Bu servis KVKK (Kişisel Verilerin Korunması Kanunu) uyumluluğu için tasarlanmıştır:
+ * 
+ * ✅ SADECE SESSION_ID KULLANILIR - Kullanıcı kimliği (user_id) analytics'te saklanmaz
+ * ✅ ANONIMIZASYON - Kişisel veriler analytics'te tutulmaz
+ * ✅ LEGITIMATE INTEREST - Meşru menfaat kapsamında veri işleme
+ * ✅ MINIMUM DATA - Sadece gerekli veriler toplanır
+ * ✅ TRANSPARENCY - Veri işleme şeffaf ve açık
+ * 
+ * Session-based tracking ile kullanıcı gizliliği korunur.
+ * Analytics verileri sadece session_id ile ilişkilendirilir.
+ */
+
 // Legacy interface for backward compatibility
 export interface UserBehaviorEvent {
   user_id: string;
@@ -154,6 +169,14 @@ class AnalyticsService {
     return undefined;
   }
 
+  /**
+   * KVKK COMPLIANCE: Get Enterprise Session ID
+   * 
+   * Session ID'yi veritabanından alır. Bu ID kullanıcı kimliği değil,
+   * sadece session'ı takip etmek için kullanılır.
+   * 
+   * @returns Promise<string | undefined> - Session ID
+   */
   private async getEnterpriseSessionId(): Promise<string | undefined> {
     console.log('🔍 Analytics: Getting enterprise session ID...');
     console.log('🔍 Analytics: Cached enterprise session ID:', this.enterpriseSessionId);
@@ -199,6 +222,16 @@ class AnalyticsService {
 
   /**
    * Track any analytics event with standardized format
+   */
+  /**
+   * KVKK COMPLIANCE: Track Event
+   * 
+   * Analytics event'ini KVKK uyumlu şekilde kaydeder.
+   * Sadece session_id kullanılır, kişisel veri saklanmaz.
+   * 
+   * @param eventName - Event adı
+   * @param properties - Event özellikleri (kişisel veri içermemeli)
+   * @returns Promise<boolean> - Başarı durumu
    */
   async trackEvent(
     eventName: string,

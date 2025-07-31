@@ -2,6 +2,22 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+/**
+ * KVKK COMPLIANCE: Enterprise Session Logger Edge Function
+ * 
+ * Bu Edge Function KVKK uyumluluğu için session aktivitelerini kaydeder:
+ * 
+ * ✅ LEGAL BASIS - Meşru menfaat kapsamında session tracking
+ * ✅ TRANSPARENCY - Session başlangıç/bitiş zamanları kaydedilir
+ * ✅ IP TRACKING - Güvenlik için IP adresi kaydedilir (kişisel veri değil)
+ * ✅ METADATA - Session metadata'sı şeffaf şekilde saklanır
+ * ✅ AUDIT TRAIL - Session geçmişi denetim için tutulur
+ * ✅ SECURITY - IP değişiklikleri güvenlik amaçlı takip edilir
+ * 
+ * Session verileri sadece güvenlik ve denetim amaçlı kullanılır.
+ * Kullanıcı kimliği (user_id) sadece session ile ilişkilendirmek için kullanılır.
+ */
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

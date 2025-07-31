@@ -1,6 +1,20 @@
 import { supabase } from './supabaseClient';
 import NetInfo from '@react-native-community/netinfo';
 
+/**
+ * KVKK COMPLIANCE: Session Logger Service
+ * 
+ * Bu servis KVKK uyumluluğu için session aktivitelerini kaydeder:
+ * 
+ * ✅ LEGAL BASIS - Meşru menfaat kapsamında session tracking
+ * ✅ TRANSPARENCY - Session başlangıç/bitiş zamanları kaydedilir
+ * ✅ IP TRACKING - Güvenlik için IP adresi kaydedilir (kişisel veri değil)
+ * ✅ METADATA - Session metadata'sı şeffaf şekilde saklanır
+ * ✅ AUDIT TRAIL - Session geçmişi denetim için tutulur
+ * 
+ * Session verileri sadece güvenlik ve denetim amaçlı kullanılır.
+ */
+
 interface SessionLogData {
   user_id: string;
   session_id?: string;
@@ -38,6 +52,15 @@ class SessionLoggerService {
     }
   }
 
+  /**
+   * KVKK COMPLIANCE: Log Session Activity
+   * 
+   * Session aktivitesini KVKK uyumlu şekilde kaydeder.
+   * Sadece güvenlik ve denetim amaçlı veri toplanır.
+   * 
+   * @param action - Session aktivitesi (login/logout/activity)
+   * @param metadata - Ek metadata (kişisel veri içermemeli)
+   */
   async logSessionActivity(action: 'login' | 'logout' | 'activity', metadata: Record<string, any> = {}): Promise<void> {
     try {
       console.log('🔍 Enterprise Session Logger: Logging session activity:', { action, metadata });

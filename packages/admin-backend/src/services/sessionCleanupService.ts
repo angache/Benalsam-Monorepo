@@ -1,6 +1,21 @@
 import { supabase } from '../config/database';
 import logger from '../config/logger';
 
+/**
+ * KVKK COMPLIANCE: Session Cleanup Service
+ * 
+ * Bu servis KVKK uyumluluğu için session temizliği yapar:
+ * 
+ * ✅ DATA RETENTION - Veri saklama süreleri uygulanır
+ * ✅ AUDIT TRAIL - Session geçmişi denetim için korunur
+ * ✅ TRANSPARENCY - Temizlik işlemleri şeffaf şekilde loglanır
+ * ✅ LEGITIMATE INTEREST - Meşru menfaat kapsamında veri yönetimi
+ * ✅ MINIMIZATION - Gereksiz veriler otomatik temizlenir
+ * 
+ * Session verileri sadece gerekli süre kadar saklanır.
+ * Audit trail için session geçmişi korunur.
+ */
+
 class SessionCleanupService {
   private cleanupInterval: NodeJS.Timeout | null = null;
   private readonly CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 saat
@@ -33,6 +48,16 @@ class SessionCleanupService {
     }
   }
 
+  /**
+   * KVKK COMPLIANCE: Perform Cleanup
+   * 
+   * Session temizliği KVKK uyumlu şekilde yapılır.
+   * Eski session'lar terminate edilir ama silinmez (audit trail).
+   * 
+   * ✅ 24 saat eski session'lar terminate edilir
+   * ✅ Session verileri silinmez (denetim için korunur)
+   * ✅ Temizlik işlemleri loglanır
+   */
   private async performCleanup() {
     try {
       logger.info('🧹 Starting session cleanup...');
