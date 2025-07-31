@@ -43,6 +43,7 @@ const ListingCard = ({ listing, size = 'normal', onToggleFavorite, currentUser, 
   const handleMakeOfferClick = (e) => {
     e.stopPropagation();
     e.preventDefault();
+    
     if (currentUser && listing.user_id === currentUser.id) {
       navigate(`/ilan/${listing.id}`);
     } else if (currentUser) {

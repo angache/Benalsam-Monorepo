@@ -111,7 +111,7 @@ const AppRoutes = ({ currentUser }) => {
       <Routes location={location} key={location.pathname}>
         <Route 
           path="/" 
-          element={withPageErrorBoundary(HomePage, 'Ana Sayfa')}
+          element={withPageErrorBoundary(() => <HomePage currentUser={currentUser} />, 'Ana Sayfa')}
         />
         <Route path="/auth" element={withPageErrorBoundary(AuthPage, 'Giriş/Kayıt')} />
         <Route path="/arama" element={withPageErrorBoundary(SearchResultsPage, 'Arama Sonuçları')} />

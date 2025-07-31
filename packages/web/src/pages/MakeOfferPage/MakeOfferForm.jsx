@@ -34,17 +34,43 @@ const MakeOfferForm = React.memo(({
   const [attachments, setAttachments] = useState([]);
   const [errors, setErrors] = useState({});
 
+  // Debug logs for component props
+  console.log('🔍 [MakeOfferForm] Component rendered with:', {
+    hasListing: !!listing,
+    listingId: listing?.id,
+    listingTitle: listing?.title,
+    hasCurrentUser: !!currentUser,
+    currentUserId: currentUser?.id,
+    currentUserEmail: currentUser?.email,
+    inventoryCount: inventoryItems?.length || 0,
+    hasUserPlan: !!userPlan,
+    isSubmitting
+  });
+
   const handleGenerateAISuggestion = async () => {
-    if (!listing || !currentUser) return;
+    console.log('🔍 [MakeOfferForm] AI suggestion requested:', {
+      hasListing: !!listing,
+      hasCurrentUser: !!currentUser,
+      listingTitle: listing?.title
+    });
+
+    if (!listing || !currentUser) {
+      console.log('🔍 [MakeOfferForm] Missing listing or currentUser for AI suggestion');
+      return;
+    }
     
     const canUseAI = await checkPremiumFeature(currentUser.id, 'ai_suggestions');
+    console.log('🔍 [MakeOfferForm] AI feature check:', { canUseAI, userId: currentUser.id });
+    
     if (!canUseAI) {
+      console.log('🔍 [MakeOfferForm] AI feature not available, showing premium modal');
       showPremiumUpgradeToast('ai_suggestion', 0, 0);
       onOpenPremiumModal();
       return;
     }
 
     const suggestion = await generateAISuggestion(listing.title, listing.description, listing.budget);
+    console.log('🔍 [MakeOfferForm] AI suggestion generated:', { suggestion });
     setAiSuggestion(suggestion);
     setMessage(suggestion);
     setUseAISuggestion(true);
@@ -52,10 +78,19 @@ const MakeOfferForm = React.memo(({
 
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
+    console.log('🔍 [MakeOfferForm] File upload attempted:', { 
+      fileCount: files.length,
+      hasCurrentUser: !!currentUser,
+      userId: currentUser?.id
+    });
+
     if (files.length === 0) return;
 
     const canAttachFiles = await checkPremiumFeature(currentUser.id, 'file_attachments');
+    console.log('🔍 [MakeOfferForm] File attachment feature check:', { canAttachFiles, userId: currentUser.id });
+    
     if (!canAttachFiles) {
+      console.log('🔍 [MakeOfferForm] File attachment not available, showing premium modal');
       showPremiumUpgradeToast('file_attachment', 0, 0);
       onOpenPremiumModal();
       return;
@@ -66,24 +101,35 @@ const MakeOfferForm = React.memo(({
     
     const validFiles = files.filter(file => {
       if (file.size > maxSize) {
+        console.log('🔍 [MakeOfferForm] File too large:', { fileName: file.name, fileSize: file.size });
         toast({ title: "Dosya Çok Büyük", description: `${file.name} dosyası 5MB'dan büyük.`, variant: "destructive" });
         return false;
       }
       if (!allowedTypes.includes(file.type)) {
+        console.log('🔍 [MakeOfferForm] Unsupported file type:', { fileName: file.name, fileType: file.type });
         toast({ title: "Desteklenmeyen Dosya", description: `${file.name} dosya tipi desteklenmiyor.`, variant: "destructive" });
         return false;
       }
       return true;
     });
 
+    console.log('🔍 [MakeOfferForm] Valid files added:', { validCount: validFiles.length });
     setAttachments(prev => [...prev, ...validFiles]);
   };
 
   const removeAttachment = (index) => {
+    console.log('🔍 [MakeOfferForm] Removing attachment:', { index });
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
+    console.log('🔍 [MakeOfferForm] Validating form:', {
+      selectedItemId,
+      offeredPrice,
+      hasMessage: !!message.trim(),
+      attachmentCount: attachments.length
+    });
+
     const newErrors = {};
     if (offeredPrice !== '' && (isNaN(parseFloat(offeredPrice)) || parseFloat(offeredPrice) < 0)) {
       newErrors.offeredPrice = 'Geçerli bir teklif fiyatı girin (0 veya daha büyük).';
@@ -92,24 +138,43 @@ const MakeOfferForm = React.memo(({
     }
     if (!message.trim()) newErrors.message = 'Lütfen bir teklif mesajı yazın.';
     
+    console.log('🔍 [MakeOfferForm] Validation errors:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting || !validateForm()) return;
+    console.log('🔍 [MakeOfferForm] Form submission started:', {
+      hasCurrentUser: !!currentUser,
+      currentUserId: currentUser?.id,
+      selectedItemId,
+      offeredPrice,
+      hasMessage: !!message.trim(),
+      attachmentCount: attachments.length,
+      isSubmitting
+    });
+
+    if (!currentUser) {
+      console.log('🔍 [MakeOfferForm] No currentUser in form submit');
+      toast({ title: "Giriş Gerekli", description: "Teklif yapmak için giriş yapmalısınız.", variant: "destructive" });
+      return;
+    }
+
+    if (!validateForm()) {
+      console.log('🔍 [MakeOfferForm] Form validation failed');
+      return;
+    }
 
     const offerData = {
-      listingId: listing.id,
-      offeredItemId: selectedItemId || null,
+      selectedItemId,
       offeredPrice: offeredPrice ? parseFloat(offeredPrice) : null,
-      message: message,
-      aiSuggestion: useAISuggestion ? aiSuggestion : null,
-      attachments: attachments
+      message: message.trim(),
+      attachments
     };
 
-    onSubmit(offerData);
+    console.log('🔍 [MakeOfferForm] Submitting offer data:', offerData);
+    await onSubmit(offerData);
   };
 
   const selectedInventoryItem = inventoryItems.find(item => item.id === selectedItemId);
