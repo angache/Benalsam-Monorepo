@@ -49,6 +49,7 @@ import { useScrollHeader } from '../hooks/useScrollHeader';
 import { useUserPreferencesContext } from '../contexts/UserPreferencesContext';
 import analyticsService from '../services/analyticsService';
 import { performanceService } from '../services/performanceService';
+import ipChangeDetectionService from '../services/ipChangeDetectionService';
 
 
 // Legacy imports - aşamalı olarak kaldırılacak
@@ -451,6 +452,32 @@ const styles = StyleSheet.create({
   },
   footerSkeleton: {
     height: 150, // Approximate height for skeleton
+  },
+  // Test buttons styles
+  testSection: {
+    ...margins.h.md,
+    ...margins.v.sm,
+    ...paddings.all.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: '#f0f0f0',
+  },
+  testSectionTitle: {
+    ...textPatterns.sectionHeader,
+    ...margins.b.sm,
+    color: '#666',
+  },
+  testButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    ...margins.b.sm,
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
@@ -1589,6 +1616,19 @@ const HomeScreen = () => {
               </>
             ) : null}
           </View>
+          
+          {/* Test Buttons - Development Only */}
+          {__DEV__ && (
+            <View style={styles.testSection}>
+              <Text style={styles.testSectionTitle}>🧪 Test Buttons (DEV)</Text>
+              <TouchableOpacity 
+                style={styles.testButton}
+                onPress={() => ipChangeDetectionService.testIPChange()}
+              >
+                <Text style={styles.testButtonText}>Test IP Change</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           
           {/* Modern Footer */}
           <ModernFooter />

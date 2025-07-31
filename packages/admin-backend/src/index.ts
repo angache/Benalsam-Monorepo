@@ -24,10 +24,12 @@ import alertRoutes from './routes/alerts';
 import dataExportRoutes from './routes/dataExport';
 import dataExportV2Routes from './routes/dataExportV2';
 import loadTestingRoutes from './routes/loadTesting';
+import sessionManagementRoutes from './routes/sessionManagement';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
 import QueueProcessorService from './services/queueProcessorService';
+import sessionCleanupService from './services/sessionCleanupService';
 
 // Import middleware
 import { authenticateToken } from './middleware/auth';
@@ -145,6 +147,7 @@ app.use('/api/v1/alerts', alertRoutes); // Alert System aktif edildi
 app.use('/api/v1/data-export', dataExportRoutes); // Data Export sistemi aktif edildi
 app.use('/api/v1/data-export-v2', dataExportV2Routes); // Data Export V2 sistemi aktif edildi
 app.use('/api/v1/load-testing', loadTestingRoutes); // Load Testing sistemi aktif edildi
+app.use('/api/v1/session-management', sessionManagementRoutes); // Session Management sistemi aktif edildi
 
 // Global error handler
 app.use(errorHandler);
@@ -183,6 +186,14 @@ const startServer = async () => {
       logger.info('✅ Queue processor started');
     } catch (error) {
       logger.error('❌ Queue processor failed to start:', error);
+    }
+
+    // Start session cleanup service
+    try {
+      await sessionCleanupService.start();
+      logger.info('✅ Session cleanup service started');
+    } catch (error) {
+      logger.error('❌ Session cleanup service failed to start:', error);
     }
 
     // Test Redis connection

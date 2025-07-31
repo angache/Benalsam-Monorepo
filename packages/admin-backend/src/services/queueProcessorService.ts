@@ -82,6 +82,11 @@ export class QueueProcessorService {
         await this.processJob(job);
       }
     } catch (error) {
+      // Supabase bağlantı hatası durumunda sessizce devam et
+      if (error instanceof Error && error.message.includes('fetch failed')) {
+        logger.debug('🔇 Queue processing skipped due to connection issue');
+        return;
+      }
       logger.error('❌ Error in processQueue:', error);
     }
   }

@@ -106,11 +106,7 @@ class AnalyticsService {
       // Get timezone
       this.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      // Get user profile if available
-      const user = useAuthStore.getState().user;
-      if (user) {
-        await this.loadUserProfile(user.id);
-      }
+
       
       console.log('✅ Analytics service initialized');
     } catch (error) {
@@ -173,20 +169,7 @@ class AnalyticsService {
     return sessionId;
   }
 
-  private async loadUserProfile(userId: string): Promise<void> {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      this.userProfile = profile;
-    } catch (error) {
-      console.error('❌ Error loading user profile:', error);
-    }
-  }
+
 
   private generateSessionId(): string {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -245,9 +228,27 @@ class AnalyticsService {
       console.log('🔍 Analytics: Final enterprise session ID for request:', enterpriseSessionId);
       console.log('🔍 Analytics: Fallback session ID:', this.sessionId);
       
+      // Get Supabase session ID as fallback
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseSessionId = session?.access_token;
+      
+      // Extract session UUID from JWT token
+      let supabaseSessionUUID: string | undefined;
+      if (supabaseSessionId) {
+        try {
+          const payload = JSON.parse(atob(supabaseSessionId.split('.')[1]));
+          supabaseSessionUUID = payload.session_id;
+        } catch (error) {
+          console.warn('⚠️ Analytics: Could not decode JWT payload:', error);
+        }
+      }
+      
+      console.log('🔍 Analytics: Supabase session ID:', supabaseSessionId);
+      console.log('🔍 Analytics: Supabase session UUID:', supabaseSessionUUID);
+      
       // Send to Admin Backend
       const requestBody = {
-        session_id: enterpriseSessionId || this.sessionId, // ✅ Sadece session ID
+        session_id: enterpriseSessionId || supabaseSessionUUID || this.sessionId || supabaseSessionId, // ✅ UUID öncelikli fallback
         event_type: eventName,
         event_data: {
           ...properties,
@@ -936,6 +937,24 @@ class AnalyticsService {
       const enterpriseSessionId = await this.getEnterpriseSessionId();
       console.log('🔍 Analytics: Final enterprise session ID for trackAnalyticsEvent:', enterpriseSessionId);
       
+      // Get Supabase session ID as fallback
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseSessionId = session?.access_token;
+      
+      // Extract session UUID from JWT token
+      let supabaseSessionUUID: string | undefined;
+      if (supabaseSessionId) {
+        try {
+          const payload = JSON.parse(atob(supabaseSessionId.split('.')[1]));
+          supabaseSessionUUID = payload.session_id;
+        } catch (error) {
+          console.warn('⚠️ Analytics: Could not decode JWT payload:', error);
+        }
+      }
+      
+      console.log('🔍 Analytics: Supabase session ID for trackAnalyticsEvent:', supabaseSessionId);
+      console.log('🔍 Analytics: Supabase session UUID for trackAnalyticsEvent:', supabaseSessionUUID);
+      
       // Use the same format as trackEvent
       const requestBody = {
         event_type: eventName,
@@ -943,7 +962,7 @@ class AnalyticsService {
           ...eventProperties,
           event_timestamp: new Date().toISOString()
         },
-        session_id: enterpriseSessionId || this.sessionId, // ✅ Sadece session ID
+        session_id: enterpriseSessionId || supabaseSessionUUID || this.sessionId || supabaseSessionId, // ✅ UUID öncelikli fallback
         device_info: this.getDeviceInfo()
       };
 
@@ -1052,10 +1071,7 @@ class AnalyticsService {
     });
   }
 
-  // Enhanced methods for better analytics
-  async updateUserProfile(userId: string): Promise<void> {
-    await this.loadUserProfile(userId);
-  }
+
 
   async setLanguage(language: string): Promise<void> {
     this.language = language;

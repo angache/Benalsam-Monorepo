@@ -8,262 +8,151 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-// Enterprise rate limiting
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 10;
-
 Deno.serve(async (req) => {
   // CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: corsHeaders
-    });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   // Method validation
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({
-      error: 'Method not allowed'
-    }), {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
-      }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
   try {
-    // 1. Enterprise rate limiting
-    const clientIP = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const now = Date.now();
-    const clientRequests = rateLimitMap.get(clientIP) || [];
-    const validRequests = clientRequests.filter((time) => now - time < RATE_LIMIT_WINDOW);
-    
-    if (validRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
-      return new Response(JSON.stringify({
-        error: 'Rate limit exceeded'
-      }), {
-        status: 429,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
-    }
-    
-    validRequests.push(now);
-    rateLimitMap.set(clientIP, validRequests);
-
-    // 2. Request size validation (4KB limit)
-    const contentLength = parseInt(req.headers.get('content-length') || '0');
-    if (contentLength > 4096) {
-      return new Response(JSON.stringify({
-        error: 'Request too large'
-      }), {
-        status: 413,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
-    }
-
-    // 3. Request validation
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (e) {
-      return new Response(JSON.stringify({
-        error: 'Invalid JSON body'
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
-    }
-
+    // 1. Get request body
+    const requestBody = await req.json();
     const { action = 'activity', metadata = {} } = requestBody;
 
-    // 4. Enterprise IP validation
-    const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    
-    // IP format validation
+    // 2. Enhanced IP detection (Public IP)
+    const ip = req.headers.get('cf-connecting-ip') ||
+               req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+               req.headers.get('x-real-ip') ||
+               req.headers.get('x-client-ip') ||
+               'unknown';
+
+    // 3. IP format validation
     const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
     if (ip !== 'unknown' && !ipRegex.test(ip)) {
-      return new Response(JSON.stringify({
-        error: 'Invalid IP address'
-      }), {
+      return new Response(JSON.stringify({ error: 'Invalid IP address' }), {
         status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 5. Enterprise User Agent validation
+    // 4. Get User Agent
     const userAgent = req.headers.get('user-agent') || 'unknown';
-    if (userAgent.length > 500) {
-      return new Response(JSON.stringify({
-        error: 'Invalid User Agent'
-      }), {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
-    }
 
-    // 6. Enterprise Supabase client (ANON_KEY kullan)
+    // 5. Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '' // ✅ ANON_KEY kullan
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // 7. Get current session from auth context
+    // 6. Get user from auth header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({
-        error: 'Authorization required'
-      }), {
+      return new Response(JSON.stringify({ error: 'Authorization required' }), {
         status: 401,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 8. Get user session from Supabase Auth
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''));
     if (authError || !user) {
-      return new Response(JSON.stringify({
-        error: 'Invalid session'
-      }), {
+      return new Response(JSON.stringify({ error: 'Invalid session' }), {
         status: 401,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 9. Get active session from database
-    const { data: sessionData, error: sessionError } = await supabaseClient
+    // 7. Get session ID from JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const sessionId = payload.session_id;
+
+    const timestamp = new Date().toISOString();
+
+    // 8. Check for IP change in existing session
+    const { data: existingSession } = await supabaseClient
       .from('user_session_logs')
-      .select('session_id, session_start')
-      .eq('user_id', user.id)
+      .select('ip_address, metadata')
+      .eq('session_id', sessionId)
       .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(1)
       .single();
 
-    if (sessionError || !sessionData) {
-      return new Response(JSON.stringify({
-        error: 'No active session found'
-      }), {
-        status: 404,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
-    }
+    const previousIP = existingSession?.ip_address;
+    const ipChanged = previousIP && previousIP !== ip;
 
-    // 10. Enterprise update data
-    const timestamp = new Date().toISOString();
-    let updateData = {
-      ip_address: ip,
-      user_agent: userAgent,
-      last_activity: timestamp,
-      updated_at: timestamp,
-      metadata: {
-        ...metadata,
-        action,
-        timestamp,
-        client_ip: clientIP
-      }
+    // 9. Enhanced metadata with IP tracking
+    const enhancedMetadata = {
+      ...metadata,
+      action,
+      timestamp,
+      platform: 'mobile',
+      current_ip: ip,
+      ip_changed: ipChanged,
+      previous_ip: ipChanged ? previousIP : undefined,
+      ip_change_count: ipChanged ? (existingSession?.metadata?.ip_change_count || 0) + 1 : (existingSession?.metadata?.ip_change_count || 0)
     };
 
-    // 11. Logout handling
-    if (action === 'logout') {
-      const start = new Date(sessionData.session_start);
-      const end = new Date(timestamp);
-      const durationMs = end.getTime() - start.getTime();
-      updateData.session_end = timestamp;
-      updateData.status = 'terminated';
-      updateData.session_duration = Math.round(durationMs / 1000);
-    }
-
-    // 12. Enterprise database update
+    // 10. Simple session logging with IP tracking (database constraint handles duplicates)
     const { data, error } = await supabaseClient
       .from('user_session_logs')
-      .update(updateData)
-      .eq('session_id', sessionData.session_id)
-      .eq('status', action === 'logout' ? 'active' : 'active')
-      .select();
+      .upsert([{
+        session_id: sessionId,
+        user_id: user.id,
+        ip_address: ip,
+        user_agent: userAgent,
+        session_start: action === 'login' ? timestamp : undefined,
+        last_activity: timestamp,
+        status: action === 'logout' ? 'terminated' : 'active',
+        session_end: action === 'logout' ? timestamp : undefined,
+        session_duration: action === 'logout' ? 
+          `(${timestamp}::timestamp - session_start)::interval` : undefined,
+        legal_basis: 'legitimate_interest',
+        metadata: enhancedMetadata
+      }], {
+        onConflict: 'user_id,session_id'
+      })
+      .select()
+      .single();
 
     if (error) {
-      console.error('Enterprise session logger error:', {
-        error: error.message,
-        user_id: user.id,
-        action,
-        ip
-      });
-      return new Response(JSON.stringify({
-        error: 'Database update failed',
-        details: error.message
-      }), {
+      console.error('❌ Session logging error:', error);
+      return new Response(JSON.stringify({ error: 'Failed to log session' }), {
         status: 500,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 13. Enterprise success logging
-    console.log('Enterprise session logged successfully:', {
+    console.log('✅ Session logged successfully:', {
       user_id: user.id,
-      session_id: sessionData.session_id,
+      session_id: sessionId,
       action,
+      status: data?.status,
       ip,
-      user_agent: userAgent.substring(0, 50) + '...',
-      rows_affected: data?.length || 0
+      ip_changed: ipChanged
     });
 
     return new Response(JSON.stringify({
       success: true,
       action,
-      session_id: sessionData.session_id,
-      rows_updated: data?.length || 0,
-      timestamp
+      session_id: sessionId,
+      timestamp,
+      ip_changed: ipChanged
     }), {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
-      }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    console.error('Enterprise session logger unexpected error:', {
-      error: error.message,
-      stack: error.stack
-    });
-    return new Response(JSON.stringify({
-      error: 'Internal server error',
-      message: error.message
-    }), {
+    console.error('❌ Edge function error:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
-      }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 }); 

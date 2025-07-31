@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabaseClient';
 import { AuthChangeEvent } from '@supabase/supabase-js';
 import { fcmTokenService } from '../services/fcmTokenService';
+import ipChangeDetectionService from '../services/ipChangeDetectionService';
 import type { User } from '../types';
 
 interface AuthState {
@@ -115,6 +116,10 @@ export const useAuthStore = create<AuthState>()(
             'login',
             { user_id: data.session.user.id }
           );
+
+          // Start IP Change Detection Service
+          console.log('🔍 [AuthStore] Starting IP Change Detection Service...');
+          await ipChangeDetectionService.initialize();
 
           console.log('🟢 [AuthStore] Auth successful, fetching profile...');
           await get().fetchUserProfile(data.session.user.id);
@@ -387,6 +392,18 @@ export const useAuthStore = create<AuthState>()(
           
           if (session?.user) {
             console.log('🟢 [AuthStore] Found existing session, fetching profile...');
+            
+            // Enterprise Session Logging for existing session
+            console.log('🔐 Enterprise Session: Logging existing session activity...');
+            await sessionLoggerService.logSessionActivity(
+              'login',
+              { user_id: session.user.id }
+            );
+            
+            // Start IP Change Detection Service
+            console.log('🔍 [AuthStore] Starting IP Change Detection Service...');
+            await ipChangeDetectionService.initialize();
+            
             await get().fetchUserProfile(session.user.id);
           } else {
             console.log('🔴 [AuthStore] No session found during initialization');
@@ -406,6 +423,13 @@ export const useAuthStore = create<AuthState>()(
             if (event === 'SIGNED_IN') {
               console.log('🟢 [AuthStore] User signed in, fetching profile...');
               if (session?.user) {
+                // Enterprise Session Logging for sign in
+                console.log('🔐 Enterprise Session: Logging sign in activity...');
+                await sessionLoggerService.logSessionActivity(
+                  'login',
+                  { user_id: session.user.id }
+                );
+                
                 await get().fetchUserProfile(session.user.id);
                 // FCM token'ı ayarla
                 await fcmTokenService.onUserLogin(session.user.id);
