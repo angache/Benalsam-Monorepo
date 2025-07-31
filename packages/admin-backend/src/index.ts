@@ -25,6 +25,7 @@ import dataExportRoutes from './routes/dataExport';
 import dataExportV2Routes from './routes/dataExportV2';
 import loadTestingRoutes from './routes/loadTesting';
 import sessionManagementRoutes from './routes/sessionManagement';
+import cacheRoutes from './routes/cache';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -148,6 +149,7 @@ app.use('/api/v1/data-export', dataExportRoutes); // Data Export sistemi aktif e
 app.use('/api/v1/data-export-v2', dataExportV2Routes); // Data Export V2 sistemi aktif edildi
 app.use('/api/v1/load-testing', loadTestingRoutes); // Load Testing sistemi aktif edildi
 app.use('/api/v1/session-management', sessionManagementRoutes); // Session Management sistemi aktif edildi
+app.use('/api/v1/cache', cacheRoutes); // Cache Management sistemi aktif edildi
 
 // Global error handler
 app.use(errorHandler);
