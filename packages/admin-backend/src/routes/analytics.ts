@@ -96,6 +96,63 @@ router.post('/track-analytics', authenticateToken, async (req, res) => {
   }
 });
 
+// Session-based analytics endpoints
+router.get('/session-events', authenticateToken, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, event_type, session_id, start_date, end_date } = req.query;
+    
+    const filters = {
+      page: parseInt(page as string),
+      limit: parseInt(limit as string),
+      event_type: event_type as string,
+      session_id: session_id as string,
+      start_date: start_date as string,
+      end_date: end_date as string
+    };
+    
+    const events = await userBehaviorService.getSessionEvents(filters);
+    res.json({ success: true, data: events });
+  } catch (error) {
+    logger.error('Error fetching session events:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.get('/session-stats', authenticateToken, async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    const stats = await userBehaviorService.getSessionStats(parseInt(days as string));
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    logger.error('Error fetching session stats:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.get('/session-journey/:sessionId', authenticateToken, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { days = 7 } = req.query;
+    const journey = await userBehaviorService.getSessionJourney(sessionId, parseInt(days as string));
+    res.json({ success: true, data: journey });
+  } catch (error) {
+    logger.error('Error fetching session journey:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.get('/session-analytics/:sessionId', authenticateToken, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { days = 7 } = req.query;
+    const analytics = await userBehaviorService.getSessionAnalytics(sessionId, parseInt(days as string));
+    res.json({ success: true, data: analytics });
+  } catch (error) {
+    logger.error('Error fetching session analytics:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Track analytics event (new format)
 router.post('/track-event', async (req, res) => {
   try {
@@ -403,17 +460,17 @@ router.get('/event-types', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user journey analytics
-router.get('/user-journey/:userId', authenticateToken, async (req, res) => {
+// Get session journey analytics
+router.get('/session-journey/:sessionId', authenticateToken, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { sessionId } = req.params;
     const { days = 7 } = req.query;
     
-    const journey = await userBehaviorService.getAnalyticsUserJourney(userId, Number(days));
+    const journey = await userBehaviorService.getSessionJourney(sessionId, Number(days));
     
     res.json({ success: true, data: journey });
   } catch (error) {
-    logger.error('Error getting user journey:', error);
+    logger.error('Error getting session journey:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -428,6 +485,26 @@ router.get('/session/:sessionId', authenticateToken, async (req, res) => {
     res.json({ success: true, data: sessionData });
   } catch (error) {
     logger.error('Error getting session data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Session-based analytics endpoints
+router.get('/session-activities', authenticateToken, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, session_id, start_date, end_date } = req.query;
+    
+    const activities = await userBehaviorService.getSessionActivities({
+      page: Number(page),
+      limit: Number(limit),
+      session_id: session_id as string,
+      start_date: start_date as string,
+      end_date: end_date as string
+    });
+    
+    res.json({ success: true, data: activities });
+  } catch (error) {
+    logger.error('Error getting session activities:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

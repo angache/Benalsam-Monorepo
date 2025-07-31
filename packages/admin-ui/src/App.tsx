@@ -19,6 +19,8 @@ import DataExportPage from './pages/DataExportPage';
 import PerformanceTestPage from './pages/PerformanceTestPage';
 import UserJourneyPage from './pages/UserJourneyPage';
 import AlertSystemPage from './pages/AlertSystemPage';
+import SessionAnalyticsPage from './pages/SessionAnalyticsPage';
+import SessionJourneyPage from './pages/SessionJourneyPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -214,6 +216,26 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <AlertSystemPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/session-analytics"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SessionAnalyticsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/session-journey/:sessionId?"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SessionJourneyPage />
                   </Layout>
                 </ProtectedRoute>
               }

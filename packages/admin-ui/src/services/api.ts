@@ -232,6 +232,11 @@ export const apiService = {
     return response.data.data || [];
   },
 
+  async getSessionActivities(): Promise<any[]> {
+    const response = await apiClient.get('/analytics/session-activities');
+    return response.data.data || [];
+  },
+
   async getPerformanceAlerts(): Promise<any[]> {
     const response = await apiClient.get('/analytics/performance-alerts');
     return response.data.data || [];
@@ -286,11 +291,31 @@ export const apiService = {
   },
 
   // Enhanced Analytics Methods
-  async getAnalyticsEvents(params: {
+  // Session-based Analytics Methods
+  async getSessionAnalytics(params: {
     page?: number;
     limit?: number;
     event_type?: string;
-    user_id?: string;
+    session_id?: string;
+    start_date?: string;
+    end_date?: string;
+  } = {}): Promise<any> {
+    const response = await apiClient.get('/analytics/session-events', { params });
+    return response.data;
+  },
+
+  async getSessionStats(days: number = 7): Promise<any> {
+    const response = await apiClient.get('/analytics/session-stats', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async getSessionEvents(params: {
+    page?: number;
+    limit?: number;
+    event_type?: string;
+    session_id?: string;
     start_date?: string;
     end_date?: string;
   } = {}): Promise<any> {
@@ -319,8 +344,15 @@ export const apiService = {
     return response.data;
   },
 
-  async getAnalyticsUserJourney(userId: string, days: number = 7): Promise<any> {
-    const response = await apiClient.get(`/analytics/user-journey/${userId}`, {
+  async getSessionJourney(sessionId: string, days: number = 7): Promise<any> {
+    const response = await apiClient.get(`/analytics/session-journey/${sessionId}`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async getSessionAnalyticsById(sessionId: string, days: number = 7): Promise<any> {
+    const response = await apiClient.get(`/analytics/session-analytics/${sessionId}`, {
       params: { days }
     });
     return response.data;
@@ -612,24 +644,24 @@ export const apiService = {
               return response.data;
             },
 
-            // Alert System Methods
-            async getAlertRules(): Promise<any> {
-              const response = await apiClient.get('/alerts/rules');
+            // Session-based Alert System Methods
+            async getSessionAlertRules(): Promise<any> {
+              const response = await apiClient.get('/alerts/session-rules');
               return response.data;
             },
 
-            async createAlertRule(ruleData: any): Promise<any> {
-              const response = await apiClient.post('/alerts/rules', ruleData);
+            async createSessionAlertRule(ruleData: any): Promise<any> {
+              const response = await apiClient.post('/alerts/session-rules', ruleData);
               return response.data;
             },
 
-            async updateAlertRule(id: string, updates: any): Promise<any> {
-              const response = await apiClient.put(`/alerts/rules/${id}`, updates);
+            async updateSessionAlertRule(id: string, updates: any): Promise<any> {
+              const response = await apiClient.put(`/alerts/session-rules/${id}`, updates);
               return response.data;
             },
 
-            async deleteAlertRule(id: string): Promise<any> {
-              const response = await apiClient.delete(`/alerts/rules/${id}`);
+            async deleteSessionAlertRule(id: string): Promise<any> {
+              const response = await apiClient.delete(`/alerts/session-rules/${id}`);
               return response.data;
             },
 

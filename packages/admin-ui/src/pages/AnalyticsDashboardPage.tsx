@@ -57,11 +57,12 @@ import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import type { AnalyticsEvent, AnalyticsEventType } from '@benalsam/shared-types';
 
-// Enhanced interfaces for new analytics format
-interface AnalyticsEventSummary {
+// Session-based analytics interfaces
+interface SessionAnalyticsSummary {
+  session_id: string;
   event_name: string;
   count: number;
-  unique_users: number;
+  unique_sessions: number;
   avg_session_duration: number;
   daily_trend: Array<{
     date: string;
@@ -69,8 +70,8 @@ interface AnalyticsEventSummary {
   }>;
 }
 
-interface UserAnalyticsStats {
-  userId: string;
+interface SessionAnalyticsStats {
+  sessionId: string;
   period: string;
   stats: {
     totalEvents: number;
@@ -111,7 +112,7 @@ interface PerformanceMetrics {
 interface PopularPage {
   page_name: string;
   view_count: number;
-  unique_users: number;
+  unique_sessions: number;
   avg_duration: number;
   bounce_rate: number;
   daily_trend: Array<{
@@ -123,7 +124,7 @@ interface PopularPage {
 interface FeatureUsage {
   feature: string;
   usage_count: number;
-  unique_users: number;
+  unique_sessions: number;
   daily_trend: Array<{
     date: string;
     count: number;
@@ -167,16 +168,16 @@ const AnalyticsDashboardPage: React.FC = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // New analytics queries - now active with backend endpoints
-  const { data: analyticsEvents, isLoading: eventsLoading } = useQuery({
-    queryKey: ['analytics-events', timeRange],
-    queryFn: () => apiService.getAnalyticsEvents({ limit: 100, start_date: new Date(Date.now() - timeRange * 24 * 60 * 60 * 1000).toISOString() }),
+  // Session-based analytics queries
+  const { data: sessionAnalytics, isLoading: eventsLoading } = useQuery({
+    queryKey: ['session-analytics', timeRange],
+    queryFn: () => apiService.getSessionAnalytics({ limit: 100, start_date: new Date(Date.now() - timeRange * 24 * 60 * 60 * 1000).toISOString() }),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  const { data: performanceMetrics, isLoading: performanceLoading } = useQuery({
-    queryKey: ['analytics-performance', timeRange],
-    queryFn: () => apiService.getAnalyticsPerformanceMetrics(timeRange),
+  const { data: sessionStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['session-stats', timeRange],
+    queryFn: () => apiService.getSessionStats(timeRange),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -201,7 +202,8 @@ const AnalyticsDashboardPage: React.FC = () => {
     return `${minutes}m ${remainingSeconds}s`;
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined | null) => {
+    if (num === undefined || num === null) return '0';
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
@@ -442,7 +444,7 @@ const AnalyticsDashboardPage: React.FC = () => {
                         </TableCell>
                         <TableCell align="right">
                           <Chip 
-                            label={formatNumber(page.unique_users)} 
+                            label={formatNumber(page.unique_sessions)} 
                             size="small" 
                             color="secondary" 
                           />
@@ -538,7 +540,7 @@ const AnalyticsDashboardPage: React.FC = () => {
                         </TableCell>
                         <TableCell align="right">
                           <Chip 
-                            label={formatNumber(feature.unique_users)} 
+                            label={formatNumber(feature.unique_sessions)} 
                             size="small" 
                             color="secondary" 
                           />

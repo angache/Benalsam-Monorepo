@@ -198,7 +198,7 @@ const formatListingData = (source: any) => {
     eventType: 'listing',
     sessionId: id?.substring(0, 20) + '...',
     device: 'Web/Mobile App',
-    user: `User ${user_id?.substring(0, 8)}...`,
+    session: `Session ${user_id?.substring(0, 8)}...`,
     details: {
       title: title?.substring(0, 50) + (title?.length > 50 ? '...' : ''),
       category: category,

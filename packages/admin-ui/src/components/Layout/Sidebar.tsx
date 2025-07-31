@@ -90,6 +90,20 @@ const navigationItems = [
     permission: PERMISSIONS.ANALYTICS_VIEW,
   },
   {
+    id: 'session-analytics',
+    title: 'Session Analytics',
+    path: '/session-analytics',
+    icon: BarChart3,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'session-journey',
+    title: 'Session Journey',
+    path: '/session-journey',
+    icon: Route,
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
     id: 'data-export',
     title: 'Data Export',
     path: '/data-export',

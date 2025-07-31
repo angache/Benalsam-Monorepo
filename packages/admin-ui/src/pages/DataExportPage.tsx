@@ -43,9 +43,9 @@ import { usePerformanceMonitoring } from '../hooks/usePerformanceMonitoring';
 
 interface ExportRequest {
   id: string;
-  user_id: string;
+  session_id?: string;
   export_type: 'csv' | 'json' | 'excel' | 'pdf';
-  data_type: 'user_analytics' | 'performance_metrics' | 'business_metrics' | 'custom';
+  data_type: 'session_analytics' | 'performance_metrics' | 'business_metrics' | 'custom';
   filters: {
     date_range?: {
       start: string;
@@ -98,7 +98,7 @@ const DataExportPage: React.FC = () => {
   const [showNewExportDialog, setShowNewExportDialog] = useState(false);
   const [newExport, setNewExport] = useState({
     export_type: 'csv' as const,
-    data_type: 'user_analytics' as const,
+    data_type: 'session_analytics' as const,
     filters: {
       date_range: {
         start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],

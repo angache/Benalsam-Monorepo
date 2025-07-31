@@ -556,8 +556,8 @@ export class UserBehaviorService {
             }
           },
           aggs: {
-            active_users: {
-              cardinality: { field: 'user_id' }
+            active_sessions: {
+              cardinality: { field: 'session_id.keyword' }
             },
             total_events: {
               value_count: { field: 'event_type.keyword' }
@@ -571,7 +571,7 @@ export class UserBehaviorService {
       });
 
       return {
-        activeUsers: (response.aggregations?.active_users as any)?.value || 0,
+        activeUsers: (response.aggregations?.active_sessions as any)?.value || 0,
         totalSessions: (response.aggregations?.total_events as any)?.value || 0,
         pageViews: (response.aggregations?.total_events as any)?.value || 0,
         avgResponseTime: 200,
@@ -611,27 +611,71 @@ export class UserBehaviorService {
       return response.hits?.hits?.map((hit: any) => {
         const source = hit._source;
         
-        // New format: user_profile object
-        const userProfile = {
-          id: source.user_profile?.id || 'unknown',
-          email: source.user_profile?.email || 'unknown@example.com',
-          name: source.user_profile?.name || 'Unknown User',
-          avatar: source.user_profile?.avatar || null
-        };
-
         return {
           id: hit._id,
-          userId: userProfile.id,
-          username: userProfile.id,
-          user_profile: userProfile,
-          action: source.event_type,
-          screen: source.event_data?.screen_name || 'Unknown',
+          sessionId: source.session_id || 'unknown',
+          action: source.event_type || 'unknown',
+          screen: source.event_data?.screen_name || 'unknown',
           timestamp: source.timestamp,
-          deviceInfo: source.device_info || { platform: 'Unknown', model: 'Unknown' }
+          deviceInfo: source.device_info || { platform: 'unknown', model: 'unknown' }
         };
       }) || [];
     } catch (error) {
       logger.error('❌ Error getting user activities:', error);
+      return [];
+    }
+  }
+
+  async getSessionActivities(filters: {
+    page?: number;
+    limit?: number;
+    session_id?: string;
+    start_date?: string;
+    end_date?: string;
+  }): Promise<any[]> {
+    try {
+      const { page = 1, limit = 50, session_id, start_date, end_date } = filters;
+      
+      const query: any = {
+        bool: {
+          must: []
+        }
+      };
+
+      if (session_id) {
+        query.bool.must.push({ term: { session_id: session_id } });
+      }
+
+      if (start_date || end_date) {
+        const range: any = {};
+        if (start_date) range.gte = start_date;
+        if (end_date) range.lte = end_date;
+        query.bool.must.push({ range: { timestamp: range } });
+      }
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query,
+          sort: [{ timestamp: { order: 'desc' } }],
+          from: (page - 1) * limit,
+          size: limit
+        }
+      });
+
+      return response.hits?.hits?.map((hit: any) => {
+        const source = hit._source;
+        return {
+          id: hit._id,
+          sessionId: source.session_id || 'unknown',
+          action: source.event_type || 'unknown',
+          screen: source.event_data?.screen_name || 'unknown',
+          timestamp: source.timestamp,
+          deviceInfo: source.device_info || { platform: 'unknown', model: 'unknown' }
+        };
+      }) || [];
+    } catch (error) {
+      logger.error('❌ Error getting session activities:', error);
       return [];
     }
   }
@@ -1145,6 +1189,255 @@ export class UserBehaviorService {
       logger.error('Error getting enhanced user journey:', error);
       throw error;
     }
+  }
+
+  // Session-based analytics methods
+  async getSessionEvents(filters: {
+    page?: number;
+    limit?: number;
+    event_type?: string;
+    session_id?: string;
+    start_date?: string;
+    end_date?: string;
+  }): Promise<any> {
+    try {
+      const { page = 1, limit = 50, event_type, session_id, start_date, end_date } = filters;
+      
+      const query: any = {
+        bool: {
+          must: []
+        }
+      };
+
+      if (session_id) {
+        query.bool.must.push({ term: { session_id: session_id } });
+      }
+
+      if (event_type) {
+        query.bool.must.push({ term: { 'event_name.keyword': event_type } });
+      }
+
+      if (start_date || end_date) {
+        const range: any = {};
+        if (start_date) range.gte = start_date;
+        if (end_date) range.lte = end_date;
+        query.bool.must.push({ range: { event_timestamp: range } });
+      }
+
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query,
+          sort: [{ event_timestamp: { order: 'desc' } }],
+          from: (page - 1) * limit,
+          size: limit
+        }
+      });
+
+      return {
+        events: response.hits.hits.map((hit: any) => hit._source),
+        total: typeof response.hits.total === 'number' ? response.hits.total : response.hits.total?.value || 0,
+        page,
+        limit
+      };
+    } catch (error) {
+      logger.error('Error getting session events:', error);
+      return { events: [], total: 0, page: 1, limit: 50 };
+    }
+  }
+
+  async getSessionStats(days: number = 7): Promise<any> {
+    try {
+      const endDate = new Date();
+      const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+      
+      // Get session statistics
+      const sessionStats = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            range: { event_timestamp: { gte: startDate.toISOString(), lte: endDate.toISOString() } }
+          },
+          aggs: {
+            total_sessions: {
+              cardinality: { field: 'session_id.keyword' }
+            },
+            active_sessions: {
+              filter: {
+                range: { event_timestamp: { gte: new Date(Date.now() - 30 * 60 * 1000).toISOString() } }
+              },
+              aggs: {
+                session_count: {
+                  cardinality: { field: 'session_id.keyword' }
+                }
+              }
+            },
+            event_types: {
+              terms: { field: 'event_name.keyword', size: 20 }
+            },
+            platforms: {
+              terms: { field: 'device_info.platform.keyword', size: 10 }
+            }
+          }
+        }
+      });
+
+      const aggs = sessionStats.aggregations as any;
+      
+      return {
+        totalSessions: aggs?.total_sessions?.value || 0,
+        activeSessions: aggs?.active_sessions?.session_count?.value || 0,
+        totalEvents: typeof sessionStats.hits.total === 'number' ? sessionStats.hits.total : sessionStats.hits.total?.value || 0,
+        eventTypes: aggs?.event_types?.buckets || [],
+        platforms: aggs?.platforms?.buckets || [],
+        avgSessionDuration: this.calculateAverageSessionDuration(sessionStats.hits.hits)
+      };
+    } catch (error) {
+      logger.error('Error getting session stats:', error);
+      return {
+        totalSessions: 0,
+        activeSessions: 0,
+        totalEvents: 0,
+        eventTypes: [],
+        platforms: [],
+        avgSessionDuration: 0
+      };
+    }
+  }
+
+  async getSessionJourney(sessionId: string, days: number = 7): Promise<any> {
+    try {
+      const endDate = new Date();
+      const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+      
+      const response = await this.client.search({
+        index: this.behaviorIndex,
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { session_id: sessionId } },
+                { range: { event_timestamp: { gte: startDate.toISOString(), lte: endDate.toISOString() } } }
+              ]
+            }
+          },
+          sort: [{ event_timestamp: { order: 'asc' } }],
+          size: 1000
+        }
+      });
+
+      const events = response.hits.hits.map((hit: any) => hit._source);
+      
+      const sessionDuration = this.calculateSessionDuration(events);
+      const eventTypes = [...new Set(events.map((event: any) => event.event_name))];
+      const screensVisited = [...new Set(events.map((event: any) => event.event_properties?.screen_name).filter(Boolean))];
+      
+      return {
+        sessionId,
+        totalEvents: events.length,
+        sessionDuration: sessionDuration,
+        screensVisited: screensVisited.length,
+        eventTypes: eventTypes,
+        startTime: events.length > 0 ? events[0].event_timestamp : new Date().toISOString(),
+        endTime: events.length > 0 ? events[events.length - 1].event_timestamp : new Date().toISOString(),
+        conversionRate: 15.5, // Mock data
+        dropOffRate: 25.3, // Mock data
+        engagementScore: 75, // Mock data
+        topScreens: [
+          { screen: 'HomeScreen', views: 5, conversionRate: 80.0 },
+          { screen: 'ListingDetail', views: 3, conversionRate: 66.7 },
+          { screen: 'CategoryList', views: 2, conversionRate: 50.0 }
+        ],
+        sessionFlow: [
+          { from: 'HomeScreen', to: 'CategoryList', count: 3, conversionRate: 100.0 },
+          { from: 'CategoryList', to: 'ListingDetail', count: 2, conversionRate: 66.7 },
+          { from: 'ListingDetail', to: 'ChatScreen', count: 1, conversionRate: 50.0 }
+        ],
+        events: events.map((event: any) => ({
+          id: event.id || Math.random().toString(),
+          event_type: event.event_name,
+          screen_name: event.event_properties?.screen_name,
+          timestamp: event.event_timestamp,
+          event_data: event.event_properties,
+          device_info: event.device_info
+        }))
+      };
+    } catch (error) {
+      logger.error('Error getting session journey:', error);
+      return null;
+    }
+  }
+
+  async getSessionAnalytics(sessionId: string, days: number = 7): Promise<any> {
+    try {
+      const journey = await this.getSessionJourney(sessionId, days);
+      if (!journey) return null;
+
+      // Calculate analytics metrics
+      const eventTypeCounts = new Map();
+      const platformInfo = journey.events[0]?.device_info || {};
+      
+      journey.events.forEach((event: any) => {
+        const count = eventTypeCounts.get(event.event_type) || 0;
+        eventTypeCounts.set(event.event_type, count + 1);
+      });
+
+      return {
+        sessionId,
+        totalEvents: journey.totalEvents,
+        duration: journey.duration,
+        eventTypeDistribution: Array.from(eventTypeCounts.entries()).map(([type, count]) => ({
+          event_type: type,
+          count
+        })),
+        platform: platformInfo.platform,
+        version: platformInfo.version,
+        model: platformInfo.model,
+        events: journey.events
+      };
+    } catch (error) {
+      logger.error('Error getting session analytics:', error);
+      return null;
+    }
+  }
+
+  private calculateSessionDuration(events: any[]): number {
+    if (events.length < 2) return 0;
+    
+    const sortedEvents = events.sort((a, b) => 
+      new Date(a.event_timestamp).getTime() - new Date(b.event_timestamp).getTime()
+    );
+    
+    const startTime = new Date(sortedEvents[0].event_timestamp).getTime();
+    const endTime = new Date(sortedEvents[sortedEvents.length - 1].event_timestamp).getTime();
+    
+    const durationInSeconds = Math.round((endTime - startTime) / 1000);
+    return durationInSeconds > 0 ? durationInSeconds : 60; // Minimum 60 saniye
+  }
+
+  private calculateAverageSessionDuration(events: any[]): number {
+    // Group events by session and calculate average duration
+    const sessions = new Map();
+    events.forEach((event: any) => {
+      const sessionId = event._source.session?.id || 'unknown';
+      if (!sessions.has(sessionId)) {
+        sessions.set(sessionId, []);
+      }
+      sessions.get(sessionId).push(event._source);
+    });
+
+    let totalDuration = 0;
+    let sessionCount = 0;
+
+    sessions.forEach((sessionEvents) => {
+      const duration = this.calculateSessionDuration(sessionEvents);
+      if (duration > 0) {
+        totalDuration += duration;
+        sessionCount++;
+      }
+    });
+
+    return sessionCount > 0 ? totalDuration / sessionCount : 0;
   }
 }
 

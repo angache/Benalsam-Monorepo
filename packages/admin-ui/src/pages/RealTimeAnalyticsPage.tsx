@@ -73,16 +73,9 @@ interface RealTimeMetrics {
   apiCalls: number;
 }
 
-interface UserActivity {
+interface SessionActivity {
   id: string;
-  userId: string;
-  username: string;
-  user_profile?: {
-    id: string;
-    email: string;
-    name: string;
-    avatar: string;
-  };
+  sessionId: string;
   action: string;
   screen: string;
   timestamp: string;
@@ -135,7 +128,7 @@ const RealTimeAnalyticsPage: React.FC = () => {
     apiCalls: 0
   });
   
-  const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
+  const [sessionActivities, setSessionActivities] = useState<SessionActivity[]>([]);
   const [performanceAlerts, setPerformanceAlerts] = useState<PerformanceAlert[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
 
@@ -159,7 +152,7 @@ const RealTimeAnalyticsPage: React.FC = () => {
           console.log('❌ Error fetching metrics:', err.message);
           return null;
         }),
-        apiService.getUserActivities().catch(err => {
+        apiService.getSessionActivities().catch(err => {
           console.log('❌ Error fetching activities:', err.message);
           return [];
         }),
@@ -279,7 +272,7 @@ const RealTimeAnalyticsPage: React.FC = () => {
         bundleSize: 0,
         apiCalls: 0
       });
-      setUserActivities(analyticsData.activities || []);
+              setSessionActivities(analyticsData.activities || []);
       setPerformanceAlerts(analyticsData.alerts || []);
       
       // Update chart data
@@ -593,7 +586,7 @@ const RealTimeAnalyticsPage: React.FC = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>User</TableCell>
+                    <TableCell>Session</TableCell>
                     <TableCell>Action</TableCell>
                     <TableCell>Screen</TableCell>
                     <TableCell>Device</TableCell>
@@ -601,20 +594,18 @@ const RealTimeAnalyticsPage: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {userActivities.slice(0, 10).map((activity) => (
+                                      {sessionActivities.slice(0, 10).map((activity: SessionActivity) => (
                     <TableRow key={activity.id}>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar 
-                            sx={{ width: 32, height: 32, mr: 1 }}
-                            src={activity.user_profile?.avatar}
+                            sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}
                           >
-                            {activity.user_profile?.name?.charAt(0)?.toUpperCase() || 
-                             activity.user_profile?.email?.charAt(0)?.toUpperCase() || 'U'}
+                            S
                           </Avatar>
-                          {activity.user_profile?.name || 
-                           activity.user_profile?.email || 
-                           (activity.userId ? `User ${activity.userId.slice(0, 8)}...` : 'Unknown User')}
+                          <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                            {activity.sessionId ? `${activity.sessionId.slice(0, 8)}...` : 'Unknown Session'}
+                          </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
