@@ -26,6 +26,7 @@ import {
   Activity,
   Route,
   Bell,
+  HardDrive,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
@@ -102,6 +103,13 @@ const navigationItems = [
     path: '/session-journey',
     icon: Route,
     permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
+  {
+    id: 'cache-dashboard',
+    title: 'Cache Dashboard',
+    path: '/cache-dashboard',
+    icon: HardDrive,
+    permission: PERMISSIONS.ADMINS_VIEW,
   },
   {
     id: 'data-export',

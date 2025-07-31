@@ -21,6 +21,7 @@ import UserJourneyPage from './pages/UserJourneyPage';
 import AlertSystemPage from './pages/AlertSystemPage';
 import SessionAnalyticsPage from './pages/SessionAnalyticsPage';
 import SessionJourneyPage from './pages/SessionJourneyPage';
+import CacheDashboardPage from './pages/CacheDashboardPage';
 import { useAuthStore } from './stores/authStore';
 import { CustomThemeProvider } from './contexts/ThemeContext';
 
@@ -236,6 +237,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <SessionJourneyPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cache-dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CacheDashboardPage />
                   </Layout>
                 </ProtectedRoute>
               }
