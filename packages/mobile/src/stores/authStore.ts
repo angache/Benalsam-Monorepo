@@ -4,28 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabaseClient';
 import { AuthChangeEvent } from '@supabase/supabase-js';
+import { AuthService } from '../services/authService';
+import { DebugLogger } from '../services/debugLogger';
 import { fcmTokenService } from '../services/fcmTokenService';
-import ipChangeDetectionService from '../services/ipChangeDetectionService';
 import type { User } from '../types';
-
-interface AuthState {
-  // State
-  user: User | null;
-  loading: boolean;
-  initialized: boolean;
-  
-  // Actions
-  setUser: (user: User | null) => void;
-  setLoading: (loading: boolean) => void;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  updateProfile: (updates: Partial<User>) => Promise<void>;
-  signInWithSession: () => Promise<boolean>;
-  fetchUserProfile: (userId: string) => Promise<void>;
-  initialize: () => Promise<void>;
-  reset: () => void;
-}
 
 // Enterprise Session Logger Service
 const sessionLoggerService = {
@@ -34,7 +16,7 @@ const sessionLoggerService = {
       // Get current session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        console.warn('⚠️ No active session found for logging');
+        DebugLogger.warn('No active session found for logging');
         return false;
       }
 
@@ -57,19 +39,39 @@ const sessionLoggerService = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Enterprise Session Logger: Failed to log session activity', errorData);
+        DebugLogger.error('Enterprise Session Logger: Failed to log session activity', errorData);
         return false;
       }
 
       const result = await response.json();
-      console.log('✅ Enterprise Session Logger: Session activity logged successfully', result);
+      DebugLogger.info('Enterprise Session Logger: Session activity logged successfully', result);
       return true;
     } catch (error) {
-      console.error('❌ Enterprise Session Logger Error:', error);
+      DebugLogger.error('Enterprise Session Logger Error:', error);
       return false;
     }
   }
 };
+
+interface AuthState {
+  // State
+  user: User | null;
+  loading: boolean;
+  initialized: boolean;
+  
+  // Actions
+  setUser: (user: User | null) => void;
+  setLoading: (loading: boolean) => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
+  signInWithSession: () => Promise<boolean>;
+  fetchUserProfile: (userId: string) => Promise<void>;
+  initialize: () => Promise<void>;
+  reset: () => void;
+  clearExpiredSession: () => Promise<boolean>;
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -95,40 +97,18 @@ export const useAuthStore = create<AuthState>()(
           console.log('🟡 [AuthStore] Starting sign in process...');
           set({ loading: true });
           
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          const result = await AuthService.signIn(email, password);
           
-          if (error) {
-            console.error('🔴 [AuthStore] Supabase auth error:', error);
-            throw error;
+          if (result.error) {
+            throw new Error(result.error);
           }
 
-          if (!data.session) {
-            console.error('🔴 [AuthStore] No session returned after login');
-            throw new Error('Login successful but no session created');
+          if (result.user) {
+            set({ user: result.user });
+            console.log('🟢 [AuthStore] Sign in successful');
+          } else {
+            throw new Error('No user returned from AuthService');
           }
-
-          // Enterprise Session Logging
-          console.log('🔐 Enterprise Session: Logging login activity...');
-          await sessionLoggerService.logSessionActivity(
-            'login',
-            { user_id: data.session.user.id }
-          );
-
-          // Start IP Change Detection Service
-          console.log('🔍 [AuthStore] Starting IP Change Detection Service...');
-          await ipChangeDetectionService.initialize();
-
-          console.log('🟢 [AuthStore] Auth successful, fetching profile...');
-          await get().fetchUserProfile(data.session.user.id);
-          
-          // FCM token'ı ayarla
-          console.log('🔔 [AuthStore] Setting up FCM token...');
-          await fcmTokenService.onUserLogin(data.session.user.id);
-          
-          console.log('🟢 [AuthStore] Profile fetched successfully');
           
         } catch (error) {
           console.error('🔴 [AuthStore] Error in signIn flow:', error);
@@ -141,39 +121,21 @@ export const useAuthStore = create<AuthState>()(
       signUp: async (email: string, password: string, username: string) => {
         try {
           set({ loading: true });
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                username,
-              },
-            },
-          });
-          if (error) throw error;
+          
+          const result = await AuthService.signUp(email, password, username);
+          
+          if (result.error) {
+            throw new Error(result.error);
+          }
 
-          if (data.user && data.session) {
-            // Enterprise Session Logging for signup
-            console.log('🔐 Enterprise Session: Logging signup activity...');
-            await sessionLoggerService.logSessionActivity(
-              'login',
-              { user_id: data.user.id }
-            );
-
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .insert([
-                {
-                  id: data.user.id,
-                  email,
-                  username,
-                  created_at: new Date().toISOString(),
-                },
-              ]);
-            if (profileError) throw profileError;
+          if (result.user) {
+            set({ user: result.user });
+            console.log('🟢 [AuthStore] Sign up successful');
+          } else {
+            throw new Error('No user returned from AuthService');
           }
         } catch (error) {
-          console.error('Error signing up:', error);
+          console.error('🔴 [AuthStore] Error in signUp flow:', error);
           throw error;
         } finally {
           set({ loading: false });
@@ -182,53 +144,232 @@ export const useAuthStore = create<AuthState>()(
 
       signOut: async () => {
         try {
-          console.log('🟡 [AuthStore] Starting sign out process...');
-          set({ loading: true });
-          
-          // Get current user info before signing out
+          DebugLogger.info('Starting robust sign out process');
           const currentUser = get().user;
           
-          // Try to log session activity first (if we have user info)
-          if (currentUser?.id) {
-            try {
-              console.log('🔐 Enterprise Session: Logging logout activity...');
-              await sessionLoggerService.logSessionActivity(
-                'logout',
-                { user_id: currentUser.id }
-              );
-            } catch (sessionError) {
-              console.warn('⚠️ Session logging failed, continuing with logout:', sessionError);
-            }
-          }
-          
-          // Try to sign out from Supabase (but don't fail if it errors)
-          try {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-              console.warn('⚠️ Supabase signOut failed:', error);
-            }
-          } catch (signOutError) {
-            console.warn('⚠️ Supabase signOut threw error:', signOutError);
-          }
-          
-          console.log('🟢 [AuthStore] Successfully signed out, resetting state...');
-          
-          // FCM token'ı temizle
-          if (currentUser) {
-            console.log('🔔 [AuthStore] Cleaning up FCM token...');
-            await fcmTokenService.onUserLogout(currentUser.id);
-          }
-          
-          // Reset user state
+          // ÖNEMLİ: State'i hemen temizle (UI responsiveness için)
           set({ 
             user: null,
-            loading: false,
-            initialized: true 
+            loading: true
           });
-          console.log('🟢 [AuthStore] State reset complete');
+          
+          // 1. Enterprise session logging (hata olsa da devam et)
+          if (currentUser?.id) {
+            try {
+              // Session kontrolü YAP
+              const { data: { session }, error } = await supabase.auth.getSession();
+              
+              if (session && !error) {
+                // Session geçerliyse logout logla
+                await sessionLoggerService.logSessionActivity('logout', { 
+                  user_id: currentUser.id 
+                });
+              } else {
+                DebugLogger.warn('No valid session for logging, skipping enterprise log');
+              }
+            } catch (logError) {
+              DebugLogger.warn('Enterprise logging failed (continuing)', logError);
+            }
+          }
+          
+          // 2. FCM token temizle (her zaman yap)
+          if (currentUser) {
+            try {
+              await fcmTokenService.onUserLogout(currentUser.id);
+            } catch (fcmError) {
+              DebugLogger.warn('FCM cleanup failed (continuing)', fcmError);
+            }
+          }
+          
+          // 3. Robust Supabase SignOut
+          try {
+            // Önce session durumunu kontrol et
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            
+            if (session && !sessionError) {
+              // Session geçerliyse normal signOut
+              DebugLogger.info('Valid session found, attempting normal signOut');
+              const { error } = await supabase.auth.signOut({ scope: 'global' });
+              
+              if (error) {
+                DebugLogger.warn('Normal signOut failed, forcing client cleanup', error);
+                // Hata olsa bile client-side cleanup devam et
+              } else {
+                DebugLogger.info('Normal signOut successful');
+              }
+            } else {
+              DebugLogger.warn('No valid session found, performing client-side cleanup only');
+            }
+            
+            // FORCE CLIENT CLEANUP (session geçerli olsun olmasın)
+            try {
+              // Manual cleanup - Supabase'in private method'larını kullanmaya çalış
+              try {
+                // @ts-ignore - private method but necessary for cleanup
+                if ((supabase.auth as any)._removeSession) {
+                  await (supabase.auth as any)._removeSession();
+                }
+              } catch (privateError) {
+                DebugLogger.warn('Private method cleanup failed, continuing with storage cleanup');
+              }
+              
+              // Storage'ı manuel temizle
+              try {
+                // @ts-ignore - protected property but necessary for cleanup
+                const storage = supabase.auth.storage;
+                if (storage) {
+                  await storage.removeItem('sb-auth-token');
+                  await storage.removeItem('subabase.auth.token');
+                }
+              } catch (storageError) {
+                DebugLogger.warn('Storage cleanup failed, continuing');
+              }
+              
+              DebugLogger.info('Forced client cleanup completed');
+            } catch (cleanupError) {
+              DebugLogger.warn('Force cleanup failed', cleanupError);
+            }
+            
+          } catch (supabaseError) {
+            DebugLogger.error('Supabase signOut completely failed, doing manual cleanup', supabaseError);
+          }
+          
+          // 4. AuthService cleanup
+          try {
+            // AuthService'de clearToken yok, bu adımı atla
+            DebugLogger.info('AuthService cleanup skipped (no clearToken method)');
+          } catch (authError) {
+            DebugLogger.warn('AuthService cleanup failed', authError);
+          }
+          
+          // 5. Storage cleanup (her zaman yap)
+          try {
+            // Persist storage temizle
+            await AsyncStorage.removeItem('auth-storage');
+            
+            // Diğer auth related key'leri temizle
+            const authKeys = [
+              'sb-auth-token',
+              'supabase.auth.token',
+              'supabase.auth.refreshToken',
+              'supabase.auth.expires_at'
+            ];
+            
+            await Promise.allSettled(
+              authKeys.map(key => AsyncStorage.removeItem(key))
+            );
+            
+            DebugLogger.info('Storage cleanup completed');
+          } catch (storageError) {
+            DebugLogger.warn('Storage cleanup failed', storageError);
+          }
+          
+          // 6. SecureStore cleanup
+          try {
+            const secureKeys = [
+              'supabase.auth.token',
+              'sb-auth-token'
+            ];
+            
+            await Promise.allSettled(
+              secureKeys.map(key => SecureStore.deleteItemAsync(key))
+            );
+            
+            DebugLogger.info('SecureStore cleanup completed');
+          } catch (secureError) {
+            DebugLogger.warn('SecureStore cleanup failed', secureError);
+          }
+          
+          // 7. AGGRESSIVE CLEANUP - Tüm storage'ı temizle
+          try {
+            DebugLogger.info('Starting aggressive cleanup...');
+            
+            // AsyncStorage'ı tamamen temizle
+            await AsyncStorage.clear();
+            DebugLogger.info('AsyncStorage completely cleared');
+            
+            // SecureStore'u temizle
+            const allSecureKeys = [
+              'supabase.auth.token',
+              'sb-auth-token',
+              'supabase.auth.refreshToken',
+              'supabase.auth.expires_at',
+              'supabase.auth.user'
+            ];
+            
+            await Promise.allSettled(
+              allSecureKeys.map(key => SecureStore.deleteItemAsync(key))
+            );
+            DebugLogger.info('SecureStore completely cleared');
+            
+          } catch (aggressiveError) {
+            DebugLogger.warn('Aggressive cleanup failed', aggressiveError);
+          }
+          
+          // 8. SUPABASE CLIENT RESET
+          try {
+            DebugLogger.info('Resetting Supabase client...');
+            
+            // Global signOut
+            await supabase.auth.signOut({ scope: 'global' });
+            
+            // Client'ı force reset et
+            // @ts-ignore - private method
+            if ((supabase.auth as any)._removeSession) {
+              await (supabase.auth as any)._removeSession();
+            }
+            
+            // Storage'ı manuel temizle
+            // @ts-ignore - protected property
+            const storage = supabase.auth.storage;
+            if (storage) {
+              await storage.removeItem('sb-auth-token');
+              await storage.removeItem('supabase.auth.token');
+              await storage.removeItem('supabase.auth.refreshToken');
+              await storage.removeItem('supabase.auth.expires_at');
+            }
+            
+            DebugLogger.info('Supabase client reset completed');
+            
+          } catch (resetError) {
+            DebugLogger.warn('Supabase client reset failed', resetError);
+          }
+          
+          // 9. Final verification
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              DebugLogger.warn('Session still exists after aggressive cleanup - APP RESTART REQUIRED');
+              
+              // App restart önerisi
+              DebugLogger.error('CRITICAL: Session persistence detected. App restart required for complete cleanup.');
+              
+              // 3 saniye sonra app'i restart et
+              setTimeout(() => {
+                DebugLogger.info('Forcing app restart in 3 seconds...');
+                // Expo'da app restart için
+                if ((global as any).__EXPO__) {
+                  // @ts-ignore
+                  (global as any).__EXPO__.reload();
+                }
+              }, 3000);
+              
+            } else {
+              DebugLogger.info('Session successfully cleared after aggressive cleanup');
+            }
+          } catch (verifyError) {
+            DebugLogger.warn('Session verification failed', verifyError);
+          }
+          
+          DebugLogger.info('Ultra-robust signOut completed');
           
         } catch (error) {
-          console.error('🔴 [AuthStore] Error in signOut flow:', error);
+          DebugLogger.error('SignOut error', error);
+          // Hata olsa bile state temizle
+          set({ 
+            user: null,
+            loading: false
+          });
           throw error;
         } finally {
           set({ loading: false });
@@ -277,16 +418,23 @@ export const useAuthStore = create<AuthState>()(
       signInWithSession: async () => {
         try {
           set({ loading: true });
-          const { data, error } = await supabase.auth.getSession();
-          if (error) throw error;
           
-          if (data.session?.user) {
-            await get().fetchUserProfile(data.session.user.id);
+          const result = await AuthService.signInWithSession();
+          
+          if (result.error) {
+            console.error('🔴 [AuthStore] Session sign in error:', result.error);
+            return false;
+          }
+
+          if (result.user) {
+            set({ user: result.user });
+            console.log('🟢 [AuthStore] Session sign in successful');
             return true;
           }
+          
           return false;
         } catch (error) {
-          console.error('Error signing in with session:', error);
+          console.error('🔴 [AuthStore] Error in signInWithSession:', error);
           return false;
         } finally {
           set({ loading: false });
@@ -297,55 +445,15 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log('🔍 [AuthStore] Fetching user profile for ID:', userId);
           
-          // Önce session kontrolü
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          console.log('🔍 [AuthStore] Session check during profile fetch:', {
-            hasSession: !!session,
-            sessionError: sessionError?.message,
-            sessionUser: session?.user?.id,
-            requestedUser: userId,
-            sessionExpiresAt: session?.expires_at
-          });
+          const user = await AuthService.fetchUserProfile(userId);
           
-          if (sessionError) {
-            console.error('❌ [AuthStore] Session error:', sessionError);
-            throw sessionError;
-          }
-          
-          if (!session) {
-            console.error('❌ [AuthStore] No session found during profile fetch');
+          if (user) {
+            set({ user });
+            console.log('✅ [AuthStore] Profile fetched successfully');
+          } else {
             set({ user: null });
-            return;
+            console.log('❌ [AuthStore] No profile found');
           }
-          
-          console.log('✅ [AuthStore] Session found, user ID:', session.user.id);
-          console.log('✅ [AuthStore] Session user matches requested ID:', session.user.id === userId);
-          
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-          if (error) {
-            console.error('❌ [AuthStore] Profile fetch error:', error);
-            throw error;
-          }
-
-          const user: User = {
-            id: data.id,
-            email: data.email,
-            username: data.username,
-            avatar_url: data.avatar_url,
-            created_at: data.created_at,
-          };
-
-          console.log('✅ [AuthStore] Profile fetched successfully:', {
-            userId: user.id,
-            email: user.email,
-            username: user.username
-          });
-          set({ user });
         } catch (error) {
           console.error('❌ [AuthStore] Error fetching user profile:', error);
           set({ user: null });
@@ -356,6 +464,12 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log('🟡 [AuthStore] Starting initialization...');
           set({ loading: true });
+          
+          // Önce expired session'ları temizle
+          const expiredCleared = await get().clearExpiredSession();
+          if (expiredCleared) {
+            console.log('🔄 [AuthStore] Expired session cleared during initialization');
+          }
           
           // Check current session with detailed logging
           let { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -369,41 +483,47 @@ export const useAuthStore = create<AuthState>()(
             currentTime: new Date().toISOString()
           });
           
-          // If no session, try to refresh
+          // If no session, check if we have refresh token before attempting refresh
           if (!session) {
-            console.log('🔄 [AuthStore] No session found, attempting to refresh...');
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            console.log('🔄 [AuthStore] No session found, checking for refresh token...');
             
-            if (refreshError) {
-              console.error('❌ [AuthStore] Session refresh failed:', refreshError);
-              // Session refresh failed, clear user state and force re-login
-              console.log('🔄 [AuthStore] Clearing user state due to session failure');
+            // Check if we have any stored tokens before attempting refresh
+            try {
+              const hasRefreshToken = await SecureStore.getItemAsync('supabase.auth.refreshToken');
+              const hasAuthToken = await SecureStore.getItemAsync('supabase.auth.token');
+              
+              if (hasRefreshToken || hasAuthToken) {
+                console.log('🔄 [AuthStore] Found stored tokens, attempting to refresh...');
+                const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                
+                if (refreshError) {
+                  console.log('❌ [AuthStore] Session refresh failed (expected if no valid refresh token):', refreshError.message);
+                  // This is normal - no valid refresh token means user needs to login again
+                  console.log('🔄 [AuthStore] No valid refresh token, user needs to login');
+                  set({ user: null, loading: false, initialized: true });
+                  return;
+                } else {
+                  session = refreshData.session;
+                  console.log('🔄 [AuthStore] Session refresh successful:', {
+                    hasSession: !!session,
+                    sessionUser: session?.user?.id,
+                    sessionExpiresAt: session?.expires_at
+                  });
+                }
+              } else {
+                console.log('🔄 [AuthStore] No stored tokens found, user needs to login');
+                set({ user: null, loading: false, initialized: true });
+                return;
+              }
+            } catch (tokenCheckError) {
+              console.log('🔄 [AuthStore] Error checking stored tokens:', tokenCheckError);
               set({ user: null, loading: false, initialized: true });
               return;
-            } else {
-              session = refreshData.session;
-              console.log('🔄 [AuthStore] Session refresh result:', {
-                hasSession: !!session,
-                sessionUser: session?.user?.id,
-                sessionExpiresAt: session?.expires_at
-              });
             }
           }
           
           if (session?.user) {
             console.log('🟢 [AuthStore] Found existing session, fetching profile...');
-            
-            // Enterprise Session Logging for existing session
-            console.log('🔐 Enterprise Session: Logging existing session activity...');
-            await sessionLoggerService.logSessionActivity(
-              'login',
-              { user_id: session.user.id }
-            );
-            
-            // Start IP Change Detection Service
-            console.log('🔍 [AuthStore] Starting IP Change Detection Service...');
-            await ipChangeDetectionService.initialize();
-            
             await get().fetchUserProfile(session.user.id);
           } else {
             console.log('🔴 [AuthStore] No session found during initialization');
@@ -412,7 +532,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // Setup auth state listener
-          supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
+          AuthService.setupAuthStateListener(async (event: string, session) => {
             console.log('🔄 [AuthStore] Auth state changed:', {
               event,
               hasSession: !!session,
@@ -423,23 +543,10 @@ export const useAuthStore = create<AuthState>()(
             if (event === 'SIGNED_IN') {
               console.log('🟢 [AuthStore] User signed in, fetching profile...');
               if (session?.user) {
-                // Enterprise Session Logging for sign in
-                console.log('🔐 Enterprise Session: Logging sign in activity...');
-                await sessionLoggerService.logSessionActivity(
-                  'login',
-                  { user_id: session.user.id }
-                );
-                
                 await get().fetchUserProfile(session.user.id);
-                // FCM token'ı ayarla
-                await fcmTokenService.onUserLogin(session.user.id);
               }
             } else if (event === 'SIGNED_OUT') {
               console.log('🟢 [AuthStore] User signed out, clearing user state...');
-              const currentUser = get().user;
-              if (currentUser) {
-                await fcmTokenService.onUserLogout(currentUser.id);
-              }
               set({ user: null });
             } else if (event === 'USER_UPDATED') {
               console.log('🟢 [AuthStore] User updated, refreshing profile...');
@@ -464,6 +571,80 @@ export const useAuthStore = create<AuthState>()(
       reset: () => {
         set({ user: null, loading: false, initialized: false });
       },
+
+      // Ek helper fonksiyon - expired session'ları temizlemek için
+      clearExpiredSession: async () => {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error || !session) {
+            DebugLogger.info('No session to clear');
+            return false;
+          }
+          
+          // Session expire kontrolü
+          const now = Math.floor(Date.now() / 1000);
+          if (session.expires_at && session.expires_at <= now) {
+            DebugLogger.warn('Found expired session, performing aggressive cleanup...');
+            
+            // 1. State'i temizle
+            set({ user: null });
+            
+            // 2. AsyncStorage'ı tamamen temizle
+            await AsyncStorage.clear();
+            DebugLogger.info('AsyncStorage cleared for expired session');
+            
+            // 3. SecureStore'u temizle
+            const secureKeys = [
+              'supabase.auth.token',
+              'sb-auth-token',
+              'supabase.auth.refreshToken',
+              'supabase.auth.expires_at',
+              'supabase.auth.user'
+            ];
+            
+            await Promise.allSettled(
+              secureKeys.map(key => SecureStore.deleteItemAsync(key))
+            );
+            DebugLogger.info('SecureStore cleared for expired session');
+            
+            // 4. Supabase client'ı temizle
+            await supabase.auth.signOut({ scope: 'global' });
+            
+            // 5. Client'ı force reset et
+            try {
+              // @ts-ignore - private method
+              if ((supabase.auth as any)._removeSession) {
+                await (supabase.auth as any)._removeSession();
+              }
+            } catch (privateError) {
+              DebugLogger.warn('Private method cleanup failed for expired session');
+            }
+            
+            // 6. Storage'ı manuel temizle
+            try {
+              // @ts-ignore - protected property
+              const storage = supabase.auth.storage;
+              if (storage) {
+                await storage.removeItem('sb-auth-token');
+                await storage.removeItem('supabase.auth.token');
+                await storage.removeItem('supabase.auth.refreshToken');
+                await storage.removeItem('supabase.auth.expires_at');
+              }
+            } catch (storageError) {
+              DebugLogger.warn('Storage cleanup failed for expired session');
+            }
+            
+            DebugLogger.info('Expired session aggressively cleared');
+            return true;
+          }
+          
+          return false;
+        } catch (error) {
+          DebugLogger.error('Clear expired session error', error);
+          return false;
+        }
+      }
     }),
     {
       name: 'auth-storage',

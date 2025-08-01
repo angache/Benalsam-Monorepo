@@ -3,19 +3,18 @@ import {
     getOrCreateConversation as getOrCreateConversationService,
     fetchMessages as fetchMessagesService,
     sendMessage as sendMessageService,
-    fetchConversationDetails as fetchConversationDetailsService,
-    subscribeToMessages as subscribeToMessagesService
+    fetchConversationDetails as fetchConversationDetailsService
 } from './conversationService';
 import {
     createOffer as createOfferService,
-    fetchSentOffers as fetchSentOffersService,
-    fetchReceivedOffers as fetchReceivedOffersService,
+    getSentOffers as getSentOffersService,
+    getReceivedOffers as getReceivedOffersService,
     updateOfferStatus as updateOfferStatusService,
     deleteOffer as deleteOfferService
 } from './offerService';
 import {
     createReview as createReviewService,
-    fetchUserReviews as fetchUserReviewsService,
+    getUserReviews as getUserReviewsService,
     canUserReview as canUserReviewService
 } from './reviewService';
 import {
@@ -68,14 +67,13 @@ export {
     fetchMessagesService as fetchMessages,
     sendMessageService as sendMessage,
     fetchConversationDetailsService as fetchConversationDetails,
-    subscribeToMessagesService as subscribeToMessages,
     createOfferService as createOffer,
-    fetchSentOffersService as fetchSentOffers,
-    fetchReceivedOffersService as fetchReceivedOffers,
+    getSentOffersService as getSentOffers,
+    getReceivedOffersService as getReceivedOffers,
     updateOfferStatusService as updateOfferStatus,
     deleteOfferService as deleteOffer,
     createReviewService as createReview,
-    fetchUserReviewsService as fetchUserReviews,
+    getUserReviewsService as getUserReviews,
     canUserReviewService as canUserReview,
     createListingReportService as createListingReport,
     addFavoriteService as addFavorite,
@@ -105,108 +103,7 @@ export {
     deleteInventoryItemService as deleteInventoryItem
 };
 
-export const signIn = async (credentials: AuthCredentials): Promise<ApiResponse<User>> => {
-  try {
-    if (!credentials.email || !credentials.password) {
-      throw new ValidationError('Email and password are required');
-    }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: credentials.email,
-      password: credentials.password,
-    });
-
-    if (error) {
-      throw new AuthenticationError('Invalid email or password', error);
-    }
-
-    if (!data.user) {
-      throw new AuthenticationError('No user data returned');
-    }
-
-    return { data: data.user as User };
-  } catch (error) {
-    console.error('Error in signIn:', error);
-    return { error: handleError(error).toJSON().error };
-  }
-};
-
-export const signUp = async (registerData: RegisterData): Promise<ApiResponse<User>> => {
-  try {
-    if (!registerData.email || !registerData.password || !registerData.username) {
-      throw new ValidationError('Email, password and username are required');
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email: registerData.email,
-      password: registerData.password,
-      options: {
-        data: {
-          username: registerData.username,
-        },
-      },
-    });
-
-    if (error) {
-      throw new AuthenticationError('Registration failed', error);
-    }
-
-    if (!data.user) {
-      throw new AuthenticationError('No user data returned');
-    }
-
-    // Create profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          id: data.user.id,
-          email: registerData.email,
-          username: registerData.username,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-
-    if (profileError) {
-      throw new DatabaseError('Failed to create user profile', profileError);
-    }
-
-    return { data: data.user as User };
-  } catch (error) {
-    console.error('Error in signUp:', error);
-    return { error: handleError(error).toJSON().error };
-  }
-};
-
-export const signOut = async (): Promise<ApiResponse<boolean>> => {
-  try {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      throw new AuthenticationError('Failed to sign out', error);
-    }
-
-    return { data: true };
-  } catch (error) {
-    console.error('Error in signOut:', error);
-    return { error: handleError(error).toJSON().error };
-  }
-};
-
-export const getCurrentUser = async (): Promise<ApiResponse<User | null>> => {
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession();
-
-    if (error) {
-      throw new AuthenticationError('Failed to get current user', error);
-    }
-
-    return { data: session?.user || null };
-  } catch (error) {
-    console.error('Error in getCurrentUser:', error);
-    return { error: handleError(error).toJSON().error };
-  }
-};
 
 export const updateUserProfile = async (userId: string, updates: any) => {
   try {
@@ -262,7 +159,7 @@ export const resetPassword = async (email: string): Promise<ApiResponse<boolean>
     return { data: true };
   } catch (error) {
     console.error('Error in resetPassword:', error);
-    return { error: handleError(error).toJSON().error };
+    return { error: handleError(error).error };
   }
 };
 
@@ -283,7 +180,7 @@ export const updatePassword = async (newPassword: string): Promise<ApiResponse<b
     return { data: true };
   } catch (error) {
     console.error('Error in updatePassword:', error);
-    return { error: handleError(error).toJSON().error };
+    return { error: handleError(error).error };
   }
 };
 
@@ -291,28 +188,12 @@ export { supabase };
 
 
 
-export const getUserReviews = async (userId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('user_id', userId);
 
-    if (error) {
-      throw error;
-    }
-
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error fetching user reviews:', error);
-    return { data: null, error };
-  }
-};
 
 export const subscribeToMessagesChannel = (channelId: string, callback: (message: any) => void) => {
   const subscription = supabase
     .channel(`messages:${channelId}`)
-    .on('INSERT', (payload) => {
+    .on('INSERT', (payload: any) => {
       callback(payload.new);
     })
     .subscribe();
