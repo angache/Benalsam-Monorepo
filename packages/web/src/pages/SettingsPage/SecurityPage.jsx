@@ -166,6 +166,7 @@ const SecurityPage = () => {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Mevcut şifrenizi girin"
+                  autoComplete="current-password"
                   required
                 />
                 <button
@@ -190,6 +191,7 @@ const SecurityPage = () => {
                   onChange={handlePasswordChange}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Yeni şifrenizi girin"
+                  autoComplete="new-password"
                   required
                 />
                 <button
@@ -223,7 +225,7 @@ const SecurityPage = () => {
             {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Yeni Şifreyi Tekrarla
+                Yeni Şifre (Tekrar)
               </label>
               <div className="relative">
                 <input
@@ -232,6 +234,7 @@ const SecurityPage = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Yeni şifrenizi tekrar girin"
+                  autoComplete="new-password"
                   required
                 />
                 <button
