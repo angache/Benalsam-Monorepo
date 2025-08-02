@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useThemeColors } from '../stores';
-import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { useThemeColors, useAuthStore } from '../stores';
+import { ArrowLeft, Lock, Eye, EyeOff, Shield, ShieldCheck } from 'lucide-react-native';
 import { Input, Button } from '../components';
 import { updatePassword } from '../services/supabaseService';
+import { TwoFactorService } from '../services/twoFactorService';
+
 
 const SecurityScreen = () => {
   const navigation = useNavigation();
   const colors = useThemeColors();
+  const { user } = useAuthStore();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,6 +28,11 @@ const SecurityScreen = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [twoFactorStatus, setTwoFactorStatus] = useState({
+    enabled: false,
+    setupComplete: false
+  });
+  const [twoFactorLoading, setTwoFactorLoading] = useState(true);
 
   const validatePasswords = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -43,6 +51,29 @@ const SecurityScreen = () => {
     }
 
     return true;
+  };
+
+  useEffect(() => {
+    loadTwoFactorStatus();
+  }, []);
+
+  const loadTwoFactorStatus = async () => {
+    try {
+      setTwoFactorLoading(true);
+      if (user?.id) {
+        const status = await TwoFactorService.getTwoFactorStatus(user.id);
+        setTwoFactorStatus(status);
+  
+      }
+    } catch (error) {
+      console.error('Failed to load 2FA status:', error);
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleTwoFactorSetup = () => {
+    navigation.navigate('TwoFactorSetup');
   };
 
   const handlePasswordChange = async () => {
@@ -125,6 +156,60 @@ const SecurityScreen = () => {
       </View>
 
       <ScrollView style={styles.content}>
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Shield size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              İki Faktörlü Kimlik Doğrulama
+            </Text>
+          </View>
+
+          {twoFactorLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Yükleniyor...
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.twoFactorContainer}>
+              <View style={styles.twoFactorStatus}>
+                <View style={styles.statusRow}>
+                  <Text style={[styles.statusLabel, { color: colors.text }]}>
+                    Durum:
+                  </Text>
+                  <View style={styles.statusValue}>
+                    {twoFactorStatus.enabled ? (
+                      <>
+                        <ShieldCheck size={16} color="#34C759" />
+                        <Text style={[styles.statusText, { color: '#34C759' }]}>
+                          Etkin
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Shield size={16} color={colors.textSecondary} />
+                        <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+                          Devre Dışı
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.twoFactorButton, { backgroundColor: colors.primary }]}
+                onPress={handleTwoFactorSetup}
+              >
+                <Text style={styles.twoFactorButtonText}>
+                  {twoFactorStatus.enabled ? '2FA Ayarlarını Değiştir' : '2FA Kur'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
         <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <View style={styles.sectionHeader}>
             <Lock size={20} color={colors.primary} />
@@ -223,6 +308,51 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  loadingText: {
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  twoFactorContainer: {
+    marginTop: 8,
+  },
+  twoFactorStatus: {
+    marginBottom: 16,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  statusLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  statusValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusText: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  twoFactorButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  twoFactorButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

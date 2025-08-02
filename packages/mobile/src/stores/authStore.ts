@@ -58,10 +58,12 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   initialized: boolean;
+  requires2FA: boolean;
   
   // Actions
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
+  setRequires2FA: (requires: boolean) => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -80,6 +82,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       loading: true,
       initialized: false,
+      requires2FA: false,
 
       // Actions
       setUser: (user) => {
@@ -90,6 +93,11 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (loading) => {
         console.log('🔵 [AuthStore] Setting loading:', loading);
         set({ loading });
+      },
+      
+      setRequires2FA: (requires) => {
+        console.log('🔵 [AuthStore] Setting requires2FA:', requires);
+        set({ requires2FA: requires });
       },
 
       signIn: async (email: string, password: string) => {
@@ -104,6 +112,45 @@ export const useAuthStore = create<AuthState>()(
           }
 
           if (result.user) {
+            // Check if 2FA is required
+            const { TwoFactorService } = await import('../services/twoFactorService');
+            const requires2FA = await TwoFactorService.requiresTwoFactor(result.user.id);
+            
+            if (requires2FA) {
+              console.log('🟡 [AuthStore] 2FA required, navigating to verification screen');
+              // Store pending session for 2FA verification
+              set({ 
+                user: null, // Don't set user yet
+                loading: false,
+                requires2FA: true
+              });
+              
+              // Direct navigation to 2FA screen with retry mechanism
+              const attemptNavigation = async (retryCount = 0) => {
+                const { NavigationService } = await import('../services/navigationService');
+                const { supabase } = await import('../services/supabaseClient');
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session?.user) {
+                  // Check if NavigationService is ready
+                  if (NavigationService.isReady()) {
+                    NavigationService.navigate('TwoFactorVerify', {
+                      userId: session.user.id
+                    });
+                  } else if (retryCount < 10) {
+                    // Retry after 200ms if not ready (max 10 times = 2 seconds)
+                    setTimeout(() => attemptNavigation(retryCount + 1), 200);
+                  } else {
+                    console.warn('NavigationService not ready after retries');
+                  }
+                }
+              };
+              
+              setTimeout(attemptNavigation, 100);
+              
+              return;
+            }
+            
             set({ user: result.user });
             console.log('🟢 [AuthStore] Sign in successful');
           } else {

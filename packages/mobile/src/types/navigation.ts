@@ -65,6 +65,11 @@ export type RootStackParamList = {
   AnalyticsDashboard: undefined;
   AnalyticsTest: undefined;
   ElasticsearchTest: undefined;
+  TwoFactorSetup: undefined;
+  TwoFactorVerify: {
+    userId: string;
+    onSuccess?: () => void;
+  };
 };
 
 export type NavigationProps = {

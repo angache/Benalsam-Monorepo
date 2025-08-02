@@ -3,6 +3,7 @@ import { Platform, View, Dimensions, StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { useAuthStore, useThemeColors } from '../stores';
 import TabBarIcon from '../components/TabBarIcon';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -55,6 +56,8 @@ import AnalyticsTestScreen from '../screens/AnalyticsTestScreen';
 import ElasticsearchTestScreen from '../screens/ElasticsearchTestScreen';
 import DopingScreen from '../screens/DopingScreen';
 import LeaveReviewScreen from '../screens/LeaveReviewScreen';
+import TwoFactorSetupScreen from '../screens/TwoFactorSetupScreen';
+import TwoFactorVerifyScreen from '../screens/TwoFactorVerifyScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -360,6 +363,18 @@ const AppNavigator = () => {
         listeners={{
           focus: () => {
             // console.log('🔵 [Navigation] CreateListingConfirm screen focused');
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="TwoFactorVerify" 
+        component={TwoFactorVerifyScreen}
+        options={{
+          headerShown: false,
+        }}
+        listeners={{
+          focus: () => {
+            // console.log('🔵 [Navigation] TwoFactorVerify screen focused');
           },
         }}
       />
@@ -686,6 +701,19 @@ const AppNavigator = () => {
               },
             }}
           />
+          <Stack.Screen 
+            name="TwoFactorSetup" 
+            component={TwoFactorSetupScreen}
+            options={{
+              headerShown: false,
+            }}
+            listeners={{
+              focus: () => {
+                // console.log('🔵 [Navigation] TwoFactorSetup screen focused');
+              },
+            }}
+          />
+
 
         </>
       )}

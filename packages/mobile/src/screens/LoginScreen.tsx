@@ -12,7 +12,8 @@ import { useAuthStore, useThemeColors } from '../stores';
 import { useNavigation } from '@react-navigation/native';
 import { Input, Button } from '../components';
 
-const LoginScreen = ({ navigation }: any) => {
+const LoginScreen = () => {
+  const navigation = useNavigation();
   const { user, signIn } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,10 +21,13 @@ const LoginScreen = ({ navigation }: any) => {
   const colors = useThemeColors();
 
   useEffect(() => {
+    // Only navigate to MainTabs if user exists and 2FA is not required
     if (user) {
-      navigation.replace('MainTabs');
+      navigation.navigate('MainTabs' as never);
     }
   }, [user, navigation]);
+
+
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -34,7 +38,7 @@ const LoginScreen = ({ navigation }: any) => {
     try {
       setLoading(true);
       await signIn(email, password);
-      // Başarılı giriş sonrası navigation otomatik olarak yapılacak
+      // signIn handles 2FA navigation automatically
     } catch (error) {
       Alert.alert('Hata', 'Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.');
       console.error('Login error:', error);
@@ -45,7 +49,7 @@ const LoginScreen = ({ navigation }: any) => {
 
   const handleRegisterPress = () => {
     console.log('🔵 [LoginScreen] Navigating to Register screen');
-    (navigation as any).navigate('Register');
+    navigation.navigate('Register' as never);
   };
 
   const styles = StyleSheet.create({
