@@ -51,7 +51,7 @@ class SharedRateLimitService {
   private async initializeRedis() {
     try {
       // Redis connection with Docker container name
-      const redisUrl = process.env.REDIS_URL || 'redis://redis:6379';
+      const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || 'redis'}:${process.env.REDIS_PORT || '6379'}`;
       
       this.redis = createClient({
         url: redisUrl,
