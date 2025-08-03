@@ -77,6 +77,28 @@ const SecurityPage = () => {
 
     try {
       setIsUpdatingPassword(true);
+      
+      // Get current user email from session
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email;
+      
+      if (!userEmail) {
+        alert('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
+        return;
+      }
+
+      // Verify current password first (Supabase's official recommendation)
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: currentPassword
+      });
+
+      if (signInError) {
+        alert('Mevcut şifre yanlış.');
+        return;
+      }
+
+      // Update password
       const { error } = await supabase.auth.updateUser({ password: newPassword });
 
       if (error) {

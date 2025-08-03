@@ -44,6 +44,9 @@ import SentOffersScreen from '../screens/SentOffersScreen';
 import SelectDistrictScreen from '../screens/SelectDistrictScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import TrustScoreScreen from '../screens/TrustScoreScreen';
 import PublicProfileScreen from '../screens/PublicProfileScreen';
 import AIGenerateListingScreen from '../screens/AIGenerateListingScreen';
@@ -287,6 +290,33 @@ const AppNavigator = () => {
         listeners={{
           focus: () => {
             // console.log('🔵 [Navigation] Register screen focused');
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="ForgotPassword" 
+        component={ForgotPasswordScreen}
+        listeners={{
+          focus: () => {
+            // console.log('🔵 [Navigation] ForgotPassword screen focused');
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="ResetPassword" 
+        component={ResetPasswordScreen}
+        listeners={{
+          focus: () => {
+            // console.log('🔵 [Navigation] ResetPassword screen focused');
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="ChangePassword" 
+        component={ChangePasswordScreen}
+        listeners={{
+          focus: () => {
+            // console.log('🔵 [Navigation] ChangePassword screen focused');
           },
         }}
       />

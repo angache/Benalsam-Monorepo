@@ -33,6 +33,9 @@ export type RootStackParamList = {
   SentOffers: undefined;
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: undefined;
+  ChangePassword: undefined;
   Auth: undefined;
   AppSettings: undefined;
   Support: undefined;

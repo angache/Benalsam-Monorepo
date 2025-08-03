@@ -73,6 +73,8 @@ interface AuthState {
   initialize: () => Promise<void>;
   reset: () => void;
   clearExpiredSession: () => Promise<boolean>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -690,6 +692,48 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           DebugLogger.error('Clear expired session error', error);
           return false;
+        }
+      },
+
+      resetPassword: async (email: string) => {
+        try {
+          const { supabase } = await import('../services/supabaseClient');
+          const { AuthService } = await import('../services/authService');
+          const { DebugLogger } = await import('../services/debugLogger');
+
+          const result = await AuthService.resetPassword(email);
+
+          if (result.error) {
+            DebugLogger.error('Password reset failed:', result.error);
+            return { success: false, error: result.error };
+          }
+
+          DebugLogger.info('Password reset email sent successfully');
+          return { success: true };
+        } catch (error) {
+          DebugLogger.error('Error sending password reset email:', error);
+          return { success: false, error: 'Failed to send password reset email' };
+        }
+      },
+
+      updatePassword: async (newPassword: string) => {
+        try {
+          const { supabase } = await import('../services/supabaseClient');
+          const { AuthService } = await import('../services/authService');
+          const { DebugLogger } = await import('../services/debugLogger');
+
+          const result = await AuthService.updatePassword(newPassword);
+
+          if (result.error) {
+            DebugLogger.error('Password update failed:', result.error);
+            return { success: false, error: result.error };
+          }
+
+          DebugLogger.info('Password updated successfully');
+          return { success: true };
+        } catch (error) {
+          DebugLogger.error('Error updating password:', error);
+          return { success: false, error: 'Failed to update password' };
         }
       }
     }),

@@ -777,6 +777,10 @@ const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
     navigation.navigate('Security');
   };
 
+  const handleChangePassword = () => {
+    navigation.navigate('ChangePassword' as never);
+  };
+
   const handleNotificationPreferences = () => {
     navigation.navigate('NotificationPreferences', {
       preferences: profile?.notification_preferences,

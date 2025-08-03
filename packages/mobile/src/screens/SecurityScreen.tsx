@@ -73,7 +73,11 @@ const SecurityScreen = () => {
   };
 
   const handleTwoFactorSetup = () => {
-    navigation.navigate('TwoFactorSetup');
+    navigation.navigate('TwoFactorSetup' as never);
+  };
+
+  const handleChangePassword = () => {
+    navigation.navigate('ChangePassword' as never);
   };
 
   const handlePasswordChange = async () => {
@@ -218,36 +222,18 @@ const SecurityScreen = () => {
             </Text>
           </View>
 
-          {renderPasswordInput(
-            currentPassword,
-            setCurrentPassword,
-            'Mevcut şifre',
-            showCurrentPassword,
-            setShowCurrentPassword
-          )}
+          <Text style={[styles.sectionDescription, { color: colors.textSecondary }]}>
+            Hesabınızın güvenliği için şifrenizi değiştirin. Güçlü bir şifre seçmeyi unutmayın.
+          </Text>
 
-          {renderPasswordInput(
-            newPassword,
-            setNewPassword,
-            'Yeni şifre',
-            showNewPassword,
-            setShowNewPassword
-          )}
-
-          {renderPasswordInput(
-            confirmPassword,
-            setConfirmPassword,
-            'Yeni şifre tekrar',
-            showConfirmPassword,
-            setShowConfirmPassword
-          )}
-
-          <Button
-            title={loading ? "Güncelleniyor..." : "Şifreyi Güncelle"}
-            onPress={handlePasswordChange}
-            disabled={loading}
-            style={[styles.button, { backgroundColor: colors.primary }]}
-          />
+          <TouchableOpacity
+            style={[styles.changePasswordButton, { backgroundColor: colors.primary }]}
+            onPress={handleChangePassword}
+          >
+            <Text style={styles.changePasswordButtonText}>
+              Şifre Değiştir
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -353,6 +339,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  changePasswordButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  changePasswordButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sectionDescription: {
+    fontSize: 14,
+    marginBottom: 16,
   },
 });
 

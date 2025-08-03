@@ -210,8 +210,27 @@ export class AuthService {
   /**
    * Şifre güncelle
    */
-  static async updatePassword(newPassword: string): Promise<ApiResponse<void>> {
+  static async updatePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<void>> {
     try {
+      // Get current user email from session
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email;
+      
+      if (!userEmail) {
+        return { error: { code: 'NO_USER_EMAIL', message: 'Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.' } };
+      }
+
+      // Verify current password first (Supabase's official recommendation)
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: currentPassword
+      });
+
+      if (signInError) {
+        return { error: { code: 'INVALID_CURRENT_PASSWORD', message: 'Mevcut şifre yanlış.' } };
+      }
+
+      // Update password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -223,7 +242,7 @@ export class AuthService {
       return { data: undefined };
     } catch (error) {
       console.error('Update password error:', error);
-      return { error: { message: 'Şifre güncellenemedi' } };
+      return { error: { code: 'PASSWORD_UPDATE_FAILED', message: 'Şifre güncellenemedi' } };
     }
   }
 
