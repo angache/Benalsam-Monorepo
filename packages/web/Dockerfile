@@ -7,9 +7,9 @@ COPY package.json pnpm-lock.yaml ./
 COPY packages/web/package.json ./packages/web/
 COPY packages/shared-types/package.json ./packages/shared-types/
 
-# pnpm install
+# pnpm install - minimal approach
 RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile --no-verify-store-integrity
+RUN pnpm install --frozen-lockfile --no-verify-store-integrity --prefer-offline
 
 # Şimdi tüm kodu kopyala
 COPY . .
