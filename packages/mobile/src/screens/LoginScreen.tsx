@@ -7,6 +7,9 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  TouchableWithoutFeedback,
+  ScrollView,
+  Keyboard,
 } from 'react-native';
 import { useAuthStore, useThemeColors } from '../stores';
 import { useNavigation } from '@react-navigation/native';
@@ -28,11 +31,18 @@ const LoginScreen = () => {
     }
   }, [user, navigation]);
 
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Hata', 'E-posta ve şifre gerekli.');
       return;
     }
+
+    // Dismiss keyboard before login
+    dismissKeyboard();
 
     // Clear previous rate limit error
     setRateLimitError(null);
@@ -43,18 +53,21 @@ const LoginScreen = () => {
       // signIn handles 2FA navigation automatically
     } catch (error: any) {
       console.error('Login error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error.message);
+      console.error('Error toString:', error.toString());
       
-      // Check if it's a rate limit error
-      if (error.message && (
-        error.message.includes('kilitlendi') ||
-        error.message.includes('fazla deneme') ||
-        error.message.includes('hızlı deneme') ||
-        error.message.includes('bekleyin')
-      )) {
-        // Show rate limit error in UI instead of Alert
-        setRateLimitError(error.message);
+      // Basit rate limit kontrolü
+      const errorText = error.message || error.toString() || '';
+      
+      if (errorText.includes('kilitlendi') || 
+          errorText.includes('fazla başarısız deneme') || 
+          errorText.includes('hızlı deneme') || 
+          errorText.includes('bekleyin')) {
+        console.log('🛡️ Rate limit error detected:', errorText);
+        setRateLimitError(errorText);
       } else {
-        // Show regular error in Alert
+        console.log('🔴 Regular error:', errorText);
         Alert.alert('Hata', 'Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.');
       }
     } finally {
@@ -64,6 +77,7 @@ const LoginScreen = () => {
 
   const handleRegisterPress = () => {
     console.log('🔵 [LoginScreen] Navigating to Register screen');
+    dismissKeyboard();
     navigation.navigate('Register' as never);
   };
 
@@ -105,18 +119,27 @@ const LoginScreen = () => {
       elevation: 5,
     },
     rateLimitError: {
-      backgroundColor: '#FFE6E6',
-      borderColor: '#FF6B6B',
-      borderWidth: 1,
-      borderRadius: 8,
-      padding: 12,
+      backgroundColor: colors.error + '15', // %15 opacity - daha hafif
+      borderColor: colors.error,
+      borderWidth: 1.5,
+      borderRadius: 10,
+      padding: 16,
       marginBottom: 16,
+      shadowColor: colors.error,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     rateLimitErrorText: {
-      color: '#D63031',
+      color: colors.error,
       fontSize: 14,
       textAlign: 'center',
-      fontWeight: '500',
+      fontWeight: '600',
+      lineHeight: 20,
     },
     linkButton: {
       alignItems: 'center',
@@ -129,65 +152,74 @@ const LoginScreen = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.content}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>BenAlsam</Text>
-          <Text style={styles.subtitle}>Hesabınıza giriş yapın</Text>
-        </View>
-
-        <View style={styles.form}>
-          {rateLimitError && (
-            <View style={styles.rateLimitError}>
-              <Text style={styles.rateLimitErrorText}>
-                🛡️ {rateLimitError}
-              </Text>
-            </View>
-          )}
-
-          <Input
-            label="E-posta"
-            placeholder="E-posta adresinizi girin"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            textContentType="emailAddress"
-            keyboardType="email-address"
-            autoCorrect={false}
-          />
-
-          <Input
-            label="Şifre"
-            placeholder="Şifrenizi girin"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            textContentType="password"
-            autoCorrect={false}
-          />
-
-          <Button
-            title={loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
-            onPress={handleLogin}
-            loading={loading}
-            fullWidth
-          />
-
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={handleRegisterPress}
+    <TouchableWithoutFeedback onPress={dismissKeyboard}>
+      <View style={styles.container}>
+        <KeyboardAvoidingView
+          style={styles.content}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.linkText}>
-              Hesabınız yok mu? Kayıt olun
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </View>
+            <View style={styles.header}>
+              <Text style={styles.title}>BenAlsam</Text>
+              <Text style={styles.subtitle}>Hesabınıza giriş yapın</Text>
+            </View>
+
+            <View style={styles.form}>
+              {rateLimitError && (
+                <View style={styles.rateLimitError}>
+                  <Text style={styles.rateLimitErrorText}>
+                    🛡️ {rateLimitError}
+                  </Text>
+                </View>
+              )}
+
+              <Input
+                label="E-posta"
+                placeholder="E-posta adresinizi girin"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                textContentType="emailAddress"
+                keyboardType="email-address"
+                autoCorrect={false}
+              />
+
+              <Input
+                label="Şifre"
+                placeholder="Şifrenizi girin"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                textContentType="password"
+                autoCorrect={false}
+              />
+
+              <Button
+                title={loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+                onPress={handleLogin}
+                loading={loading}
+                fullWidth
+              />
+
+              <TouchableOpacity
+                style={styles.linkButton}
+                onPress={handleRegisterPress}
+              >
+                <Text style={styles.linkText}>
+                  Hesabınız yok mu? Kayıt olun
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
