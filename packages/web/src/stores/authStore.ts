@@ -286,24 +286,169 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     signOut: async () => {
-      console.log('🔐 [AuthStore] Sign out attempt');
+      console.log('🔐 [AuthStore] Starting robust sign out process');
       set({ loading: true });
+      
       try {
-        // Get current session before signing out
-        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = get().user;
         
-        if (session?.user) {
-          // Enterprise Session Logging for logout
-          console.log('🔐 [AuthStore] Enterprise Session: Logging logout activity...');
-          await sessionLoggerService.logSessionActivity(
-            'logout',
-            { user_id: session.user.id, email: session.user.email }
-          );
+        // ÖNEMLİ: State'i hemen temizle (UI responsiveness için)
+        set({ 
+          user: null, 
+          currentUser: null,
+          loading: true 
+        });
+        
+        // 1. Enterprise session logging (hata olsa da devam et)
+        if (currentUser?.id) {
+          try {
+            // Session kontrolü YAP
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (session && !error) {
+              // Session geçerliyse logout logla
+              console.log('🔐 [AuthStore] Enterprise Session: Logging logout activity...');
+              await sessionLoggerService.logSessionActivity(
+                'logout',
+                { user_id: currentUser.id, email: currentUser.email }
+              );
+            } else {
+              console.warn('🔐 [AuthStore] No valid session for logging, skipping enterprise log');
+            }
+          } catch (logError) {
+            console.warn('🔐 [AuthStore] Enterprise logging failed (continuing)', logError);
+          }
         }
-
-        await supabase.auth.signOut();
-        console.log('🔐 [AuthStore] User signed out successfully');
-        set({ user: null, currentUser: null, loading: false });
+        
+        // 2. Robust Supabase SignOut
+        try {
+          // Önce session durumunu kontrol et
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (session && !sessionError) {
+            // Session geçerliyse normal signOut
+            console.log('🔐 [AuthStore] Valid session found, attempting normal signOut');
+            const { error } = await supabase.auth.signOut({ scope: 'global' });
+            
+            if (error) {
+              console.warn('🔐 [AuthStore] Normal signOut failed, forcing client cleanup', error);
+              // Hata olsa bile client-side cleanup devam et
+            } else {
+              console.log('🔐 [AuthStore] Normal signOut successful');
+            }
+          } else {
+            console.warn('🔐 [AuthStore] No valid session found, performing client-side cleanup only');
+          }
+          
+          // FORCE CLIENT CLEANUP (session geçerli olsun olmasın)
+          try {
+            // Manual cleanup - Supabase'in private method'larını kullanmaya çalış
+            try {
+              // @ts-ignore - private method but necessary for cleanup
+              if ((supabase.auth as any)._removeSession) {
+                await (supabase.auth as any)._removeSession();
+              }
+            } catch (privateError) {
+              console.warn('🔐 [AuthStore] Private method cleanup failed, continuing with storage cleanup');
+            }
+            
+            // Storage'ı manuel temizle
+            try {
+              // @ts-ignore - protected property but necessary for cleanup
+              const storage = supabase.auth.storage;
+              if (storage) {
+                await storage.removeItem('sb-auth-token');
+                await storage.removeItem('supabase.auth.token');
+                await storage.removeItem('supabase.auth.refreshToken');
+                await storage.removeItem('supabase.auth.expires_at');
+              }
+            } catch (storageError) {
+              console.warn('🔐 [AuthStore] Storage cleanup failed, continuing');
+            }
+            
+            console.log('🔐 [AuthStore] Forced client cleanup completed');
+          } catch (cleanupError) {
+            console.warn('🔐 [AuthStore] Force cleanup failed', cleanupError);
+          }
+          
+        } catch (supabaseError) {
+          console.error('🔐 [AuthStore] Supabase signOut completely failed, doing manual cleanup', supabaseError);
+        }
+        
+        // 3. Local Storage cleanup (her zaman yap)
+        try {
+          // Local storage'dan auth related key'leri temizle
+          const authKeys = [
+            'sb-auth-token',
+            'supabase.auth.token',
+            'supabase.auth.refreshToken',
+            'supabase.auth.expires_at',
+            'supabase.auth.user'
+          ];
+          
+          authKeys.forEach(key => {
+            try {
+              localStorage.removeItem(key);
+            } catch (e) {
+              console.warn(`🔐 [AuthStore] Failed to remove ${key} from localStorage`);
+            }
+          });
+          
+          // Session storage'dan da temizle
+          authKeys.forEach(key => {
+            try {
+              sessionStorage.removeItem(key);
+            } catch (e) {
+              console.warn(`🔐 [AuthStore] Failed to remove ${key} from sessionStorage`);
+            }
+          });
+          
+          console.log('🔐 [AuthStore] Local storage cleanup completed');
+        } catch (storageError) {
+          console.warn('🔐 [AuthStore] Local storage cleanup failed', storageError);
+        }
+        
+        // 4. Cookies cleanup
+        try {
+          // Auth related cookies'leri temizle
+          const authCookies = [
+            'sb-auth-token',
+            'supabase.auth.token',
+            'supabase.auth.refreshToken'
+          ];
+          
+          authCookies.forEach(cookieName => {
+            try {
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            } catch (e) {
+              console.warn(`🔐 [AuthStore] Failed to remove cookie ${cookieName}`);
+            }
+          });
+          
+          console.log('🔐 [AuthStore] Cookies cleanup completed');
+        } catch (cookieError) {
+          console.warn('🔐 [AuthStore] Cookies cleanup failed', cookieError);
+        }
+        
+        // 5. Final state cleanup
+        set({ 
+          user: null, 
+          currentUser: null, 
+          loading: false 
+        });
+        
+        console.log('🔐 [AuthStore] User signed out successfully with comprehensive cleanup');
+        
+        // 6. Force page reload to clear any remaining state
+        try {
+          // Small delay to ensure all cleanup is complete
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        } catch (reloadError) {
+          console.warn('🔐 [AuthStore] Force reload failed', reloadError);
+        }
+        
       } catch (error) {
         console.error('🔐 [AuthStore] Sign out exception:', error);
         set({ loading: false });
