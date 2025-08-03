@@ -50,9 +50,8 @@ class SharedRateLimitService {
 
   private async initializeRedis() {
     try {
-      // Redis connection with fallback
-      // VPS Redis URL (same as Elasticsearch VPS)
-      const redisUrl = process.env.REDIS_URL || process.env.REDIS_PRIVATE_URL || 'redis://209.227.228.96:6379';
+      // Redis connection with Docker container name
+      const redisUrl = process.env.REDIS_URL || 'redis://redis:6379';
       
       this.redis = createClient({
         url: redisUrl,
