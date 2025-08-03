@@ -2,13 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Tüm monorepo'yu kopyala
-COPY . .
+# Sadece package.json dosyalarını kopyala
+COPY package.json pnpm-lock.yaml ./
+COPY packages/web/package.json ./packages/web/
+COPY packages/shared-types/package.json ./packages/shared-types/
 
+# pnpm install
 RUN npm install -g pnpm
+RUN pnpm install --frozen-lockfile --no-verify-store-integrity
 
-# Kökte install (tüm workspace bağımlılıkları yüklenir)
-RUN pnpm install --force --no-verify-store-integrity
+# Şimdi tüm kodu kopyala
+COPY . .
 
 WORKDIR /app/packages/web
 
