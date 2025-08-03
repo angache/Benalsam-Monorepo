@@ -18,6 +18,7 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const colors = useThemeColors();
 
   useEffect(() => {
@@ -27,21 +28,35 @@ const LoginScreen = () => {
     }
   }, [user, navigation]);
 
-
-
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Hata', 'E-posta ve şifre gerekli.');
       return;
     }
 
+    // Clear previous rate limit error
+    setRateLimitError(null);
+
     try {
       setLoading(true);
       await signIn(email, password);
       // signIn handles 2FA navigation automatically
-    } catch (error) {
-      Alert.alert('Hata', 'Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.');
+    } catch (error: any) {
       console.error('Login error:', error);
+      
+      // Check if it's a rate limit error
+      if (error.message && (
+        error.message.includes('kilitlendi') ||
+        error.message.includes('fazla deneme') ||
+        error.message.includes('hızlı deneme') ||
+        error.message.includes('bekleyin')
+      )) {
+        // Show rate limit error in UI instead of Alert
+        setRateLimitError(error.message);
+      } else {
+        // Show regular error in Alert
+        Alert.alert('Hata', 'Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.');
+      }
     } finally {
       setLoading(false);
     }
@@ -89,6 +104,20 @@ const LoginScreen = () => {
       shadowRadius: 3.84,
       elevation: 5,
     },
+    rateLimitError: {
+      backgroundColor: '#FFE6E6',
+      borderColor: '#FF6B6B',
+      borderWidth: 1,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+    },
+    rateLimitErrorText: {
+      color: '#D63031',
+      fontSize: 14,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
     linkButton: {
       alignItems: 'center',
       marginTop: 20,
@@ -111,6 +140,14 @@ const LoginScreen = () => {
         </View>
 
         <View style={styles.form}>
+          {rateLimitError && (
+            <View style={styles.rateLimitError}>
+              <Text style={styles.rateLimitErrorText}>
+                🛡️ {rateLimitError}
+              </Text>
+            </View>
+          )}
+
           <Input
             label="E-posta"
             placeholder="E-posta adresinizi girin"

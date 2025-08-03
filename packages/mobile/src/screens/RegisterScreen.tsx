@@ -17,6 +17,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const { signUp } = useAuthStore();
   const colors = useThemeColors();
   const navigation = useNavigation();
@@ -32,14 +33,31 @@ const RegisterScreen = () => {
       return;
     }
 
+    // Clear previous rate limit error
+    setRateLimitError(null);
+
     setLoading(true);
     try {
       await signUp(email, password, username);
       Alert.alert('Başarılı', 'Hesabınız oluşturuldu! Giriş yapabilirsiniz.');
       // Navigation otomatik olarak auth state değişikliği ile yapılacak
       // Manuel navigation yapmaya gerek yok
-    } catch (error) {
-      Alert.alert('Kayıt Hatası', 'Kayıt olurken bir hata oluştu');
+    } catch (error: any) {
+      console.error('Register error:', error);
+      
+      // Check if it's a rate limit error
+      if (error.message && (
+        error.message.includes('kilitlendi') ||
+        error.message.includes('fazla deneme') ||
+        error.message.includes('hızlı deneme') ||
+        error.message.includes('bekleyin')
+      )) {
+        // Show rate limit error in UI instead of Alert
+        setRateLimitError(error.message);
+      } else {
+        // Show regular error in Alert
+        Alert.alert('Kayıt Hatası', 'Kayıt olurken bir hata oluştu');
+      }
     } finally {
       setLoading(false);
     }
@@ -82,6 +100,20 @@ const RegisterScreen = () => {
       shadowRadius: 3.84,
       elevation: 5,
     },
+    rateLimitError: {
+      backgroundColor: '#FFE6E6',
+      borderColor: '#FF6B6B',
+      borderWidth: 1,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+    },
+    rateLimitErrorText: {
+      color: '#D63031',
+      fontSize: 14,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
     linkButton: {
       alignItems: 'center',
       marginTop: 20,
@@ -104,6 +136,14 @@ const RegisterScreen = () => {
         </View>
 
         <View style={styles.form}>
+          {rateLimitError && (
+            <View style={styles.rateLimitError}>
+              <Text style={styles.rateLimitErrorText}>
+                🛡️ {rateLimitError}
+              </Text>
+            </View>
+          )}
+
           <Input
             label="Kullanıcı Adı"
             placeholder="Kullanıcı adınızı girin"

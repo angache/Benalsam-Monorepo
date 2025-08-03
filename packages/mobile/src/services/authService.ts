@@ -135,6 +135,28 @@ export class AuthService {
     try {
       console.log('🟡 [AuthService] Starting sign up process...');
       
+      // Rate limit check
+      const rateLimitCheck = await sharedRateLimitService.checkRateLimit(email);
+      console.log('🛡️ [AuthService] Rate limit check for signup:', rateLimitCheck);
+      
+      if (!rateLimitCheck.allowed) {
+        let errorMsg = '';
+        if (rateLimitCheck.error === 'ACCOUNT_LOCKED') {
+          errorMsg = `Hesabınız güvenlik nedeniyle kilitlendi. ${Math.ceil(rateLimitCheck.timeRemaining / 60)} dakika sonra tekrar deneyin.`;
+        } else if (rateLimitCheck.error === 'TOO_MANY_ATTEMPTS') {
+          errorMsg = `Çok fazla başarısız deneme. ${Math.ceil(rateLimitCheck.timeRemaining / 60)} dakika sonra tekrar deneyin.`;
+        } else if (rateLimitCheck.error === 'PROGRESSIVE_DELAY') {
+          errorMsg = `Çok hızlı deneme yapıyorsunuz. ${rateLimitCheck.timeRemaining} saniye bekleyin.`;
+        } else if (rateLimitCheck.message) {
+          errorMsg = rateLimitCheck.message;
+        } else {
+          errorMsg = 'Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin.';
+        }
+        
+        console.log('🛡️ [AuthService] Rate limit exceeded for signup:', errorMsg);
+        return { user: null, error: errorMsg };
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -147,6 +169,10 @@ export class AuthService {
       
       if (error) {
         console.error('🔴 [AuthService] Sign up error:', error);
+        
+        // Record failed attempt for rate limiting
+        await sharedRateLimitService.recordFailedAttempt(email);
+        
         return { user: null, error: error.message };
       }
 
