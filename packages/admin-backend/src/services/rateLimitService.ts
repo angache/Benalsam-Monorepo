@@ -53,6 +53,12 @@ class SharedRateLimitService {
       // Redis connection with Docker container name
       const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || 'redis'}:${process.env.REDIS_PORT || '6379'}`;
       
+      console.log('🔍 [Redis] Environment variables:');
+      console.log('🔍 [Redis] REDIS_URL:', process.env.REDIS_URL);
+      console.log('🔍 [Redis] REDIS_HOST:', process.env.REDIS_HOST);
+      console.log('🔍 [Redis] REDIS_PORT:', process.env.REDIS_PORT);
+      console.log('🔍 [Redis] Final URL:', redisUrl);
+      
       this.redis = createClient({
         url: redisUrl,
         socket: {
