@@ -320,4 +320,5 @@ class SharedRateLimitService {
   }
 }
 
+export { SharedRateLimitService };
 export const sharedRateLimitService = new SharedRateLimitService();

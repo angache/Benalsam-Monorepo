@@ -141,4 +141,5 @@ router.get('/status/:email', async (req, res): Promise<void> => {
   }
 });
 
+export { router as rateLimitRoutes };
 export default router;

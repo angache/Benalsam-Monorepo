@@ -1,4 +1,4 @@
-import '@testing-library/jest-native/extend-expect';
+// Testing library extends removed for unit tests
 
 // Global type declarations
 declare global {

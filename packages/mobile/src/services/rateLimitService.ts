@@ -17,6 +17,7 @@ interface RateLimitResult {
   error?: 'PROGRESSIVE_DELAY' | 'TOO_MANY_ATTEMPTS' | 'ACCOUNT_LOCKED';
   timeRemaining: number;
   message?: string;
+  attempts?: number;
 }
 
 const RATE_LIMIT_KEY_PREFIX = 'rate_limit_';
@@ -78,6 +79,7 @@ class RateLimitService {
         allowed: false,
         error: 'ACCOUNT_LOCKED',
         timeRemaining,
+        attempts: data.attempts,
         message: `Hesabınız güvenlik nedeniyle kilitlendi. ${Math.ceil(timeRemaining / 60)} dakika sonra tekrar deneyin.`
       };
     }
@@ -107,12 +109,13 @@ class RateLimitService {
       data.blockExpiry = now + (ACCOUNT_LOCK_HOURS * 60 * 60 * 1000);
       await this.saveRateLimitData(email, data);
       
-      return {
-        allowed: false,
-        error: 'ACCOUNT_LOCKED',
-        timeRemaining: ACCOUNT_LOCK_HOURS * 60 * 60,
-        message: `Çok fazla başarısız deneme! Hesabınız ${ACCOUNT_LOCK_HOURS} saat kilitlendi.`
-      };
+              return {
+          allowed: false,
+          error: 'ACCOUNT_LOCKED',
+          timeRemaining: ACCOUNT_LOCK_HOURS * 60 * 60,
+          attempts: data.attempts,
+          message: `Çok fazla başarısız deneme! Hesabınız ${ACCOUNT_LOCK_HOURS} saat kilitlendi.`
+        };
     }
 
     // Temporary block check (5+ attempts in 5 minutes)
@@ -126,6 +129,7 @@ class RateLimitService {
           allowed: false,
           error: 'TOO_MANY_ATTEMPTS',
           timeRemaining,
+          attempts: data.attempts,
           message: `Çok fazla deneme! ${Math.ceil(timeRemaining / 60)} dakika bekleyin.`
         };
       }
@@ -142,6 +146,7 @@ class RateLimitService {
           allowed: false,
           error: 'PROGRESSIVE_DELAY',
           timeRemaining,
+          attempts: data.attempts,
           message: `Çok hızlı deneme! ${timeRemaining} saniye bekleyin.`
         };
       }
@@ -149,7 +154,8 @@ class RateLimitService {
 
     return {
       allowed: true,
-      timeRemaining: 0
+      timeRemaining: 0,
+      attempts: data.attempts
     };
   }
 
