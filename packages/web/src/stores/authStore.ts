@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserProfile } from '@/services/profileService';
+import { sharedRateLimitService } from '@/services/sharedRateLimitService';
 import { User } from '@benalsam/shared-types';
 
 interface AuthState {
@@ -152,7 +153,31 @@ export const useAuthStore = create<AuthState>((set, get) => {
     signIn: async (email: string, password: string) => {
       console.log('🔐 [AuthStore] Sign in attempt:', { email });
       set({ loading: true });
+      
       try {
+              // Rate limit check
+      const rateLimitCheck = await sharedRateLimitService.checkRateLimit(email);
+      console.log('🔐 [AuthStore] Rate limit check:', rateLimitCheck);
+        
+        if (!rateLimitCheck.allowed) {
+          let errorMsg = '';
+          if (rateLimitCheck.error === 'ACCOUNT_LOCKED') {
+            errorMsg = `Hesabınız güvenlik nedeniyle kilitlendi. ${Math.ceil(rateLimitCheck.timeRemaining / 60)} dakika sonra tekrar deneyin.`;
+          } else if (rateLimitCheck.error === 'TOO_MANY_ATTEMPTS') {
+            errorMsg = `Çok fazla başarısız deneme. ${Math.ceil(rateLimitCheck.timeRemaining / 60)} dakika sonra tekrar deneyin.`;
+          } else if (rateLimitCheck.error === 'PROGRESSIVE_DELAY') {
+            errorMsg = `Çok hızlı deneme yapıyorsunuz. ${rateLimitCheck.timeRemaining} saniye bekleyin.`;
+          } else if (rateLimitCheck.message) {
+            errorMsg = rateLimitCheck.message;
+          } else {
+            errorMsg = 'Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin.';
+          }
+          
+          console.log('🔐 [AuthStore] Rate limit exceeded:', errorMsg);
+          set({ loading: false });
+          return { error: errorMsg };
+        }
+
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -167,6 +192,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
         if (error) {
           console.error('🔐 [AuthStore] Sign in error:', error);
+          
+                  // Record failed attempt for rate limiting
+        await sharedRateLimitService.recordFailedAttempt(email);
+          
           set({ loading: false });
           return { error: error.message };
         }
@@ -195,6 +224,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
             userEmail: basicUser.email, 
             userName: basicUser.name 
           });
+          
+          // Reset rate limit on successful login
+          await sharedRateLimitService.resetRateLimit(email);
+          
           set({ user: basicUser, currentUser: basicUser, loading: false });
         }
 

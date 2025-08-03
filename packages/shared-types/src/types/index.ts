@@ -28,3 +28,6 @@ export * from './common';
 
 // Category Attributes Types
 export * from './category-attributes';
+
+// Rate Limiting Types
+export * from './rateLimitTypes';

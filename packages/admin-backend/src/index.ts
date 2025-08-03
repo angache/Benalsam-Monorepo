@@ -34,6 +34,7 @@ import predictiveCacheRoutes from './routes/predictiveCache';
 import geographicCacheRoutes from './routes/geographicCache';
 import smartInvalidationRoutes from './routes/smartInvalidation';
 import cacheCompressionRoutes from './routes/cacheCompression';
+import rateLimitRoutes from './routes/rateLimitRoutes';
 
 // Import services
 import { AdminElasticsearchService } from './services/elasticsearchService';
@@ -166,6 +167,7 @@ app.use('/api/v1/predictive-cache', predictiveCacheRoutes); // Predictive Cache 
 app.use('/api/v1/geographic-cache', geographicCacheRoutes); // Geographic Cache sistemi aktif edildi
 app.use('/api/v1/smart-invalidation', smartInvalidationRoutes); // Smart Invalidation sistemi aktif edildi
 app.use('/api/v1/cache-compression', cacheCompressionRoutes); // Cache Compression sistemi aktif edildi
+app.use('/api/v1/rate-limit', rateLimitRoutes); // Cross-Platform Rate Limiting sistemi aktif edildi
 
 // Global error handler
 app.use(errorHandler);
