@@ -24,6 +24,7 @@ const SearchResultsPage = lazy(() => import('@/pages/SearchResultsPage.jsx'));
 
 const CreateListingPage = lazy(() => import('@/pages/CreateListingPage.jsx'));
 const AuthPage = lazy(() => import('@/pages/AuthPage.jsx'));
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage.jsx'));
 const MakeOfferPage = lazy(() => import('@/pages/MakeOfferPage.jsx'));
 const ReportListingPage = lazy(() => import('@/pages/ReportListingPage.jsx'));
 const LeaveReviewPage = lazy(() => import('@/pages/LeaveReviewPage.jsx'));
@@ -133,6 +134,7 @@ const AppRoutes = ({ currentUser }) => {
           element={withPageErrorBoundary(() => <HomePage currentUser={currentUser} />, 'Ana Sayfa')}
         />
         <Route path="/auth" element={withPageErrorBoundary(AuthPage, 'Giriş/Kayıt')} />
+        <Route path="/auth/reset-password" element={withPageErrorBoundary(ResetPasswordPage, 'Şifre Sıfırlama')} />
         <Route path="/arama" element={withPageErrorBoundary(SearchResultsPage, 'Arama Sonuçları')} />
 
         <Route path="/ilan-olustur" element={<ProtectedRoute>{withPageErrorBoundary(CreateListingPage, 'İlan Oluştur')}</ProtectedRoute>} />
