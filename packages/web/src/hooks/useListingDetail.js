@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 import { updateOfferStatus as updateOfferStatusService } from '@/services/offerService';
 import { getOrCreateConversation as getOrCreateConversationService } from '@/services/conversationService';
-import { addFavorite, removeFavorite, fetchUserFavoriteStatusForListings } from '@/services/favoriteService.js';
+import { addFavorite, removeFavorite, fetchUserFavoriteStatusForListings } from '@/services/favoriteService';
 import { useAuthStore } from '@/stores';
 
 export const useListingDetail = (listingId, setListings) => {

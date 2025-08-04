@@ -1,31 +1,81 @@
-FROM node:20-alpine
+# Multi-stage Dockerfile for Web Application
+# Development ve Production için optimize edilmiş
 
+# Base stage - ortak dependencies
+FROM node:20-alpine AS base
 WORKDIR /app
 
-# Sadece package.json dosyalarını kopyala
-COPY package.json pnpm-lock.yaml ./
-COPY packages/web/package.json ./packages/web/
-COPY packages/shared-types/package.json ./packages/shared-types/
-
-# pnpm install - minimal approach
+# Install pnpm globally
 RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile --no-verify-store-integrity --prefer-offline
 
-# Şimdi tüm kodu kopyala
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S appuser -u 1001
+
+# Dependencies stage - sadece package.json dosyalarını kopyala (cache layer)
+FROM base AS deps
+# Copy package files first (for better caching)
+COPY package.json pnpm-lock.yaml ./
+COPY packages/*/package.json ./packages/*/
+
+# Install dependencies (this layer will be cached if package.json doesn't change)
+RUN pnpm install --frozen-lockfile --no-verify-store-integrity
+
+# Development stage - hot reload için
+FROM base AS development
+# Copy dependencies from deps stage (including devDependencies)
+COPY --from=deps /app/node_modules ./node_modules
+# Copy source code (this layer changes frequently)
 COPY . .
-
-# Web klasörüne geç ve node_modules'ı kontrol et
 WORKDIR /app/packages/web
-RUN pnpm install --frozen-lockfile --no-verify-store-integrity --prefer-offline
 
-# Vite'ın tüm interface'leri dinlemesi için
+# Install devDependencies for development
+RUN pnpm install --frozen-lockfile
+
+# Fix permissions for Vite
+RUN chown -R appuser:nodejs /app/packages/web
+
+# Development environment variables
+ENV NODE_ENV=development
 ENV HOST=0.0.0.0
-# Rollup native binary'lerini devre dışı bırak
 ENV ROLLUP_SKIP_NATIVE=true
 ENV ROLLUP_SKIP_NATIVE_BINARY=true
 ENV NODE_OPTIONS="--no-experimental-fetch"
+EXPOSE 5173
 
-# Environment değişkenlerini build time'da kopyala (eğer varsa)
-COPY .env* ./
-
+# Switch to non-root user
+USER appuser
 CMD ["pnpm", "run", "dev"]
+
+# Build stage - Vite build
+FROM base AS builder
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+# Copy source code
+COPY . .
+WORKDIR /app/packages/web
+
+# Build the application (this layer changes when source code changes)
+RUN pnpm run build
+
+# Production stage - Nginx ile serve
+FROM nginx:alpine AS production
+# Copy built files (this layer changes when build changes)
+COPY --from=builder /app/packages/web/dist /usr/share/nginx/html
+# Copy nginx configuration
+COPY packages/web/nginx.conf /etc/nginx/nginx.conf
+
+# Create non-root user for nginx
+RUN addgroup -g 1001 -S nginx
+RUN adduser -S nginx -u 1001
+
+# Switch to non-root user
+USER nginx
+
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

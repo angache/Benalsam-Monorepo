@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { fetchFilteredListings } from '@/services/listingService/fetchers.js';
-import { saveLastSearch } from '@/services/userActivityService.js';
+import { fetchFilteredListings } from '@/services/listingService/fetchers';
+import { saveLastSearch } from '@/services/userActivityService';
 import { supabase } from '@/lib/supabaseClient';
 const PAGE_SIZE = 16;
 

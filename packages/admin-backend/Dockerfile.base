@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for Admin Backend
-# Development ve Production için optimize edilmiş
+# Base Dockerfile Template for Benalsam Monorepo
+# Bu template tüm paketler için ortak kullanılacak
 
 # Base stage - ortak dependencies
 FROM node:20-alpine AS base
@@ -12,25 +12,17 @@ RUN npm install -g pnpm
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S appuser -u 1001
 
-# Dependencies stage - sadece package.json dosyalarını kopyala (cache layer)
+# Dependencies stage - sadece package.json dosyalarını kopyala
 FROM base AS deps
-# Copy package files first (for better caching)
 COPY package.json pnpm-lock.yaml ./
 COPY packages/*/package.json ./packages/*/
-
-# Install dependencies (this layer will be cached if package.json doesn't change)
 RUN pnpm install --frozen-lockfile --no-verify-store-integrity
 
 # Development stage - hot reload için
 FROM base AS development
-# Copy dependencies from deps stage (including devDependencies)
 COPY --from=deps /app/node_modules ./node_modules
-# Copy source code (this layer changes frequently)
 COPY . .
 WORKDIR /app/packages/admin-backend
-
-# Install devDependencies for development
-RUN pnpm install --frozen-lockfile
 
 # Development environment variables
 ENV NODE_ENV=development
@@ -43,19 +35,10 @@ CMD ["pnpm", "run", "dev"]
 
 # Build stage - TypeScript compilation
 FROM base AS builder
-# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-# Copy source code
 COPY . .
 WORKDIR /app/packages/admin-backend
-
-# Build the application (this layer changes when source code changes)
 RUN pnpm run build
-
-# Security scanning stage
-FROM aquasec/trivy:latest AS security-scan
-COPY --from=builder /app/packages/admin-backend/dist /app/dist
-RUN trivy filesystem /app/dist --exit-code 1 --severity HIGH,CRITICAL --no-progress
 
 # Production stage - minimal production image
 FROM node:20-alpine AS production
@@ -68,14 +51,14 @@ RUN adduser -S appuser -u 1001
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy package files (cache layer)
+# Copy package files
 COPY package.json pnpm-lock.yaml ./
 COPY packages/*/package.json ./packages/*/
 
-# Install only production dependencies (cache layer)
+# Install only production dependencies
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built application (this layer changes when build changes)
+# Copy built application
 COPY --from=builder --chown=appuser:nodejs /app/packages/admin-backend/dist ./dist
 COPY --from=builder --chown=appuser:nodejs /app/packages/admin-backend/package.json ./package.json
 
@@ -88,7 +71,7 @@ ENV PORT=3002
 EXPOSE 3002
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/index.js"] 

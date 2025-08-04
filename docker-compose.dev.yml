@@ -1,0 +1,185 @@
+version: '3.8'
+
+networks:
+  benalsam-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      benalsam-network:
+        ipv4_address: 172.18.0.2
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    networks:
+      benalsam-network:
+        ipv4_address: 172.18.0.3
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+
+  admin-backend:
+    build:
+      context: .
+      dockerfile: ./packages/admin-backend/Dockerfile
+      target: development
+      # cache_from removed for local development
+      # args:
+      #   BUILDKIT_INLINE_CACHE: 1
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=benalsam_listings
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=http://localhost:3003,http://localhost:5173,http://127.0.0.1:3003,http://127.0.0.1:5173
+    ports:
+      - "3002:3002"
+    depends_on:
+      - redis
+      - elasticsearch
+    networks:
+      benalsam-network:
+        ipv4_address: 172.18.0.4
+    volumes:
+      # Hot reload için source code mount
+      - ./packages/admin-backend/src:/app/packages/admin-backend/src
+      - ./packages/shared-types/src:/app/packages/shared-types/src
+      - ./packages/admin-backend/package.json:/app/packages/admin-backend/package.json
+      - ./packages/shared-types/package.json:/app/packages/shared-types/package.json
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+      - /var/tmp
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  admin-ui:
+    build:
+      context: .
+      dockerfile: ./packages/admin-ui/Dockerfile
+      target: development
+      # cache_from removed for local development
+      # args:
+      #   BUILDKIT_INLINE_CACHE: 1
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - VITE_API_URL=http://admin-backend:3002/api/v1
+      - VITE_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - CORS_ORIGIN=http://localhost:3003,http://localhost:5173,http://127.0.0.1:3003,http://127.0.0.1:5173
+    ports:
+      - "3003:3003"
+    depends_on:
+      admin-backend:
+        condition: service_healthy
+    networks:
+      benalsam-network:
+        ipv4_address: 172.18.0.5
+    volumes:
+      # Hot reload için source code mount
+      - ./packages/admin-ui/src:/app/packages/admin-ui/src
+      - ./packages/shared-types/src:/app/packages/shared-types/src
+      - ./packages/admin-ui/package.json:/app/packages/admin-ui/package.json
+      - ./packages/shared-types/package.json:/app/packages/shared-types/package.json
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+    restart: unless-stopped
+    # Health check removed for Vite development server
+    # Vite dev server doesn't need health checks
+
+  web:
+    build:
+      context: .
+      dockerfile: ./packages/web/Dockerfile
+      target: development
+      # cache_from removed for local development
+      # args:
+      #   BUILDKIT_INLINE_CACHE: 1
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=5173
+      - VITE_API_URL=http://admin-backend:3002/api/v1
+      - VITE_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - CORS_ORIGIN=http://localhost:3003,http://localhost:5173,http://127.0.0.1:3003,http://127.0.0.1:5173
+    ports:
+      - "5173:5173"
+    depends_on:
+      admin-backend:
+        condition: service_healthy
+    networks:
+      benalsam-network:
+        ipv4_address: 172.18.0.6
+    volumes:
+      # Hot reload için source code mount
+      - ./packages/web/src:/app/packages/web/src
+      - ./packages/shared-types/src:/app/packages/shared-types/src
+      - ./packages/web/package.json:/app/packages/web/package.json
+      - ./packages/shared-types/package.json:/app/packages/shared-types/package.json
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+    restart: unless-stopped
+    # Health check removed for Vite development server
+    # Vite dev server doesn't need health checks
+
+volumes:
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+ 

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import ListingCard from '@/components/ListingCard';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
-import { fetchUserFavoriteStatusForListings } from '@/services/favoriteService.js';
+import { fetchUserFavoriteStatusForListings } from '@/services/favoriteService';
 
 const SuggestedListings = ({ currentListingId, category, onMakeOffer, onToggleFavorite, currentUser, openAuthModal }) => {
   const [suggested, setSuggested] = useState([]);

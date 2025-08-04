@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import ListingCard from '@/components/ListingCard';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
-import { fetchUserFavoriteStatusForListings } from '@/services/favoriteService.js';
+import { fetchUserFavoriteStatusForListings } from '@/services/favoriteService';
 
 
 const PopularInCategory = ({ currentListingId, category, sortBy = 'views_count', title, onMakeOffer, onToggleFavorite, currentUser, openAuthModal }) => {

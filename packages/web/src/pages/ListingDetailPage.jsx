@@ -18,7 +18,7 @@ import ListingActions from '@/components/ListingDetailPage/ListingActions';
 import EditListingModal from '@/components/EditListingModal';
 import UnpublishListingModal from '@/components/UnpublishListingModal';
 import { updateListingStatus, deleteListing } from '@/services/listingService';
-import { addToListingHistory } from '@/services/userActivityService.js';
+import { addToListingHistory } from '@/services/userActivityService';
 import { trackEvent } from '@/services/analyticsService';
 
 const ListingDetailPage = ({ setListings, onToggleFavorite }) => {

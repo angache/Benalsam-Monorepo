@@ -35,4 +35,6 @@ __exportStar(require("./analytics"), exports);
 __exportStar(require("./common"), exports);
 // Category Attributes Types
 __exportStar(require("./category-attributes"), exports);
+// Rate Limiting Types
+__exportStar(require("./rateLimitTypes"), exports);
 //# sourceMappingURL=index.js.map

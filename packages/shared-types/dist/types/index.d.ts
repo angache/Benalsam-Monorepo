@@ -7,4 +7,5 @@ export * from './admin';
 export * from './analytics';
 export * from './common';
 export * from './category-attributes';
+export * from './rateLimitTypes';
 //# sourceMappingURL=index.d.ts.map
