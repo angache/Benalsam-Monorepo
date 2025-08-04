@@ -40,18 +40,18 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
-      - PORT=3002
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_URL=redis://redis:6379
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - ELASTICSEARCH_INDEX=benalsam_listings
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-3002}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
+      - ELASTICSEARCH_INDEX=${ELASTICSEARCH_INDEX:-benalsam_listings}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - JWT_SECRET=${JWT_SECRET}
-      - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173}
     ports:
       - "3002:3002"
     depends_on:
@@ -69,13 +69,13 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
-      - PORT=3003
-      - VITE_API_URL=https://benalsam.com/api/v1
-      - VITE_ELASTICSEARCH_URL=http://209.227.228.96:9200
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-3003}
+      - VITE_API_URL=${VITE_API_URL:-https://benalsam.com/api/v1}
+      - VITE_ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
       - VITE_SUPABASE_URL=${SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173}
     ports:
       - "3003:3003"
     depends_on:
@@ -92,13 +92,13 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
-      - PORT=5173
-      - VITE_API_URL=https://benalsam.com/api/v1
-      - VITE_ELASTICSEARCH_URL=http://209.227.228.96:9200
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-5173}
+      - VITE_API_URL=${VITE_API_URL:-https://benalsam.com/api/v1}
+      - VITE_ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
       - VITE_SUPABASE_URL=${SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173}
     ports:
       - "5173:5173"
     depends_on:
