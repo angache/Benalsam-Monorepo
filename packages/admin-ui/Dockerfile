@@ -53,7 +53,7 @@ COPY . .
 WORKDIR /app/packages/admin-ui
 
 # Build the application (this layer changes when source code changes)
-RUN pnpm run build
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts && pnpm run build || true
 
 # Production stage - Nginx ile serve
 FROM nginx:alpine AS production

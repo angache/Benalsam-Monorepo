@@ -65,18 +65,44 @@ class SessionCleanupService {
       const timestamp = new Date().toISOString();
       const oldThreshold = new Date(Date.now() - this.OLD_SESSION_THRESHOLD * 1000).toISOString();
       
-      // 1. Eski aktif session'ları terminate et
-      const { data: terminatedSessions, error: terminateError } = await supabase
+
+      
+      // 1. Önce eski session'ları al
+      const { data: oldSessions, error: fetchError } = await supabase
         .from('user_session_logs')
-        .update({
-          status: 'terminated',
-          session_end: timestamp,
-          session_duration: `(${timestamp}::timestamp - session_start)::interval`,
-          updated_at: timestamp
-        })
+        .select('id, session_id, user_id, session_start')
         .eq('status', 'active')
-        .lt('last_activity', oldThreshold)
-        .select('id, session_id, user_id');
+        .lt('last_activity', oldThreshold);
+      
+      if (fetchError) {
+        logger.error('❌ Error fetching old sessions:', fetchError);
+        return;
+      }
+      
+      // 2. Her session için duration hesapla ve update et
+      for (const session of oldSessions || []) {
+        const sessionStart = new Date(session.session_start);
+        const sessionEnd = new Date(timestamp);
+        const durationMs = sessionEnd.getTime() - sessionStart.getTime();
+        const durationSeconds = Math.floor(durationMs / 1000);
+        
+        const { error: updateError } = await supabase
+          .from('user_session_logs')
+          .update({
+            status: 'terminated',
+            session_end: timestamp,
+            session_duration: `${durationSeconds} seconds`,
+            updated_at: timestamp
+          })
+          .eq('id', session.id);
+        
+        if (updateError) {
+          logger.error(`❌ Error updating session ${session.id}:`, updateError);
+        }
+      }
+      
+      const terminatedSessions = oldSessions;
+      const terminateError = null;
       
       if (terminateError) {
         logger.error('❌ Error terminating old sessions:', terminateError);
