@@ -25,7 +25,7 @@
     "noImplicitOverride": false,
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": false,
-    "types": ["jest", "node"],
+    "types": ["node"],
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"],
