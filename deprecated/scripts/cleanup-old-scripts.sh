@@ -1,6 +1,20 @@
 #!/bin/bash
 
-# Root .env dosyasını tüm paketlere kopyalar
+# ===== ESKI SCRIPTLERI TEMIZLEME =====
+
+echo "🧹 Eski scriptler temizleniyor..."
+
+# Deprecated scriptleri kaldır
+echo "🗑️  Deprecated scriptler kaldırılıyor..."
+rm -rf deprecated/scripts/
+
+# Eski copy-env scriptini güncelle
+echo "📝 copy-env-to-packages.sh güncelleniyor..."
+
+cat > scripts/copy-env-to-packages.sh << 'EOF'
+#!/bin/bash
+
+# ===== MERKEZI ENVIRONMENT YONETIMI =====
 # Kullanım: ./scripts/copy-env-to-packages.sh
 
 set -e
@@ -12,7 +26,7 @@ echo "🔍 Root .env dosyası aranıyor: $ENV_FILE"
 
 if [ ! -f "$ENV_FILE" ]; then
   echo "❌ HATA: $ENV_FILE bulunamadı!"
-  echo "📝 Lütfen önce root dizinde .env dosyası oluşturun."
+  echo "📝 Lütfen önce ./scripts/setup-env.sh çalıştırın."
   exit 1
 fi
 
@@ -56,4 +70,8 @@ for pkg in "${PACKAGES[@]}"; do
   echo "   - $pkg/.env"
 done
 echo ""
-echo "💡 Not: .env dosyaları .gitignore'a eklendi, Git'e gönderilmeyecek." 
+echo "💡 Not: .env dosyaları .gitignore'a eklendi, Git'e gönderilmeyecek."
+EOF
+
+echo "✅ Eski scriptler temizlendi!"
+echo "🔄 Yeni workflow için: ./scripts/setup-env.sh" 
