@@ -27,12 +27,6 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running as root
-if [[ $EUID -eq 0 ]]; then
-   print_error "This script should not be run as root"
-   exit 1
-fi
-
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
     print_error "Docker is not installed. Please install Docker first."
@@ -45,9 +39,9 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
-# Check if .env.production exists
-if [ ! -f ".env.production" ]; then
-    print_error ".env.production file not found. Please create it from env.production.example"
+# Check if .env exists
+if [ ! -f ".env" ]; then
+    print_error ".env file not found. Please create it from env.production.example"
     exit 1
 fi
 

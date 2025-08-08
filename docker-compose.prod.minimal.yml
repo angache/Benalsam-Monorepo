@@ -4,14 +4,20 @@ services:
   admin-backend:
     build:
       context: .
-      dockerfile: ./packages/admin-backend/Dockerfile
-      target: production
+      dockerfile: ./packages/admin-backend/Dockerfile.clean
     env_file:
-      - .env.production
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=3002
       - CORS_ORIGIN=https://admin.benalsam.com,https://benalsam.com
+      - NODE_OPTIONS=--max-old-space-size=512
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
     ports:
       - "3002:3002"
     networks:
@@ -27,19 +33,18 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
-          cpus: '0.3'
+          memory: 512M
+          cpus: '0.5'
         reservations:
-          memory: 128M
-          cpus: '0.1'
+          memory: 256M
+          cpus: '0.2'
 
   admin-ui:
     build:
       context: .
-      dockerfile: ./packages/admin-ui/Dockerfile
-      target: production
+      dockerfile: ./packages/admin-ui/Dockerfile.clean
     env_file:
-      - .env.production
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=3003
@@ -59,19 +64,18 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-          cpus: '0.2'
+          memory: 256M
+          cpus: '0.3'
         reservations:
-          memory: 64M
-          cpus: '0.05'
+          memory: 128M
+          cpus: '0.1'
 
   web:
     build:
       context: .
-      dockerfile: ./packages/web/Dockerfile
-      target: production
+      dockerfile: ./packages/web/Dockerfile.clean
     env_file:
-      - .env.production
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=5173
@@ -91,11 +95,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-          cpus: '0.2'
+          memory: 256M
+          cpus: '0.3'
         reservations:
-          memory: 64M
-          cpus: '0.05'
+          memory: 128M
+          cpus: '0.1'
 
   elasticsearch:
     image: elasticsearch:8.11.0
