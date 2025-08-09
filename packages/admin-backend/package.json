@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -93,7 +94,6 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 }

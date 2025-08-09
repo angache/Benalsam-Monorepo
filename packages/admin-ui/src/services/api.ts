@@ -665,25 +665,11 @@ export const apiService = {
               return response.data;
             },
 
-            async getAlerts(status?: string, severity?: string, limit?: number): Promise<any> {
-              const params = new URLSearchParams();
-              if (status) params.append('status', status);
-              if (severity) params.append('severity', severity);
-              if (limit) params.append('limit', limit.toString());
-              
-              const response = await apiClient.get(`/alerts?${params.toString()}`);
-              return response.data;
-            },
 
-            async acknowledgeAlert(id: string, acknowledgedBy: string): Promise<any> {
-              const response = await apiClient.post(`/alerts/${id}/acknowledge`, { acknowledgedBy });
-              return response.data;
-            },
 
-            async resolveAlert(id: string): Promise<any> {
-              const response = await apiClient.post(`/alerts/${id}/resolve`);
-              return response.data;
-            },
+
+
+
 
             async getAlertMetrics(days: number = 7): Promise<any> {
               const response = await apiClient.get(`/alerts/metrics?days=${days}`);

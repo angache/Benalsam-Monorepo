@@ -1,94 +1,43 @@
-# Multi-stage Dockerfile for Admin Backend
-# Development ve Production için optimize edilmiş
-
-# Base stage - ortak dependencies
+# Multi-stage Dockerfile for Admin Backend - NPM only
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Install pnpm globally
-RUN npm install -g pnpm
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S appuser -u 1001
-
-# Dependencies stage - sadece package.json dosyalarını kopyala (cache layer)
-FROM base AS deps
-# Copy package files first (for better caching)
-COPY package.json pnpm-lock.yaml ./
-COPY packages/*/package.json ./packages/*/
-
-# Install dependencies (this layer will be cached if package.json doesn't change)
-RUN pnpm install --frozen-lockfile --no-verify-store-integrity
-
-# Development stage - hot reload için
-FROM base AS development
-# Copy dependencies from deps stage (including devDependencies)
-COPY --from=deps /app/node_modules ./node_modules
-# Copy source code (this layer changes frequently)
-COPY . .
-WORKDIR /app/packages/admin-backend
-
-# Install devDependencies for development
-RUN pnpm install --frozen-lockfile
-
-# Development environment variables
-ENV NODE_ENV=development
-ENV HOST=0.0.0.0
-EXPOSE 3002
-
-# Switch to non-root user
-USER appuser
-CMD ["pnpm", "run", "dev"]
-
-# Build stage - TypeScript compilation
-FROM base AS builder
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-# Copy source code
-COPY . .
-WORKDIR /app/packages/admin-backend
-
-# Build the application (this layer changes when source code changes)
-RUN pnpm run build
-
-# Security scanning stage
-FROM aquasec/trivy:latest AS security-scan
-COPY --from=builder /app/packages/admin-backend/dist /app/dist
-RUN trivy filesystem /app/dist --exit-code 1 --severity HIGH,CRITICAL --no-progress
-
-# Production stage - minimal production image
-FROM node:20-alpine AS production
-WORKDIR /app
-
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S appuser -u 1001
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S appuser -u 1001
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy package files (cache layer)
-COPY package.json pnpm-lock.yaml ./
+# Dependencies stage
+FROM base AS deps
+COPY package.json ./
 COPY packages/*/package.json ./packages/*/
+RUN npm install
 
-# Install only production dependencies (cache layer)
-RUN pnpm install --frozen-lockfile --prod
+# Development stage
+FROM base AS development
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+WORKDIR /app/packages/admin-backend
+RUN npm install --ignore-scripts
 
-# Copy built application (this layer changes when build changes)
-COPY --from=builder --chown=appuser:nodejs /app/packages/admin-backend/dist ./dist
-COPY --from=builder --chown=appuser:nodejs /app/packages/admin-backend/package.json ./package.json
-
-# Switch to non-root user
 USER appuser
-
-# Production environment variables
-ENV NODE_ENV=production
-ENV PORT=3002
 EXPOSE 3002
+CMD ["npm", "run", "dev"]
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Build stage
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+WORKDIR /app/packages/admin-backend
+RUN npm install --ignore-scripts
+RUN npm run build
 
+# Production stage
+FROM base AS production
+COPY --from=builder /app/packages/admin-backend/dist ./dist
+COPY --from=builder /app/packages/admin-backend/package.json ./package.json
+RUN npm install --only=production
+
+USER appuser
+EXPOSE 3002
+ENV NODE_ENV=production
 CMD ["node", "dist/index.js"]

@@ -77,7 +77,7 @@ export class AuthService {
       return { data: user };
     } catch (error) {
       console.error('Sign up error:', error);
-      return { error: { message: 'Kayıt işlemi başarısız oldu' } };
+      return { error: { message: 'Kayıt işlemi başarısız oldu', code: 'SIGNUP_FAILED' } };
     }
   }
 
@@ -96,7 +96,7 @@ export class AuthService {
       }
 
       if (!authData.user) {
-        return { error: { message: 'Giriş başarısız' } };
+        return { error: { message: 'Giriş başarısız', code: 'SIGNIN_FAILED' } };
       }
 
       // Kullanıcı bilgilerini getir
@@ -104,7 +104,7 @@ export class AuthService {
       return { data: user };
     } catch (error) {
       console.error('Sign in error:', error);
-      return { error: { message: 'Giriş işlemi başarısız oldu' } };
+      return { error: { message: 'Giriş işlemi başarısız oldu', code: 'SIGNIN_ERROR' } };
     }
   }
 
@@ -122,7 +122,7 @@ export class AuthService {
       return { data: undefined };
     } catch (error) {
       console.error('Sign out error:', error);
-      return { error: { message: 'Çıkış işlemi başarısız oldu' } };
+      return { error: { message: 'Çıkış işlemi başarısız oldu', code: 'SIGNOUT_FAILED' } };
     }
   }
 
@@ -145,7 +145,7 @@ export class AuthService {
       return { data: user };
     } catch (error) {
       console.error('Get session error:', error);
-      return { error: { message: 'Oturum bilgisi alınamadı' } };
+      return { error: { message: 'Oturum bilgisi alınamadı', code: 'SESSION_ERROR' } };
     }
   }
 
@@ -183,7 +183,7 @@ export class AuthService {
       return { data };
     } catch (error) {
       console.error('Update profile error:', error);
-      return { error: { message: 'Profil güncellenemedi' } };
+      return { error: { message: 'Profil güncellenemedi', code: 'PROFILE_UPDATE_FAILED' } };
     }
   }
 
@@ -203,7 +203,7 @@ export class AuthService {
       return { data: undefined };
     } catch (error) {
       console.error('Reset password error:', error);
-      return { error: { message: 'Şifre sıfırlama e-postası gönderilemedi' } };
+      return { error: { message: 'Şifre sıfırlama e-postası gönderilemedi', code: 'RESET_PASSWORD_FAILED' } };
     }
   }
 
@@ -264,7 +264,7 @@ export class AuthService {
       return { data: undefined };
     } catch (error) {
       console.error('Verify email error:', error);
-      return { error: { message: 'E-posta doğrulanamadı' } };
+      return { error: { message: 'E-posta doğrulanamadı', code: 'EMAIL_VERIFICATION_FAILED' } };
     }
   }
 }

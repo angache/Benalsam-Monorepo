@@ -23,7 +23,7 @@
     "clean": "rm -rf dist dist-esm",
     "prebuild": "npm run clean",
     "postinstall": "echo 'Skipping build for now'",
-    "prepare": "npm run build",
+    "prepare": "echo 'Skipping prepare for Docker build'",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [

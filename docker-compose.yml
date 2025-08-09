@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 networks:
   benalsam-network:
@@ -6,37 +6,86 @@ networks:
     ipam:
       config:
         - subnet: 172.18.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: benalsam-bridge
+
+volumes:
+  redis-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
 
 services:
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
     networks:
       benalsam-network:
         ipv4_address: 172.18.0.2
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   elasticsearch:
     image: elasticsearch:8.11.0
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
     ports:
       - "9200:9200"
       - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 1g
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
     networks:
       benalsam-network:
         ipv4_address: 172.18.0.3
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
 
   admin-backend:
     build:
       context: .
       dockerfile: ./packages/admin-backend/Dockerfile
+      target: development
+      cache_from:
+        - benalsam-admin-backend:cache
     env_file:
       - .env
     environment:
@@ -55,17 +104,42 @@ services:
     ports:
       - "3002:3002"
     depends_on:
-      - redis
-      - elasticsearch
-    command: ["pnpm", "run", "dev"]
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    command: ["npm", "run", "dev"]
     networks:
       benalsam-network:
         ipv4_address: 172.18.0.4
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   admin-ui:
     build:
       context: .
       dockerfile: ./packages/admin-ui/Dockerfile
+      target: development
+      cache_from:
+        - benalsam-admin-ui:cache
     env_file:
       - .env
     environment:
@@ -79,16 +153,40 @@ services:
     ports:
       - "3003:3003"
     depends_on:
-      - admin-backend
-    command: ["pnpm", "run", "dev"]
+      admin-backend:
+        condition: service_healthy
+    command: ["npm", "run", "dev"]
     networks:
       benalsam-network:
         ipv4_address: 172.18.0.5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   web:
     build:
       context: .
       dockerfile: ./packages/web/Dockerfile
+      target: development
+      cache_from:
+        - benalsam-web:cache
     env_file:
       - .env
     environment:
@@ -102,8 +200,29 @@ services:
     ports:
       - "5173:5173"
     depends_on:
-      - admin-backend
-    command: ["pnpm", "run", "dev"]
+      admin-backend:
+        condition: service_healthy
+    command: ["npm", "run", "dev"]
     networks:
       benalsam-network:
-        ipv4_address: 172.18.0.6 
+        ipv4_address: 172.18.0.6
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3" 

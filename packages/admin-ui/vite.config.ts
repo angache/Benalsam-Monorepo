@@ -32,6 +32,8 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
+  // Cache directory configuration for Docker
+  cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
   define: {
     'process.env': {},
     'import.meta.env.VITE_API_URL': JSON.stringify('http://localhost:3002/api/v1'),

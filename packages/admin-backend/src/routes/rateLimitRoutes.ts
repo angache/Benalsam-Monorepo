@@ -3,7 +3,7 @@
 import { Router } from 'express';
 import { sharedRateLimitService } from '../services/rateLimitService';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * POST /api/rate-limit/check

@@ -15,7 +15,7 @@ export const REPORT_REASONS = {
 } as const;
 
 export const createListingReport = async (reportData: Partial<ListingReport>): Promise<ListingReport | null> => {
-  const { reporter_id, listing_id, reason, details } = reportData;
+  const { reporter_id, listing_id, reason } = reportData;
 
   if (!reporter_id || !listing_id || !reason) {
     toast({ title: "Eksik Bilgi", description: "Şikayet oluşturmak için gerekli tüm alanlar doldurulmalıdır.", variant: "destructive" });
@@ -29,7 +29,6 @@ export const createListingReport = async (reportData: Partial<ListingReport>): P
         reporter_id, 
         listing_id, 
         reason, 
-        details,
         status: 'pending',
         created_at: new Date().toISOString()
       }])

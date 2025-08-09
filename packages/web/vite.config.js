@@ -29,6 +29,8 @@ export default defineConfig({
 			'@benalsam/shared-types': path.resolve(__dirname, '../shared-types/dist-esm'),
 		},
 	},
+	// Cache directory configuration for Docker
+	cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
 	build: {
 		rollupOptions: {
 			output: {

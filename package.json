@@ -2,9 +2,7 @@
   "name": "benalsam-monorepo",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+
   "scripts": {
     "build": "lerna run build --stream",
     "dev": "lerna run dev --parallel --stream",
@@ -23,7 +21,7 @@
     "pm2:status": "pm2 status",
     "pm2:monit": "pm2 monit",
     "pm2:flush": "pm2 flush",
-    "dev:pm2": "pnpm run pm2:start && pnpm run pm2:logs",
+    "dev:pm2": "npm run pm2:start && npm run pm2:logs",
     "pm2:start:prod": "pm2 start ecosystem.production.config.js",
     "pm2:stop:prod": "pm2 stop ecosystem.production.config.js",
     "pm2:restart:prod": "pm2 restart ecosystem.production.config.js",
@@ -33,10 +31,10 @@
     "pm2:status:prod": "pm2 status",
     "pm2:monit:prod": "pm2 monit",
     "deploy:prod": "pm2 deploy production",
-    "vps:setup": "pnpm install && pnpm run build && pm2 start ecosystem.production.config.js",
+    "vps:setup": "npm install && npm run build && pm2 start ecosystem.production.config.js",
     "vps:deploy": "./scripts/deploy-vps.sh",
-    "monorepo:clean": "lerna clean && pnpm store prune",
-    "monorepo:bootstrap": "lerna bootstrap",
+    "monorepo:clean": "lerna clean && npm cache clean --force",
+    "monorepo:bootstrap": "npm install",
     "monorepo:build:all": "lerna run build --stream",
     "monorepo:dev:all": "lerna run dev --parallel --stream",
     "monorepo:test:all": "lerna run test --stream",
@@ -54,7 +52,6 @@
     "prettier": "^3.0.0"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 } 

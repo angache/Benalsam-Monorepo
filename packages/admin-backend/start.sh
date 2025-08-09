@@ -31,4 +31,4 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 ADMIN_JWT_SECRET=your-admin-jwt-secret-key-here \
 PORT=3002 \
 NODE_ENV=development \
-pnpm run dev 
+npm run dev 

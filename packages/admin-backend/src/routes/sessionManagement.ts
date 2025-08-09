@@ -4,7 +4,7 @@ import sessionCleanupService from '../services/sessionCleanupService';
 import logger from '../config/logger';
 import { supabase } from '../index';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Session cleanup endpoint
 router.post('/cleanup', authenticateToken, async (req, res) => {

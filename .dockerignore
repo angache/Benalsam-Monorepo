@@ -1,3 +1,6 @@
+# ===== DOCKER IGNORE =====
+# Exclude unnecessary files from Docker build context
+
 # Dependencies
 node_modules
 npm-debug.log*
@@ -7,42 +10,30 @@ pnpm-debug.log*
 
 # Build outputs
 dist
+dist-esm
 build
 .next
-.nuxt
-.vuepress/dist
+out
 
 # Environment files
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.production
+.env.test
 
-# IDE files
+# Development files
+.git
+.gitignore
+README.md
+*.md
 .vscode
+.cursor
 .idea
-*.swp
-*.swo
-*~
 
 # OS files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-
-# Git
-.git
-.gitignore
-
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
 
 # Logs
 logs
@@ -94,7 +85,6 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -120,28 +110,15 @@ temp/
 
 # Expo
 .expo/
-dist/
 web-build/
-
-# Local development
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Testing
 coverage/
 .nyc_output/
 
-# Documentation
-docs/
-*.md
-!README.md
+# Production
+build/
+dist/
 
-# Scripts
-scripts/
-tools/
-
-# Backup files
-*.backup
-*.bak 
+# Misc
+*.tsbuildinfo 
