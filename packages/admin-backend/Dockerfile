@@ -43,6 +43,9 @@ COPY --from=builder /app/packages/admin-backend/dist ./dist
 COPY --from=builder /app/packages/admin-backend/package.json ./package.json
 RUN npm install --only=production
 
+# Create logs directory and set permissions BEFORE switching user
+RUN mkdir -p /app/logs && chown -R appuser:nodejs /app/logs
+
 USER appuser
 EXPOSE 3002
 ENV NODE_ENV=production

@@ -3,8 +3,12 @@ import path from 'path';
 
 // Create logs directory if it doesn't exist
 import fs from 'fs';
-const logsDir = path.join(__dirname, '../../logs');
-if (!fs.existsSync(logsDir)) {
+const logsDir = process.env.NODE_ENV === 'production' 
+  ? '/app/logs' 
+  : path.join(__dirname, '../../logs');
+
+// Only create directory if not in production (Docker handles this)
+if (process.env.NODE_ENV !== 'production' && !fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
@@ -30,16 +34,13 @@ const logger = winston.createLogger({
   ],
 });
 
-// If we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
+// Always log to console in production, and in development
+logger.add(new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  )
+}));
 
 // Create a stream object for Morgan
 export const logStream = {
