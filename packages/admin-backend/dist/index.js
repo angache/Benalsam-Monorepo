@@ -28,8 +28,20 @@ const alerts_1 = __importDefault(require("./routes/alerts"));
 const dataExport_1 = __importDefault(require("./routes/dataExport"));
 const dataExportV2_1 = __importDefault(require("./routes/dataExportV2"));
 const loadTesting_1 = __importDefault(require("./routes/loadTesting"));
+const sessionManagement_1 = __importDefault(require("./routes/sessionManagement"));
+const cache_1 = __importDefault(require("./routes/cache"));
+const search_1 = __importDefault(require("./routes/search"));
+const apiCache_1 = __importDefault(require("./routes/apiCache"));
+const test_1 = __importDefault(require("./routes/test"));
+const cacheAnalytics_1 = __importDefault(require("./routes/cacheAnalytics"));
+const predictiveCache_1 = __importDefault(require("./routes/predictiveCache"));
+const geographicCache_1 = __importDefault(require("./routes/geographicCache"));
+const smartInvalidation_1 = __importDefault(require("./routes/smartInvalidation"));
+const cacheCompression_1 = __importDefault(require("./routes/cacheCompression"));
+const rateLimitRoutes_1 = __importDefault(require("./routes/rateLimitRoutes"));
 const elasticsearchService_1 = require("./services/elasticsearchService");
 const queueProcessorService_1 = __importDefault(require("./services/queueProcessorService"));
+const sessionCleanupService_1 = __importDefault(require("./services/sessionCleanupService"));
 const auth_2 = require("./middleware/auth");
 const errorHandler_1 = require("./middleware/errorHandler");
 const app_1 = require("./config/app");
@@ -114,6 +126,17 @@ app.use('/api/v1/alerts', alerts_1.default);
 app.use('/api/v1/data-export', dataExport_1.default);
 app.use('/api/v1/data-export-v2', dataExportV2_1.default);
 app.use('/api/v1/load-testing', loadTesting_1.default);
+app.use('/api/v1/session-management', sessionManagement_1.default);
+app.use('/api/v1/cache', cache_1.default);
+app.use('/api/v1/search', search_1.default);
+app.use('/api/v1/api-cache', apiCache_1.default);
+app.use('/api/v1/test', test_1.default);
+app.use('/api/v1/cache-analytics', cacheAnalytics_1.default);
+app.use('/api/v1/predictive-cache', predictiveCache_1.default);
+app.use('/api/v1/geographic-cache', geographicCache_1.default);
+app.use('/api/v1/smart-invalidation', smartInvalidation_1.default);
+app.use('/api/v1/cache-compression', cacheCompression_1.default);
+app.use('/api/v1/rate-limit', rateLimitRoutes_1.default);
 app.use(errorHandler_1.errorHandler);
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -143,6 +166,13 @@ const startServer = async () => {
         }
         catch (error) {
             logger_1.default.error('❌ Queue processor failed to start:', error);
+        }
+        try {
+            await sessionCleanupService_1.default.start();
+            logger_1.default.info('✅ Session cleanup service started');
+        }
+        catch (error) {
+            logger_1.default.error('❌ Session cleanup service failed to start:', error);
         }
         try {
             const redis = new ioredis_1.default({

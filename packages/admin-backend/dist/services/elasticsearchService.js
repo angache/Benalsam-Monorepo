@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.elasticsearchClient = exports.AdminElasticsearchService = void 0;
 const elasticsearch_1 = require("@elastic/elasticsearch");
 const logger_1 = __importDefault(require("../config/logger"));
+const searchCacheService_1 = __importDefault(require("./searchCacheService"));
 class AdminElasticsearchService {
     client;
     defaultIndexName;
@@ -281,8 +282,13 @@ class AdminElasticsearchService {
             const response = await client.search({
                 index: indexName,
                 size: options.size || 10,
-                query: {
-                    match_all: {}
+                body: {
+                    query: {
+                        match_all: {}
+                    },
+                    sort: [
+                        { timestamp: { order: 'desc' } }
+                    ]
                 }
             });
             return response;
@@ -503,7 +509,18 @@ class AdminElasticsearchService {
     }
     async searchListings(params) {
         try {
-            const { query, filters, sort, page = 1, limit = 20 } = params;
+            const { query, filters, sort, page = 1, limit = 20, sessionId } = params;
+            const cachedResults = await searchCacheService_1.default.getCachedSearch(params, sessionId);
+            if (cachedResults) {
+                logger_1.default.info('🎯 Search results served from cache');
+                return {
+                    success: true,
+                    data: cachedResults.results,
+                    total: cachedResults.total,
+                    aggregations: cachedResults.aggregations,
+                    fromCache: true
+                };
+            }
             const searchQuery = {
                 bool: {
                     must: [],
@@ -605,17 +622,20 @@ class AdminElasticsearchService {
             const total = typeof response.hits.total === 'number'
                 ? response.hits.total
                 : response.hits.total?.value || 0;
+            const results = response.hits.hits.map((hit) => ({
+                id: hit._id,
+                score: hit._score,
+                ...hit._source
+            }));
+            await searchCacheService_1.default.cacheSearchResults(params, results, total, response.aggregations, sessionId);
             return {
-                hits: response.hits.hits.map((hit) => ({
-                    id: hit._id,
-                    score: hit._score,
-                    ...hit._source
-                })),
+                hits: results,
                 total,
                 aggregations: response.aggregations,
                 page,
                 limit,
-                totalPages: Math.ceil(total / limit)
+                totalPages: Math.ceil(total / limit),
+                fromCache: false
             };
         }
         catch (error) {

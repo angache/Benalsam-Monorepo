@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# VPS Production Deployment Script
-# Bu script VPS'de production deployment yapar
+# VPS Production Deployment Script - ROOT VERSION
+# Bu script VPS'de root olarak production deployment yapar
 
 set -e
 
-echo "🚀 VPS Production Deployment Başlıyor..."
+echo "🚀 VPS Production Deployment (ROOT) Başlıyor..."
 
 # Colors
 RED='\033[0;31m'
@@ -18,16 +18,16 @@ PROJECT_NAME="benalsam"
 COMPOSE_FILE="docker-compose.production.yml"
 ENV_FILE=".env"
 
-# Check if running as root
-if [[ $EUID -eq 0 ]]; then
-   echo -e "${YELLOW}⚠️  Root olarak çalışıyorsunuz. Dikkatli olun!${NC}"
-   # Root için güvenlik uyarısı ama devam et
-fi
+echo -e "${YELLOW}🔐 Root olarak çalışıyorsunuz - Güvenlik uyarısı!${NC}"
 
 # Check if .env exists
 if [ ! -f "$ENV_FILE" ]; then
     echo -e "${RED}❌ .env dosyası bulunamadı!${NC}"
-    exit 1
+    echo -e "${YELLOW}📝 .env dosyası oluşturuluyor...${NC}"
+    cp env.consolidated.example .env
+    echo -e "${YELLOW}⚠️  Lütfen .env dosyasını düzenleyin ve production değerlerini girin!${NC}"
+    echo -e "${YELLOW}   Örnek: nano .env${NC}"
+    read -p "Devam etmek için Enter'a basın..."
 fi
 
 # Check if production compose file exists
@@ -40,26 +40,32 @@ echo -e "${YELLOW}📋 Pre-flight checks...${NC}"
 
 # Check Docker
 if ! command -v docker &> /dev/null; then
-    echo -e "${RED}❌ Docker bulunamadı!${NC}"
-    exit 1
+    echo -e "${RED}❌ Docker bulunamadı! Kuruluyor...${NC}"
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+    systemctl start docker
+    systemctl enable docker
 fi
 
 # Check Docker Compose
 if ! command -v docker-compose &> /dev/null; then
-    echo -e "${RED}❌ Docker Compose bulunamadı!${NC}"
-    exit 1
+    echo -e "${RED}❌ Docker Compose bulunamadı! Kuruluyor...${NC}"
+    curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
 fi
 
 # Check available memory
 TOTAL_MEM=$(free -m | awk 'NR==2{printf "%.0f", $2}')
 if [ "$TOTAL_MEM" -lt 2048 ]; then
     echo -e "${YELLOW}⚠️  Düşük RAM: ${TOTAL_MEM}MB (Minimum 2GB önerilir)${NC}"
+    read -p "Devam etmek için Enter'a basın..."
 fi
 
 # Check available disk space
 DISK_SPACE=$(df -BG . | awk 'NR==2{print $4}' | sed 's/G//')
 if [ "$DISK_SPACE" -lt 10 ]; then
     echo -e "${YELLOW}⚠️  Düşük disk alanı: ${DISK_SPACE}GB (Minimum 10GB önerilir)${NC}"
+    read -p "Devam etmek için Enter'a basın..."
 fi
 
 echo -e "${GREEN}✅ Pre-flight checks tamamlandı${NC}"
@@ -129,7 +135,7 @@ docker-compose -f $COMPOSE_FILE ps
 echo -e "${YELLOW}📈 Resource kullanımı:${NC}"
 docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
 
-echo -e "${GREEN}🎉 VPS Production Deployment tamamlandı!${NC}"
+echo -e "${GREEN}🎉 VPS Production Deployment (ROOT) tamamlandı!${NC}"
 echo -e "${YELLOW}🌐 Servisler:${NC}"
 echo -e "   Web: http://localhost:80"
 echo -e "   Admin UI: http://localhost:3003"
@@ -139,3 +145,8 @@ echo -e "   Redis: localhost:6379"
 
 echo -e "${YELLOW}📝 Logları görmek için:${NC}"
 echo -e "   docker-compose -f $COMPOSE_FILE logs -f"
+
+echo -e "${YELLOW}🔧 Yönetim komutları:${NC}"
+echo -e "   Durdur: docker-compose -f $COMPOSE_FILE down"
+echo -e "   Yeniden başlat: docker-compose -f $COMPOSE_FILE restart"
+echo -e "   Güncelle: docker-compose -f $COMPOSE_FILE pull && docker-compose -f $COMPOSE_FILE up -d"

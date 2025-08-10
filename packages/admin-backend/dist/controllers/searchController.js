@@ -37,8 +37,9 @@ class SearchController {
                 sortOrder,
                 attributes
             };
+            const sessionId = req.headers['x-session-id'];
             logger_1.default.info('Search request:', searchParams);
-            const result = await searchService_1.searchService.searchListings(searchParams);
+            const result = await searchService_1.searchService.searchListings(searchParams, sessionId);
             return res.status(200).json({
                 success: true,
                 data: result.data,

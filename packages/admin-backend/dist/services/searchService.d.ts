@@ -37,7 +37,7 @@ export declare class SearchService {
     private getSupabaseClient;
     private initializeElasticsearch;
     private initializeRedis;
-    searchListings(params: SearchParams): Promise<SearchResult>;
+    searchListings(params: SearchParams, sessionId?: string): Promise<SearchResult>;
     private elasticsearchSearch;
     private supabaseSearch;
     private getCachedResult;

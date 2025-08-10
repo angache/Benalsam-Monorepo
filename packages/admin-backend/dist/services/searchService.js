@@ -43,10 +43,10 @@ class SearchService {
             logger_1.default.warn('Redis not available, caching disabled');
         }
     }
-    async searchListings(params) {
+    async searchListings(params, sessionId) {
         const startTime = Date.now();
         try {
-            const cached = await this.getCachedResult(params);
+            const cached = await this.getCachedResult(params, sessionId);
             if (cached) {
                 return {
                     ...cached,
@@ -69,7 +69,7 @@ class SearchService {
                 }
             }
             const result = await this.supabaseSearch(params);
-            await this.cacheResult(params, result);
+            await this.cacheResult(params, result, sessionId);
             return {
                 ...result,
                 responseTime: Date.now() - startTime,
@@ -171,7 +171,7 @@ class SearchService {
             throw error;
         }
     }
-    async getCachedResult(params) {
+    async getCachedResult(params, sessionId) {
         if (!this.redisClient)
             return null;
         try {
@@ -184,7 +184,7 @@ class SearchService {
             return null;
         }
     }
-    async cacheResult(params, result) {
+    async cacheResult(params, result, sessionId) {
         if (!this.redisClient)
             return;
         try {

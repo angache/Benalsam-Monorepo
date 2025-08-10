@@ -36,6 +36,7 @@ export declare class AdminElasticsearchService {
         sort?: any;
         page?: number;
         limit?: number;
+        sessionId?: string;
     }): Promise<any>;
     private transformListingForElasticsearch;
     private generateSearchKeywords;
