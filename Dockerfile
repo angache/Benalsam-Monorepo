@@ -9,7 +9,7 @@ COPY packages/*/package*.json ./packages/*/
 
 # Install dependencies
 RUN npm install -g pnpm
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -40,4 +40,4 @@ USER node
 EXPOSE 3002 3003 3004
 
 # Default command
-CMD ["pnpm", "--filter", "@benalsam/admin-backend", "start"]
+CMD ["npm", "run", "start", "--prefix", "packages/admin-backend"]

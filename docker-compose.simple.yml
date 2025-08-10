@@ -12,7 +12,7 @@ services:
       - PORT=3002
     volumes:
       - ./logs:/app/logs
-    command: ["pnpm", "--filter", "@benalsam/admin-backend", "start"]
+    command: ["npm", "run", "start", "--prefix", "packages/admin-backend"]
     restart: unless-stopped
 
   admin-ui:
@@ -24,7 +24,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3003
-    command: ["pnpm", "--filter", "@benalsam/admin-ui", "start"]
+    command: ["npm", "run", "start", "--prefix", "packages/admin-ui"]
     restart: unless-stopped
 
   web:
@@ -36,7 +36,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3004
-    command: ["pnpm", "--filter", "@benalsam/web", "start"]
+    command: ["npm", "run", "start", "--prefix", "packages/web"]
     restart: unless-stopped
 
   redis:
