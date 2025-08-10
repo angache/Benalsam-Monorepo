@@ -7,9 +7,14 @@ const logsDir = process.env.NODE_ENV === 'production'
   ? '/app/logs' 
   : path.join(__dirname, '../../logs');
 
-// Only create directory if not in production (Docker handles this)
-if (process.env.NODE_ENV !== 'production' && !fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+// Create directory if it doesn't exist (Docker handles permissions)
+if (!fs.existsSync(logsDir)) {
+  try {
+    fs.mkdirSync(logsDir, { recursive: true });
+  } catch (error) {
+    // If we can't create logs directory, use console only
+    console.warn('Could not create logs directory, using console only');
+  }
 }
 
 // Create logger instance
