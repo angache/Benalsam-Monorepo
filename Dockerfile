@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy everything first
 COPY . .
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 RUN npm install
 
 # Build shared-types
