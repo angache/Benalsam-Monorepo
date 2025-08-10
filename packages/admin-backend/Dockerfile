@@ -27,8 +27,14 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Build shared-types first
+WORKDIR /app/packages/shared-types
+RUN npm run build
+
+# Build the application
 WORKDIR /app/packages/admin-backend
-RUN npm install --ignore-scripts
+RUN npm install
 RUN npm run build
 
 # Production stage
