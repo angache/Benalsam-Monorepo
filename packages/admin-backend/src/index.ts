@@ -53,6 +53,7 @@ import logger from './config/logger';
 config();
 
 const app = express();
+// 🚀 Hot reload test - bu yorum değişikliği otomatik yansımalı
 const PORT = process.env.PORT || 3002;
 
 // Initialize Supabase client
@@ -275,3 +276,5 @@ process.on('SIGINT', async () => {
 // Start the server
 startServer();
 
+// Test değişikliği Sun Aug 10 10:52:51 +03 2025
+// Hot reload test Sun Aug 10 10:57:18 +03 2025

@@ -298,17 +298,46 @@ export class AdminElasticsearchService {
         tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
       });
       
+      // Check if index exists and get mapping
+      const indexExists = await client.indices.exists({ index: indexName });
+      if (!indexExists) {
+        logger.warn(`Index ${indexName} does not exist`);
+        return { hits: { hits: [], total: { value: 0 } } };
+      }
+
+      // Get index mapping to check available fields
+      const mapping = await client.indices.getMapping({ index: indexName });
+      const fields = Object.keys(mapping[indexName].mappings.properties || {});
+      
+      // Determine sort field based on available fields
+      let sortField = null;
+      if (fields.includes('timestamp')) {
+        sortField = 'timestamp';
+      } else if (fields.includes('created_at')) {
+        sortField = 'created_at';
+      } else if (fields.includes('updated_at')) {
+        sortField = 'updated_at';
+      } else if (fields.includes('createdAt')) {
+        sortField = 'createdAt';
+      }
+      
+      const searchBody: any = {
+        query: {
+          match_all: {}
+        }
+      };
+      
+      // Only add sort if we have a valid sort field
+      if (sortField) {
+        searchBody.sort = [
+          { [sortField]: { order: 'desc' } }
+        ];
+      }
+      
       const response = await client.search({
         index: indexName,
         size: options.size || 10,
-        body: {
-          query: {
-            match_all: {}
-          },
-          sort: [
-            { timestamp: { order: 'desc' } }
-          ]
-        }
+        body: searchBody
       });
       
       return response;

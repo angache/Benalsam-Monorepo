@@ -14,7 +14,7 @@ export default defineConfig({
     host: '0.0.0.0', // Tüm network interface'lerini dinle
     strictPort: true, // Port kullanımdaysa hata ver
     cors: true, // CORS'u etkinleştir
-    hmr: false, // VPS'de HMR sorunları yaşanıyor, devre dışı bırak
+    hmr: true, // Hot Module Replacement etkinleştir
     allowedHosts: [
       'benalsam.com',
       'www.benalsam.com',

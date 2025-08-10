@@ -45,6 +45,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function App() {
+  // 🚀 Hot reload test - bu yorum değişikliği otomatik yansımalı
   return (
     <QueryClientProvider client={queryClient}>
       <CustomThemeProvider>
@@ -260,3 +261,6 @@ function App() {
 }
 
 export default App;
+// Test değişikliği Sun Aug 10 10:52:23 +03 2025
+// Hot reload test Sun Aug 10 10:53:18 +03 2025
+// Hot reload test Sun Aug 10 10:57:31 +03 2025

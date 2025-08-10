@@ -103,6 +103,10 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173}
     ports:
       - "3002:3002"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/admin-backend/node_modules
     depends_on:
       redis:
         condition: service_healthy
@@ -152,6 +156,10 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173}
     ports:
       - "3003:3003"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/admin-ui/node_modules
     depends_on:
       admin-backend:
         condition: service_healthy
@@ -199,6 +207,10 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-https://admin.benalsam.com,https://benalsam.com,http://209.227.228.96:3003,http://209.227.228.96:5173}
     ports:
       - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/web/node_modules
     depends_on:
       admin-backend:
         condition: service_healthy

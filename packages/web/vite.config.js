@@ -9,7 +9,7 @@ export default defineConfig({
 		port: 5173,
 		cors: true,
 		strictPort: true,
-		hmr: false, // VPS'de HMR sorunları yaşanıyor, devre dışı bırak
+		hmr: true, // Hot Module Replacement etkinleştir
 		allowedHosts: [
 			'benalsam.com',
 			'www.benalsam.com',

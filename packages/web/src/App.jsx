@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils.js';
 
 function App() {
+  // 🚀 Hot reload test - bu yorum değişikliği otomatik yansımalı
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
@@ -96,4 +97,5 @@ function App() {
   );
 }
 
-export default App;
+export default App;// Test değişikliği Sun Aug 10 10:52:36 +03 2025
+// Hot reload test Sun Aug 10 10:57:49 +03 2025
