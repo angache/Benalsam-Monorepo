@@ -2,33 +2,27 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY pnpm-workspace.yaml ./
-COPY packages/*/package*.json ./packages/*/
+# Copy everything first
+COPY . .
 
 # Install dependencies
-RUN npm install -g pnpm
-RUN pnpm install
-
-# Copy source code
-COPY . .
+RUN npm install
 
 # Build shared-types
 WORKDIR /app/packages/shared-types
-RUN pnpm build
+RUN npm run build
 
 # Build admin-backend
 WORKDIR /app/packages/admin-backend
-RUN pnpm build
+RUN npm run build
 
 # Build admin-ui
 WORKDIR /app/packages/admin-ui
-RUN pnpm build
+RUN npm run build
 
 # Build web
 WORKDIR /app/packages/web
-RUN pnpm build
+RUN npm run build
 
 # Create logs directory
 RUN mkdir -p /app/logs && chown -R node:node /app/logs
