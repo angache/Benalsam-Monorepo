@@ -81,7 +81,10 @@ services:
     build:
       context: .
       dockerfile: ./packages/admin-backend/Dockerfile
-      target: production
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
     env_file:
       - .env
     environment:
@@ -132,7 +135,10 @@ services:
     build:
       context: .
       dockerfile: ./packages/admin-ui/Dockerfile
-      target: production
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
     env_file:
       - .env
     environment:
@@ -174,7 +180,10 @@ services:
     build:
       context: .
       dockerfile: ./packages/web/Dockerfile
-      target: production
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
     env_file:
       - .env
     environment:
