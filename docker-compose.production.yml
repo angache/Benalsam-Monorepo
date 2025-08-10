@@ -81,7 +81,7 @@ services:
     build:
       context: .
       dockerfile: ./packages/admin-backend/Dockerfile
-      target: development
+      target: production
     volumes:
       - .:/app
       - /app/node_modules
@@ -119,11 +119,11 @@ services:
           memory: 256M
           cpus: '0.25'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -135,7 +135,7 @@ services:
     build:
       context: .
       dockerfile: ./packages/admin-ui/Dockerfile
-      target: development
+      target: production
     volumes:
       - .:/app
       - /app/node_modules
@@ -164,11 +164,11 @@ services:
           memory: 128M
           cpus: '0.1'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3003"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3003 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -180,7 +180,7 @@ services:
     build:
       context: .
       dockerfile: ./packages/web/Dockerfile
-      target: development
+      target: production
     volumes:
       - .:/app
       - /app/node_modules
