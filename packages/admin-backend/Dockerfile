@@ -17,7 +17,7 @@ FROM base AS development
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 WORKDIR /app/packages/admin-backend
-RUN npm install --ignore-scripts
+RUN npm install
 
 USER appuser
 EXPOSE 3002

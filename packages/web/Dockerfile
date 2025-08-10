@@ -26,8 +26,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 WORKDIR /app/packages/web
 
-# Install devDependencies for development (skip scripts to avoid shared-types build)
-RUN npm install --ignore-scripts
+# Install devDependencies for development
+RUN npm install
 
 # Create temp directory for Vite and set permissions
 RUN mkdir -p /tmp/vite && chown -R appuser:nodejs /tmp/vite
