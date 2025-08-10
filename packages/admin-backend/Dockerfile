@@ -41,6 +41,7 @@ RUN npm run build
 FROM base AS production
 COPY --from=builder /app/packages/admin-backend/dist ./dist
 COPY --from=builder /app/packages/admin-backend/package.json ./package.json
+COPY --from=builder /app/packages/shared-types/dist ./node_modules/@benalsam/shared-types
 RUN npm install --only=production
 
 # Create logs directory and set permissions BEFORE switching user
