@@ -10,7 +10,7 @@ RUN addgroup -g 1001 -S nodejs && \
 FROM base AS deps
 COPY package.json ./
 COPY packages/*/package.json ./packages/*/
-RUN npm ci --only=production
+RUN npm install
 
 # Development stage
 FROM base AS development
