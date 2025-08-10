@@ -8,13 +8,18 @@ const logsDir = process.env.NODE_ENV === 'production'
   : path.join(__dirname, '../../logs');
 
 // Create directory if it doesn't exist (Docker handles permissions)
+let canWriteLogs = false;
 if (!fs.existsSync(logsDir)) {
   try {
     fs.mkdirSync(logsDir, { recursive: true });
+    canWriteLogs = true;
   } catch (error) {
     // If we can't create logs directory, use console only
     console.warn('Could not create logs directory, using console only');
+    canWriteLogs = false;
   }
+} else {
+  canWriteLogs = true;
 }
 
 // Create logger instance
@@ -27,15 +32,18 @@ const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'admin-backend' },
   transports: [
-    // Write all logs with importance level of `error` or less to `error.log`
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'error.log'), 
-      level: 'error' 
-    }),
-    // Write all logs with importance level of `info` or less to `combined.log`
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'combined.log') 
-    }),
+    // Only add file transports if we can write logs
+    ...(canWriteLogs ? [
+      // Write all logs with importance level of `error` or less to `error.log`
+      new winston.transports.File({ 
+        filename: path.join(logsDir, 'error.log'), 
+        level: 'error' 
+      }),
+      // Write all logs with importance level of `info` or less to `combined.log`
+      new winston.transports.File({ 
+        filename: path.join(logsDir, 'combined.log') 
+      }),
+    ] : []),
   ],
 });
 
