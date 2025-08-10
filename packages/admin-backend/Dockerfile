@@ -21,6 +21,9 @@ RUN npm install
 RUN npm install benalsam-shared-types --legacy-peer-deps
 RUN npm install nodemon --save-dev
 
+# Create logs directory and set permissions BEFORE switching user
+RUN mkdir -p /app/packages/admin-backend/logs && chown -R appuser:nodejs /app/packages/admin-backend/logs
+
 USER appuser
 EXPOSE 3002
 CMD ["npm", "run", "dev"]
