@@ -1,5 +1,5 @@
 {
-  "name": "@benalsam/shared-types",
+  "name": "benalsam-shared-types",
   "version": "1.0.0",
   "description": "Shared TypeScript types and services for Benalsam mobile and web applications",
   "main": "dist/index.js",
