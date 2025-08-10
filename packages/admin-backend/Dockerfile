@@ -18,6 +18,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 WORKDIR /app/packages/admin-backend
 RUN npm install
+RUN npm install benalsam-shared-types --legacy-peer-deps
 
 USER appuser
 EXPOSE 3002
