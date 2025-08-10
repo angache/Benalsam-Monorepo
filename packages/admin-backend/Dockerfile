@@ -10,7 +10,7 @@ RUN addgroup -g 1001 -S nodejs && \
 FROM base AS deps
 COPY package.json ./
 COPY packages/*/package.json ./packages/*/
-RUN npm install
+RUN npm ci --only=production
 
 # Development stage
 FROM base AS development
@@ -19,6 +19,7 @@ COPY . .
 WORKDIR /app/packages/admin-backend
 RUN npm install
 RUN npm install benalsam-shared-types --legacy-peer-deps
+RUN npm install nodemon --save-dev
 
 USER appuser
 EXPOSE 3002

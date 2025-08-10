@@ -29,6 +29,7 @@ WORKDIR /app/packages/web
 # Install devDependencies for development
 RUN npm install
 RUN npm install benalsam-shared-types --legacy-peer-deps
+RUN npm install -g nodemon
 
 # Create temp directory for Vite and set permissions
 RUN mkdir -p /tmp/vite && chown -R appuser:nodejs /tmp/vite
