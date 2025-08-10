@@ -74,9 +74,11 @@ echo -e "${GREEN}✅ Pre-flight checks tamamlandı${NC}"
 echo -e "${YELLOW}🛑 Mevcut container'ları durduruyorum...${NC}"
 docker-compose -f $COMPOSE_FILE down --remove-orphans || true
 
-# Clean up old images
-echo -e "${YELLOW}🧹 Eski Docker image'larını temizliyorum...${NC}"
-docker system prune -f
+# Clean up old images and containers
+echo -e "${YELLOW}🧹 Eski Docker image'larını ve container'ları temizliyorum...${NC}"
+docker-compose -f $COMPOSE_FILE down --volumes --remove-orphans || true
+docker system prune -a -f
+docker builder prune -a -f
 
 # Build and start services
 echo -e "${YELLOW}🔨 Production build başlıyor...${NC}"
