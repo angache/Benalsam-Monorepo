@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticateToken, authenticateSupabaseToken } from '../middleware/auth';
 import userBehaviorService from '../services/userBehaviorService';
 import logger from '../config/logger';
-import { AnalyticsEvent, AnalyticsEventType } from '@benalsam/shared-types';
+import { AnalyticsEvent, AnalyticsEventType } from 'benalsam-shared-types';
 
 const router: Router = Router();
 

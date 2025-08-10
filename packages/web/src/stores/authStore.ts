@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserProfile } from '@/services/profileService';
 import { sharedRateLimitService } from '@/services/sharedRateLimitService';
-import { User } from '@benalsam/shared-types';
+import { User } from 'benalsam-shared-types';
 
 interface AuthState {
   user: User | null;

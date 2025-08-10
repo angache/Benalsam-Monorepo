@@ -20,7 +20,7 @@ import { fetchSentOffers, deleteOffer } from '@/services/offerService';
 import { getOrCreateConversation } from '@/services/conversationService';
 import { canUserReview } from '@/services/reviewService';
 import { useAuthStore } from '@/stores';
-import { formatDate } from '@benalsam/shared-types';
+import { formatDate } from 'benalsam-shared-types';
 
 
 const SentOffersPage = () => {

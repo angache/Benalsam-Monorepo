@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
-import { ListingReport } from '@benalsam/shared-types';
+import { ListingReport } from 'benalsam-shared-types';
 
 // Report reason types
 export const REPORT_REASONS = {

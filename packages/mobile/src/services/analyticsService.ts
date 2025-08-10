@@ -9,7 +9,7 @@ import {
   AnalyticsSession, 
   AnalyticsDevice, 
   AnalyticsContext
-} from '@benalsam/shared-types';
+} from 'benalsam-shared-types';
 import Constants from 'expo-constants';
 
 // Admin Backend URL

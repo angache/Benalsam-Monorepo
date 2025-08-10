@@ -1,6 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from '../config/logger';
-import { SearchOptimizedListing } from '@benalsam/shared-types';
+import { SearchOptimizedListing } from 'benalsam-shared-types';
 import searchCacheService from './searchCacheService';
 
 export class AdminElasticsearchService {

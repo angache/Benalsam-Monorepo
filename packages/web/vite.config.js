@@ -26,7 +26,7 @@ export default defineConfig({
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json'],
 		alias: {
 			'@': path.resolve(__dirname, './src'),
-			'@benalsam/shared-types': path.resolve(__dirname, '../shared-types/dist-esm'),
+			    'benalsam-shared-types': path.resolve(__dirname, '../shared-types/dist-esm'),
 		},
 	},
 	// Cache directory configuration for Docker

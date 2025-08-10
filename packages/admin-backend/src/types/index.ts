@@ -22,7 +22,7 @@ import {
 // ===========================
 
 // Ortak/shared tipler için eski require yapısı devam edecek:
-const s_t = require('@benalsam/shared-types');
+const s_t = require('benalsam-shared-types');
 
 // Enum ve değerler
 export const ListingStatus = s_t.ListingStatus;

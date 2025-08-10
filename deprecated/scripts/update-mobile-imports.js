@@ -17,11 +17,11 @@ function updateImports(dir) {
       let content = fs.readFileSync(filePath, 'utf8');
       let updated = false;
       
-      // ./supabaseClient import'larını @benalsam/shared-types ile değiştir
+      // ./supabaseClient import'larını benalsam-shared-types ile değiştir
       if (content.includes("import { supabase } from './supabaseClient'")) {
         content = content.replace(
           "import { supabase } from './supabaseClient'",
-          "import { supabase } from '@benalsam/shared-types'"
+          "import { supabase } from 'benalsam-shared-types'"
         );
         updated = true;
       }
@@ -29,7 +29,7 @@ function updateImports(dir) {
       if (content.includes("import { supabase } from '../supabaseClient'")) {
         content = content.replace(
           "import { supabase } from '../supabaseClient'",
-          "import { supabase } from '@benalsam/shared-types'"
+          "import { supabase } from 'benalsam-shared-types'"
         );
         updated = true;
       }
@@ -37,7 +37,7 @@ function updateImports(dir) {
       if (content.includes("import { supabase } from '../../services/supabaseClient'")) {
         content = content.replace(
           "import { supabase } from '../../services/supabaseClient'",
-          "import { supabase } from '@benalsam/shared-types'"
+          "import { supabase } from 'benalsam-shared-types'"
         );
         updated = true;
       }
@@ -45,7 +45,7 @@ function updateImports(dir) {
       if (content.includes("import { supabase } from '../../../services/supabaseClient'")) {
         content = content.replace(
           "import { supabase } from '../../../services/supabaseClient'",
-          "import { supabase } from '@benalsam/shared-types'"
+          "import { supabase } from 'benalsam-shared-types'"
         );
         updated = true;
       }

@@ -1,7 +1,7 @@
 // Shared Rate Limit Service Client for Web
 // Communicates with backend Redis-based rate limiting
 
-import type { RateLimitResult } from '@benalsam/shared-types';
+import type { RateLimitResult } from 'benalsam-shared-types';
 
 const API_BASE_URL = import.meta.env.VITE_ADMIN_BACKEND_URL || 'http://localhost:3002';
 const RATE_LIMIT_API = `${API_BASE_URL}/api/v1/rate-limit`;

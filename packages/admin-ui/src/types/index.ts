@@ -3,10 +3,10 @@
 // ===========================
 
 // Re-export all types from shared-types package
-export * from '@benalsam/shared-types';
+export * from 'benalsam-shared-types';
 
 // Import AdminUser type specifically to avoid TypeScript errors
-import type { AdminUser } from '@benalsam/shared-types';
+import type { AdminUser } from 'benalsam-shared-types';
 
 // ===========================
 // ADMIN-UI SPECIFIC TYPES

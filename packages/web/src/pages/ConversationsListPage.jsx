@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
-import { formatDate } from '@benalsam/shared-types';
+import { formatDate } from 'benalsam-shared-types';
 
 
 const ConversationCard = ({ conversation, currentUser, onClick, unreadCount }) => {

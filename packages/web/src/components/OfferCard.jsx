@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { featureOffer, checkPremiumFeature, showPremiumUpgradeToast } from '@/services/premiumService';
-import PremiumModal from '@/components/PremiumModal';import { formatDate } from '@benalsam/shared-types';
+import PremiumModal from '@/components/PremiumModal';import { formatDate } from 'benalsam-shared-types';
 
 
 const OfferCard = ({ offer, currentUser, onAccept, onReject, onMessage, showActions = true }) => {

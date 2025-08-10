@@ -1,7 +1,7 @@
 // Shared Rate Limit Service Client for Mobile
 // Communicates with backend Redis-based rate limiting
 
-import type { RateLimitResult } from '@benalsam/shared-types';
+import type { RateLimitResult } from 'benalsam-shared-types';
 import { rateLimitService } from './rateLimitService';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_ADMIN_BACKEND_URL || 'http://192.168.1.4:3002';

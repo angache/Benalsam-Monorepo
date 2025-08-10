@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import analyticsService from '../services/analyticsService';
-import { AnalyticsEventType } from '@benalsam/shared-types';
+import { AnalyticsEventType } from 'benalsam-shared-types';
 import { useAuthStore } from '../stores/authStore';
 
 const AnalyticsTestScreen: React.FC = () => {

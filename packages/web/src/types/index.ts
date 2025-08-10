@@ -3,7 +3,7 @@
 // ===========================
 
 // Re-export all types from shared-types package
-export * from '@benalsam/shared-types';
+export * from 'benalsam-shared-types';
 
 // ===========================
 // WEB-SPECIFIC TYPES (if any)

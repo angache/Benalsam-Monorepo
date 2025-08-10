@@ -83,7 +83,7 @@ export {
   getTrustLevel,
   getTrustLevelColor,
   formatPhoneNumber
-} from '@benalsam/shared-types';
+} from 'benalsam-shared-types';
 
 // ===========================
 // MOBILE-SPECIFIC TYPES

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
-import { User } from '@benalsam/shared-types';
+import { User } from 'benalsam-shared-types';
 
 // Follow relationship interface
 interface FollowRelationship {

@@ -1,6 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from '../config/logger';
-import { AnalyticsEvent, AnalyticsEventType, AnalyticsUser, AnalyticsSession, AnalyticsDevice, AnalyticsContext } from '@benalsam/shared-types';
+import { AnalyticsEvent, AnalyticsEventType, AnalyticsUser, AnalyticsSession, AnalyticsDevice, AnalyticsContext } from 'benalsam-shared-types';
 
 export interface UserBehaviorEvent {
   user_id?: string; // ✅ Optional for session-based tracking

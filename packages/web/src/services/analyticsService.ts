@@ -1,12 +1,12 @@
 import { supabase } from '@/lib/supabaseClient';
-import { AnalyticsEventType } from '@benalsam/shared-types';
+import { AnalyticsEventType } from 'benalsam-shared-types';
 import type { 
   AnalyticsEvent as StandardizedAnalyticsEvent, 
   AnalyticsUser, 
   AnalyticsSession, 
   AnalyticsDevice, 
   AnalyticsContext 
-} from '@benalsam/shared-types';
+} from 'benalsam-shared-types';
 
 // Legacy event interface for backward compatibility
 interface AnalyticsEvent {
