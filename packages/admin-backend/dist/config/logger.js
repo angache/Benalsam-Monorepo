@@ -7,8 +7,10 @@ exports.logStream = void 0;
 const winston_1 = __importDefault(require("winston"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-const logsDir = path_1.default.join(__dirname, '../../logs');
-if (!fs_1.default.existsSync(logsDir)) {
+const logsDir = process.env.NODE_ENV === 'production'
+    ? '/app/logs'
+    : path_1.default.join(__dirname, '../../logs');
+if (process.env.NODE_ENV !== 'production' && !fs_1.default.existsSync(logsDir)) {
     fs_1.default.mkdirSync(logsDir, { recursive: true });
 }
 const logger = winston_1.default.createLogger({
@@ -25,11 +27,9 @@ const logger = winston_1.default.createLogger({
         }),
     ],
 });
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston_1.default.transports.Console({
-        format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
-    }));
-}
+logger.add(new winston_1.default.transports.Console({
+    format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
+}));
 exports.logStream = {
     write: (message) => {
         logger.info(message.trim());

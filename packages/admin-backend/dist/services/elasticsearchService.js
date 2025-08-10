@@ -279,17 +279,40 @@ class AdminElasticsearchService {
                 } : undefined,
                 tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
             });
+            const indexExists = await client.indices.exists({ index: indexName });
+            if (!indexExists) {
+                logger_1.default.warn(`Index ${indexName} does not exist`);
+                return { hits: { hits: [], total: { value: 0 } } };
+            }
+            const mapping = await client.indices.getMapping({ index: indexName });
+            const fields = Object.keys(mapping[indexName].mappings.properties || {});
+            let sortField = null;
+            if (fields.includes('timestamp')) {
+                sortField = 'timestamp';
+            }
+            else if (fields.includes('created_at')) {
+                sortField = 'created_at';
+            }
+            else if (fields.includes('updated_at')) {
+                sortField = 'updated_at';
+            }
+            else if (fields.includes('createdAt')) {
+                sortField = 'createdAt';
+            }
+            const searchBody = {
+                query: {
+                    match_all: {}
+                }
+            };
+            if (sortField) {
+                searchBody.sort = [
+                    { [sortField]: { order: 'desc' } }
+                ];
+            }
             const response = await client.search({
                 index: indexName,
                 size: options.size || 10,
-                body: {
-                    query: {
-                        match_all: {}
-                    },
-                    sort: [
-                        { timestamp: { order: 'desc' } }
-                    ]
-                }
+                body: searchBody
             });
             return response;
         }

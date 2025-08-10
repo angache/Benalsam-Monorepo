@@ -2,7 +2,6 @@
   "name": "benalsam-monorepo",
   "version": "1.0.0",
   "private": true,
-
   "scripts": {
     "build": "lerna run build --stream",
     "dev": "lerna run dev --parallel --stream",
@@ -46,12 +45,15 @@
     "monorepo:publish": "lerna publish"
   },
   "devDependencies": {
-    "lerna": "^8.2.3",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "prettier": "^3.0.0"
+    "lerna": "^8.2.3",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "benalsam-shared-types": "^1.0.0"
   }
-} 
+}
